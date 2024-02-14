@@ -1,6 +1,6 @@
-# [Backstage](https://backstage.io)
+# GlobalLogic [Backstage](https://backstage.io) Plugins
 
-This is your newly scaffolded Backstage App, Good Luck!
+This repo contains all plugins created by GlobalLogic.
 
 To start the app, run:
 
@@ -8,3 +8,7 @@ To start the app, run:
 yarn install
 yarn dev
 ```
+
+## License
+
+Copyright 2024 GlobalLogic Inc. Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0

@@ -1,0 +1,5 @@
+# Backstage override configuration for your local development environment
+
+integrations:
+  terraform:
+    token: TOKEN_HERE

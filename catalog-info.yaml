@@ -2,12 +2,8 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: backstage-plugins
-  description: An example of a Backstage application.
-  # Example for optional annotations
-  # annotations:
-  #   github.com/project-slug: backstage/backstage
-  #   backstage.io/techdocs-ref: dir:.
+  description: A Backstage application containing all of GlobalLogic's open sourced plugins.
 spec:
   type: website
-  owner: john@example.com
+  owner: user:himesh.ladva
   lifecycle: experimental
