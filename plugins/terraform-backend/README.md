@@ -5,7 +5,7 @@ This plugin is the backend api used by the terraform frontend plugin.
 ## Install
 
 ```shell
-npm i @globallogicuki/plugin-terraform-backend
+npm i @globallogicuki/backstage-plugin-terraform-backend
 ```
 
 ## Setup
@@ -21,7 +21,7 @@ integrations:
 Create a new file named `packages/backend/src/plugins/terraform.ts`, and add the following to it:
 
 ```typescript
-import { createRouter } from '@globallogicuki/plugin-terraform-backend';
+import { createRouter } from '@globallogicuki/backstage-plugin-terraform-backend';
 import { Router } from 'express';
 import { PluginEnvironment } from '../types';
 

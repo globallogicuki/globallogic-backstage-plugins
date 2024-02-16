@@ -7,7 +7,7 @@ You can use this plugin to display a list of terraform runs for a specific works
 ## Install
 
 ```shell
-npm i @globallogicuki/plugin-terraform
+npm i @globallogicuki/backstage-plugin-terraform
 ```
 
 ## Setup
@@ -19,7 +19,7 @@ There is a `isTerraformAvailable` helper function and a `<EntityTerraformCard />
 Edit the `packages/app/src/components/catalog/EntityPage.tsx` and add the imports:
 
 ```typescript
-import { EntityTerraformContent } from '@globallogicuki/plugin-terraform';
+import { EntityTerraformContent } from '@globallogicuki/backstage-plugin-terraform';
 ```
 
 Then add the following route and component to the desired entity page:
