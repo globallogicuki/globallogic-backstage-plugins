@@ -1,5 +1,15 @@
 # Terraform Backend Plugin for Backstage
 
+This plugin is the backend api used by the terraform frontend plugin.
+
+## Install
+
+```shell
+npm i @globallogicuki/plugin-terraform-backend
+```
+
+## Setup
+
 To use the terraform backend, you will need to configure the following in your `app-config.yaml` file:
 
 ```yaml
@@ -42,4 +52,4 @@ After you start the backend (e.g. using yarn start-backend from the repo root), 
 curl localhost:7007/api/terraform/health
 ```
 
-This should return {"status":"ok"}.
+This should return `{"status":"ok"}`.

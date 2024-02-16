@@ -1,5 +1,17 @@
 # Terraform Frontend Plugin for Backstage
 
+You can use this plugin to display a list of terraform runs for a specific workspace.
+
+![](./docs/terraform-plugin-content.png)
+
+## Install
+
+```shell
+npm i @globallogicuki/plugin-terraform
+```
+
+## Setup
+
 This plugin is designed to work in its own tab within an entity. You will need to add the `<EntityTerraformContent />` component to the entity page in the frontend app.
 
 There is a `isTerraformAvailable` helper function and a `<EntityTerraformCard />` component available should you wish to use this within an existing tab.
