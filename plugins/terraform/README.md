@@ -7,7 +7,7 @@ There is a `isTerraformAvailable` helper function and a `<EntityTerraformCard />
 Edit the `packages/app/src/components/catalog/EntityPage.tsx` and add the imports:
 
 ```typescript
-import { EntityTerraformContent } from '@internal/plugin-terraform';
+import { EntityTerraformContent } from '@globallogicuki/plugin-terraform';
 ```
 
 Then add the following route and component to the desired entity page:

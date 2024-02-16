@@ -1,4 +1,4 @@
-import { createRouter } from '@internal/plugin-terraform-backend';
+import { createRouter } from '@globallogicuki/plugin-terraform-backend';
 import { Router } from 'express';
 import { PluginEnvironment } from '../types';
 

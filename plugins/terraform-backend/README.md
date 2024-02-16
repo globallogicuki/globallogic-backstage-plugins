@@ -11,7 +11,7 @@ integrations:
 Create a new file named `packages/backend/src/plugins/terraform.ts`, and add the following to it:
 
 ```typescript
-import { createRouter } from '@internal/plugin-terraform-backend';
+import { createRouter } from '@globallogicuki/plugin-terraform-backend';
 import { Router } from 'express';
 import { PluginEnvironment } from '../types';
 
