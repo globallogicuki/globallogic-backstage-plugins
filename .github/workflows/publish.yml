@@ -1,25 +1,31 @@
 name: Publish
 
-on: workflow_dispatch
+on:
+  push:
+    branches:
+      - main
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
-
-    if: github.ref_name == 'main'
-
-    strategy:
-      matrix:
-        node-version: [18.x]
 
     steps:
       - uses: actions/checkout@v4
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js 18.x
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 18.x
           cache: yarn
       - name: Install Dependencies
         run: yarn install --frozen-lockfile
-      - name: Publish to npm
-        run: echo 'Publishing...'
+      - name: Create Release Pull Request or Publish to npm
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          version: yarn create-version
+          publish: yarn release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

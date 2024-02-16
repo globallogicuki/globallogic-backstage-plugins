@@ -8,28 +8,29 @@ on:
     branches:
       - main
 
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [18.x]
-
     steps:
       - uses: actions/checkout@v4
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js 18.x
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 18.x
           cache: yarn
       - name: Install Dependencies
         run: yarn install --frozen-lockfile
       - name: Lint
         run: yarn lint
-      - name: Tsc
+      - name: Typecheck
         run: yarn tsc
       - name: Test
         run: yarn test:all
       - name: Build
         run: yarn build:all
+      - name: Changeset
+        run: yarn changeset status
+        if: ${{ github.ref_name != 'main' }}
