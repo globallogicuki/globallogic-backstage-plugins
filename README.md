@@ -13,7 +13,7 @@ Installation instructions for each plugin can be found in their individual READM
 Clone the repository
 
 ```sh
-git clone https://github.com/globallogicuki/backstage-plugins.git
+git clone https://github.com/globallogicuki/globallogic-backstage-plugins.git
 cd backstage-plugins
 ```
 
