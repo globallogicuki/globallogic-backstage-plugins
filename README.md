@@ -1,8 +1,23 @@
 # GlobalLogic [Backstage](https://backstage.io) Plugins
 
-This repo contains all plugins created by GlobalLogic.
+This repo contains all plugins created by [GlobalLogic](https://www.globallogic.com/).
 
-To start the app, run:
+The following plugins and scaffold actions can be found in this repository:
+- [Terraform Enterprise/Cloud](https://www.npmjs.com/package/@globallogicuki/backstage-plugin-terraform)
+- [Terraform Enterprise/Cloud Backend](https://www.npmjs.com/package/@globallogicuki/backstage-plugin-terraform-backend)
+
+Installation instructions for each plugin can be found in their individual README files.
+
+## Getting Started for Local Development
+
+Clone the repository
+
+```sh
+git clone https://github.com/globallogicuki/backstage-plugins.git
+cd backstage-plugins
+```
+
+To run the local app, run:
 
 ```sh
 yarn install
