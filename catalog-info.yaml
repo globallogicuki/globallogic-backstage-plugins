@@ -1,7 +1,7 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: backstage-plugins
+  name: globallogic-backstage-plugins
   description: A Backstage application containing all of GlobalLogic's open sourced plugins.
 spec:
   type: website

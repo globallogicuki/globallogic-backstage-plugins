@@ -1,0 +1,6 @@
+---
+'@globallogicuki/backstage-plugin-terraform-backend': patch
+'@globallogicuki/backstage-plugin-terraform': patch
+---
+
+Updating GitHub URLs
