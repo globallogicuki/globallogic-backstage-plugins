@@ -14,7 +14,7 @@ Clone the repository
 
 ```sh
 git clone https://github.com/globallogicuki/globallogic-backstage-plugins.git
-cd backstage-plugins
+cd globallogic-backstage-plugins
 ```
 
 To run the local app, run:
@@ -26,4 +26,4 @@ yarn dev
 
 ## License
 
-Copyright 2024 GlobalLogic Inc. Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
+Copyright 2024 GlobalLogic Inc. Licensed under the Apache License, Version 2.0: <http://www.apache.org/licenses/LICENSE-2.0>
