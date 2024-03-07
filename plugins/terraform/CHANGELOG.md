@@ -1,5 +1,11 @@
 # @globallogicuki/backstage-plugin-terraform
 
+## 0.2.0
+
+### Minor Changes
+
+- 63ff4dd: Update packages
+
 ## 0.1.2
 
 ### Patch Changes
