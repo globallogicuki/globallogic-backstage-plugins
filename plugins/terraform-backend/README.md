@@ -5,7 +5,7 @@ This plugin is the backend api used by the terraform frontend plugin.
 ## Install
 
 ```shell
-npm i @globallogicuki/backstage-plugin-terraform-backend
+yarn add @globallogicuki/backstage-plugin-terraform-backend
 ```
 
 ## Setup
@@ -17,6 +17,18 @@ integrations:
   terraform:
     token: tokenGoesHere
 ```
+
+### New Backstage backend system
+
+You must be using v0.3.0 or greater of the backend and frontend plugin if you are using the new Backstage backend system. [See here](https://backstage.io/docs/backend-system/) for more info.
+
+Add the following to `packages/backend/src/index.ts`:
+
+```typescript
+backend.add(import('@globallogicuki/backstage-plugin-terraform-backend'));
+```
+
+### Legacy Backstage backend system
 
 Create a new file named `packages/backend/src/plugins/terraform.ts`, and add the following to it:
 
@@ -45,6 +57,8 @@ async function main() {
   const terraformEnv = useHotMemoize(module, () => createEnv('terraform'));
   apiRouter.use('/terraform', await terraform(terraformEnv));
 ```
+
+### Status Check
 
 After you start the backend (e.g. using yarn start-backend from the repo root), you should be able to fetch data from it.
 

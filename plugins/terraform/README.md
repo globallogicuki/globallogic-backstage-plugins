@@ -7,7 +7,7 @@ You can use this plugin to display a list of terraform runs for a specific works
 ## Install
 
 ```shell
-npm i @globallogicuki/backstage-plugin-terraform
+yarn add @globallogicuki/backstage-plugin-terraform
 ```
 
 ## Setup
