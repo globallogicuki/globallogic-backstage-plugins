@@ -1,5 +1,11 @@
 # @globallogicuki/backstage-plugin-terraform-backend
 
+## 0.3.0
+
+### Minor Changes
+
+- cda908a: Upgrade terraform-backend to use new backstage backend system. Pass bearer token from terraform frontend to backend plugin. Create ApiFactory for terraform frontend client.
+
 ## 0.2.0
 
 ### Minor Changes
