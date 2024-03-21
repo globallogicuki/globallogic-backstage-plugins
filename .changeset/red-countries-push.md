@@ -3,4 +3,4 @@
 '@globallogicuki/backstage-plugin-terraform': minor
 ---
 
-Upgrade terraform-backend to use new backstage backend system. Pas bearer token from terraform frontend to backend plugin.
+Upgrade terraform-backend to use new backstage backend system. Pass bearer token from terraform frontend to backend plugin. Create ApiFactory for terraform frontend client.
