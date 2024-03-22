@@ -12,9 +12,6 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: example-website
-  annotations:
-    terraform/organization: GLUK
-    terraform/workspace: harbor_harbor
 spec:
   type: website
   lifecycle: experimental
