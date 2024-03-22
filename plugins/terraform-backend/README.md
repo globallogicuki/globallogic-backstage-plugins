@@ -67,3 +67,13 @@ curl localhost:7007/api/terraform/health
 ```
 
 This should return `{"status":"ok"}`.
+
+## Updating OpenAPI Spec
+
+OpenAPI spec can be found in `src/schema/openapi.yaml`
+
+Once this file has been modified you should run the following to generate an update for `src/schema/openapi.generated.yaml`
+
+```shell
+yarn backstage-repo-tools package schema openapi generate --serve
+```
