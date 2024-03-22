@@ -28,7 +28,8 @@
     "test": "backstage-cli package test",
     "clean": "backstage-cli package clean",
     "prepack": "backstage-cli package prepack",
-    "postpack": "backstage-cli package postpack"
+    "postpack": "backstage-cli package postpack",
+    "generate-openapi-schema": "backstage-repo-tools package schema openapi generate --server"
   },
   "dependencies": {
     "@backstage/backend-common": "^0.21.4",
