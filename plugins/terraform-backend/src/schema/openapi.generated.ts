@@ -6,7 +6,7 @@
 import { createValidatedOpenApiRouter } from '@backstage/backend-openapi-utils';
 
 export const spec = {
-  openapi: '3.1.0',
+  openapi: '3.0.3',
   info: {
     title: 'Backstage Terraform API',
     description:
@@ -15,7 +15,7 @@ export const spec = {
   },
   servers: [
     {
-      url: 'https://app.terraform.io/api/v2',
+      url: '/',
     },
   ],
   paths: {
