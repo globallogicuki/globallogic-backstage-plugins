@@ -26,7 +26,7 @@ export class TerraformApiClient implements TerraformApi {
     const apiOrigin = await this.getApiOrigin();
 
     const response = await this.fetchApi.fetch(
-      `${apiOrigin}/runs/${organization}/${workspaceName}`,
+      `${apiOrigin}/organizations/${organization}/workspaces/${workspaceName}/runs`,
       {
         credentials: 'include',
       },
