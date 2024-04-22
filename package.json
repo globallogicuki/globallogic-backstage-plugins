@@ -57,7 +57,7 @@
     ]
   },
   "dependencies": {
-    "@backstage/repo-tools": "^0.7.0",
+    "@backstage/repo-tools": "^0.8.0",
     "@changesets/cli": "^2.27.1",
     "@useoptic/optic": "^0.54.10"
   }
