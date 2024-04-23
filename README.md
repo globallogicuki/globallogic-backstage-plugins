@@ -3,6 +3,7 @@
 This repo contains all plugins created by [GlobalLogic](https://www.globallogic.com/).
 
 The following plugins and scaffold actions can be found in this repository:
+
 - [Terraform Enterprise/Cloud](https://www.npmjs.com/package/@globallogicuki/backstage-plugin-terraform)
 - [Terraform Enterprise/Cloud Backend](https://www.npmjs.com/package/@globallogicuki/backstage-plugin-terraform-backend)
 
