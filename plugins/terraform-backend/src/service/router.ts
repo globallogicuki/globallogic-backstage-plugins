@@ -2,7 +2,7 @@ import { errorHandler } from '@backstage/backend-common';
 import { LoggerService } from '@backstage/backend-plugin-api';
 import { Config } from '@backstage/config';
 import express from 'express';
-import Router from 'express-promise-router';
+import { createOpenApiRouter } from '../schema/openapi.generated';
 import { findWorkspace, getRunsForWorkspace } from '../lib';
 
 export interface RouterOptions {
@@ -15,13 +15,13 @@ export async function createRouter(
 ): Promise<express.Router> {
   const { logger, config } = options;
 
-  const router = Router();
+  const router = await createOpenApiRouter();
   router.use(express.json());
 
-  router.get('/runs/:organization/:workspace', (request, response, next) => {
+  router.get('/organizations/:orgName/workspaces/:workspaceName/runs', (request, response, next) => {
     const token = config.getString('integrations.terraform.token');
-    const organization = request.params.organization;
-    const workspaceName = request.params.workspace;
+    const organization = request.params.orgName;
+    const workspaceName = request.params.workspaceName;
 
     findWorkspace(token, organization, workspaceName)
       .then(workspace => getRunsForWorkspace(token, workspace.id))
@@ -35,6 +35,7 @@ export async function createRouter(
     logger.info('PONG!');
     response.json({ status: 'ok' });
   });
+  
   router.use(errorHandler());
   return router;
 }

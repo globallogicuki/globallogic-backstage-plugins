@@ -1,5 +1,7 @@
 import { getVoidLogger } from '@backstage/backend-common';
+import { wrapInOpenApiTestServer } from '@backstage/backend-openapi-utils';
 import { ConfigReader } from '@backstage/config';
+import { Server } from 'http';
 import express from 'express';
 import request from 'supertest';
 import { createRouter } from './router';
@@ -10,7 +12,7 @@ import { mockRun } from '../mocks/run';
 jest.mock('../lib');
 
 describe('createRouter', () => {
-  let app: express.Express;
+  let app: express.Express | Server;
   const config = new ConfigReader(mockConfig);
 
   beforeAll(async () => {
@@ -18,7 +20,7 @@ describe('createRouter', () => {
       logger: getVoidLogger(),
       config: config,
     });
-    app = express().use(router);
+    app = wrapInOpenApiTestServer(express().use(router));
   });
 
   afterEach(() => {
@@ -34,19 +36,23 @@ describe('createRouter', () => {
     });
   });
 
-  describe('GET /runs/:organization/:workspace', () => {
+  describe('GET /organizations/:orgName/workspaces/:workspaceName/runs', () => {
     it('returns all runs', async () => {
       (findWorkspace as jest.Mock).mockResolvedValue({ id: 'fakeWorkspaceId' });
       (getRunsForWorkspace as jest.Mock).mockResolvedValue([mockRun]);
 
-      const response = await request(app).get('/runs/testOrg/testWorkspace');
+      const response = await request(app).get(
+        '/organizations/testOrg/workspaces/testWorkspace/runs'
+      );
 
       expect(response.status).toEqual(200);
       expect(response.body).toEqual([mockRun]);
     });
 
     it('returns error if findWorkspace throws', async () => {
-      const response = await request(app).get('/runs/testOrg/testWorkspace');
+      const response = await request(app).get(
+        '/organizations/testOrg/workspaces/testWorkspace/runs'
+      );
 
       (findWorkspace as jest.Mock).mockRejectedValue(new Error('Some error.'));
       (getRunsForWorkspace as jest.Mock).mockResolvedValue([mockRun]);
@@ -55,11 +61,13 @@ describe('createRouter', () => {
     });
 
     it('returns error if getRunsForWorkspace throws', async () => {
-      const response = await request(app).get('/runs/testOrg/testWorkspace');
+      const response = await request(app).get(
+        '/organizations/testOrg/workspaces/testWorkspace/runs'
+      );
 
       (findWorkspace as jest.Mock).mockResolvedValue({ id: 'fakeWorkspaceId' });
       (getRunsForWorkspace as jest.Mock).mockRejectedValue(
-        new Error('Some error.'),
+        new Error('Some error.')
       );
 
       expect(response.status).toEqual(500);
