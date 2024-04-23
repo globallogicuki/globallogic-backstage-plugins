@@ -61,7 +61,7 @@ components:
             type: string
           message:
             type: string
-          status: 
+          status:
             type: string
           createdAt:
             type: string

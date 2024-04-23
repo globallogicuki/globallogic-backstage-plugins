@@ -31,6 +31,8 @@ jobs:
         run: yarn tsc
       - name: Test
         run: yarn test:all
+      - name: Format
+        run: yarn prettier:check
       - name: Build
         run: yarn build:all
       - name: Changeset

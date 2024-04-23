@@ -42,7 +42,7 @@ describe('createRouter', () => {
       (getRunsForWorkspace as jest.Mock).mockResolvedValue([mockRun]);
 
       const response = await request(app).get(
-        '/organizations/testOrg/workspaces/testWorkspace/runs'
+        '/organizations/testOrg/workspaces/testWorkspace/runs',
       );
 
       expect(response.status).toEqual(200);
@@ -51,7 +51,7 @@ describe('createRouter', () => {
 
     it('returns error if findWorkspace throws', async () => {
       const response = await request(app).get(
-        '/organizations/testOrg/workspaces/testWorkspace/runs'
+        '/organizations/testOrg/workspaces/testWorkspace/runs',
       );
 
       (findWorkspace as jest.Mock).mockRejectedValue(new Error('Some error.'));
@@ -62,12 +62,12 @@ describe('createRouter', () => {
 
     it('returns error if getRunsForWorkspace throws', async () => {
       const response = await request(app).get(
-        '/organizations/testOrg/workspaces/testWorkspace/runs'
+        '/organizations/testOrg/workspaces/testWorkspace/runs',
       );
 
       (findWorkspace as jest.Mock).mockResolvedValue({ id: 'fakeWorkspaceId' });
       (getRunsForWorkspace as jest.Mock).mockRejectedValue(
-        new Error('Some error.')
+        new Error('Some error.'),
       );
 
       expect(response.status).toEqual(500);
