@@ -14,8 +14,8 @@ jest.mock('@backstage/core-components', () => {
 
   return {
     __esModule: true,
-    ...originalModule,
     LogViewer: MockLogViewer,
+    Progress: originalModule.Progress,
   };
 });
 
