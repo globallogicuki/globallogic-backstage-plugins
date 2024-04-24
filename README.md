@@ -25,6 +25,12 @@ yarn install
 yarn dev
 ```
 
+### Environment variables
+
+There is a `app-config.local.tpl.yaml` file which you should use as the basis to create the `app-config.local.yaml` file.
+
+You can find out more on how Backstage uses config and evironment variables [here](https://backstage.io/docs/conf/).
+
 ## License
 
 Copyright 2024 GlobalLogic Inc. Licensed under the Apache License, Version 2.0: <http://www.apache.org/licenses/LICENSE-2.0>
