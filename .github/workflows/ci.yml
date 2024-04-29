@@ -33,6 +33,8 @@ jobs:
         run: yarn test:all
       - name: Test coverage report
         uses: ArtiomTr/jest-coverage-report-action@v2
+        with:
+          test-script: yarn jest:all
       - name: Format
         run: yarn prettier:check
       - name: Build
