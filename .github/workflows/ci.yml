@@ -34,7 +34,9 @@ jobs:
       - name: Test coverage report
         uses: ArtiomTr/jest-coverage-report-action@v2
         with:
-          test-script: yarn jest:all
+          test-script: yarn jest
+        with:
+          package-manager: yarn
       - name: Format
         run: yarn prettier:check
       - name: Build
