@@ -30,10 +30,11 @@ jobs:
       - name: Typecheck
         run: yarn tsc
       - name: Test
+        run: yarn test:all
+      - name: Report Test Coverage
         uses: ArtiomTr/jest-coverage-report-action@v2
         with:
-          test-script: yarn test:all
-          package-manager: yarn
+          coverage-file: ./coverage/coverage-final.json
       - name: Format
         run: yarn prettier:check
       - name: Build
