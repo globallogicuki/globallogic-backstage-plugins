@@ -1,10 +1,7 @@
-name: CI
+name: Coverage Report
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
+  pull_request_target:
     branches:
       - main
 
@@ -25,16 +22,8 @@ jobs:
           cache: yarn
       - name: Install Dependencies
         run: yarn install --frozen-lockfile
-      - name: Lint
-        run: yarn lint
-      - name: Typecheck
-        run: yarn tsc
-      - name: Test
-        run: yarn test:all
-      - name: Format
-        run: yarn prettier:check
-      - name: Build
-        run: yarn build:all
-      - name: Changeset
-        run: yarn changeset status --since origin/main
-        if: ${{ github.ref_name != 'main' }}
+      - name: Report Test Coverage
+        uses: ArtiomTr/jest-coverage-report-action@v2
+        with:
+          test-script: yarn test:all
+          package-manager: yarn
