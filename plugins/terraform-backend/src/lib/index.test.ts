@@ -240,14 +240,14 @@ describe('lib/index', () => {
       );
     });
 
-    it('should throw an error if the API returns an empty array', () => {
+    it('should throw an error if the API returns an empty array', async () => {
       axios.get = jest.fn().mockResolvedValue({
         data: {
           data: [],
         },
       });
 
-      expect(
+      await expect(
         findWorkspace(TOKEN, ORGANIZATION_NAME, WORKSPACE_NAME),
       ).rejects.toMatchObject({
         message: `Workspace with name '${WORKSPACE_NAME}' not found.`,
