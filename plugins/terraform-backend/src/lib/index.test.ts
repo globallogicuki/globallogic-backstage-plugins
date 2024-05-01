@@ -27,7 +27,7 @@ describe('lib/index', () => {
       );
     });
 
-    it('should correctly map the data received from the API', async () => {
+    it('should correctly map the data received from the tearraform API', async () => {
       const responseData: TerraformRun[] = [
         {
           id: 'id-1',
