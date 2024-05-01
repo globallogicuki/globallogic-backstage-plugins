@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-  pull_request_target:
+  pull_request:
     branches:
       - main
 
@@ -30,7 +30,10 @@ jobs:
       - name: Typecheck
         run: yarn tsc
       - name: Test
-        run: yarn test:all
+        uses: ArtiomTr/jest-coverage-report-action@v2
+        with:
+          test-script: yarn test:all
+          package-manager: yarn
       - name: Format
         run: yarn prettier:check
       - name: Build
