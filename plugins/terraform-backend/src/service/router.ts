@@ -28,7 +28,16 @@ export async function createRouter(
       findWorkspace(token, organization, workspaceName)
         .then(workspace => getRunsForWorkspace(token, workspace.id))
         .then(runs => {
-          response.json(runs);
+          response.json(
+            runs.map(singleRun => ({
+              id: singleRun.id,
+              message: singleRun.message,
+              status: singleRun.status,
+              createdAt: singleRun.createdAt,
+              confirmedBy: singleRun.confirmedBy,
+              plan: singleRun.plan,
+            })),
+          );
         })
         .catch(next);
     },
