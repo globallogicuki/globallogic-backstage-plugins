@@ -61,6 +61,7 @@ components:
             type: string
           message:
             type: string
+            nullable: true
           status:
             type: string
           createdAt:
