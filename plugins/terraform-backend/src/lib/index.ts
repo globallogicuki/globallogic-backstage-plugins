@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { TerraformResponse, TerraformRun, TerraformWorkspace } from './types';
-import { formatTerraformRun } from '../formatTerraformRun';
+import { formatTerraformRun } from './formatTerraformRun';
 
 export const TF_BASE_URL = 'https://app.terraform.io/api/v2';
 

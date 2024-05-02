@@ -1,4 +1,4 @@
-import { TerraformRun } from './lib/types';
+import { TerraformRun } from './types';
 import { formatTerraformRun } from './formatTerraformRun';
 
 describe('formatTerraformRun', () => {

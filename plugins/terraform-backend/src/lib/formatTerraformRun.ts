@@ -1,4 +1,4 @@
-import { TerraformRun, TerraformEntity } from './lib/types';
+import { TerraformRun, TerraformEntity } from './types';
 
 const findEntityById = (entities: TerraformEntity[], id: string) =>
   entities.find(e => e.id === id);
