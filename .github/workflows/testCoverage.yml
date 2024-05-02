@@ -1,0 +1,29 @@
+name: Coverage Report
+
+on:
+  pull_request_target:
+    branches:
+      - main
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Use Node.js 18.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+          cache: yarn
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+      - name: Report Test Coverage
+        uses: ArtiomTr/jest-coverage-report-action@v2
+        with:
+          test-script: yarn test:all
+          package-manager: yarn
