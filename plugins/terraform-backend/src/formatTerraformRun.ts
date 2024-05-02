@@ -1,4 +1,4 @@
-import { TerraformRun, TerraformEntity, ResponseRun } from './lib/types';
+import { TerraformRun, TerraformEntity } from './lib/types';
 
 const findEntityById = (entities: TerraformEntity[], id: string) =>
   entities.find(e => e.id === id);
@@ -26,10 +26,10 @@ const getUserDetails = (users: TerraformEntity[], userId?: string) => {
   };
 };
 
-export const terraformRun2ResponseRun = (
+export const formatTerraformRun = (
   terraformRun: TerraformRun,
   included: TerraformEntity[],
-): ResponseRun => ({
+) => ({
   id: terraformRun.id,
   message: terraformRun.attributes.message,
   status: terraformRun.attributes.status,

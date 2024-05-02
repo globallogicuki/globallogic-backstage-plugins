@@ -1,7 +1,7 @@
 import { TerraformRun } from './lib/types';
-import { terraformRun2ResponseRun } from './terraformRun2ResponseRun';
+import { formatTerraformRun } from './formatTerraformRun';
 
-describe('terraformRun2ResponseRun', () => {
+describe('formatTerraformRun', () => {
   const mockTerraformRun: TerraformRun = {
     id: 'id-1',
     relationships: {
@@ -34,7 +34,7 @@ describe('terraformRun2ResponseRun', () => {
   });
 
   it('should correctly map the data received from the API', () => {
-    const responseRun = terraformRun2ResponseRun(mockTerraformRun, []);
+    const responseRun = formatTerraformRun(mockTerraformRun, []);
     expect(responseRun).toEqual({
       ...minExpectedResult,
       confirmedBy: null,
@@ -56,7 +56,7 @@ describe('terraformRun2ResponseRun', () => {
         },
       },
     ];
-    const responseRun = terraformRun2ResponseRun(mockTerraformRun, included);
+    const responseRun = formatTerraformRun(mockTerraformRun, included);
     expect(responseRun).toEqual({
       ...minExpectedResult,
       confirmedBy: { name: 'username-01', avatar: 'avatar-01' },
@@ -75,7 +75,7 @@ describe('terraformRun2ResponseRun', () => {
         attributes: { 'log-read-url': 'wrong-logs' },
       },
     ];
-    const responseRun = terraformRun2ResponseRun(mockTerraformRun, included);
+    const responseRun = formatTerraformRun(mockTerraformRun, included);
     expect(responseRun).toEqual({
       ...minExpectedResult,
       confirmedBy: null,

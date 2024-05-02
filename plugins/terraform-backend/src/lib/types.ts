@@ -40,15 +40,3 @@ export interface TerraformResponse<EntityType> {
   data: EntityType;
   included: TerraformEntity[];
 }
-
-export interface ResponseRun {
-  id: string;
-  message?: string;
-  status: string;
-  createdAt: string;
-  confirmedBy: {
-    name?: string;
-    avatar?: string;
-  } | null;
-  plan: { logs?: string } | null;
-}

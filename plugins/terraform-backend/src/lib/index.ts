@@ -1,25 +1,20 @@
 import axios from 'axios';
-import {
-  ResponseRun,
-  TerraformResponse,
-  TerraformRun,
-  TerraformWorkspace,
-} from './types';
-import { terraformRun2ResponseRun } from '../terraformRun2ResponseRun';
+import { TerraformResponse, TerraformRun, TerraformWorkspace } from './types';
+import { formatTerraformRun } from '../formatTerraformRun';
 
 export const TF_BASE_URL = 'https://app.terraform.io/api/v2';
 
 export const getRunsForWorkspace = async (
   token: string,
   workspaceId: string,
-): Promise<ResponseRun[]> => {
+) => {
   const res = await axios.get<TerraformResponse<TerraformRun[]>>(
     `${TF_BASE_URL}/workspaces/${workspaceId}/runs?include=created_by,plan`,
     { headers: { Authorization: `Bearer ${token}` } },
   );
 
   return res.data.data.map(singleRun =>
-    terraformRun2ResponseRun(singleRun, res.data.included),
+    formatTerraformRun(singleRun, res.data.included),
   );
 };
 

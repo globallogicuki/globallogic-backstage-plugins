@@ -98,7 +98,8 @@ export const spec = {
               "type": "string"
             },
             "message": {
-              "type": "string"
+              "type": "string",
+              "nullable": true
             },
             "status": {
               "type": "string"
