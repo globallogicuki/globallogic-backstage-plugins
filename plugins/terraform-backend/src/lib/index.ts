@@ -18,7 +18,7 @@ export const getRunsForWorkspace = async (
     { headers: { Authorization: `Bearer ${token}` } },
   );
 
-  return res.data.data.map<ResponseRun>(singleRun =>
+  return res.data.data.map(singleRun =>
     terraformRun2ResponseRun(singleRun, res.data.included),
   );
 };
