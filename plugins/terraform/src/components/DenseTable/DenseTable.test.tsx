@@ -1,25 +1,22 @@
 import React from 'react';
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { DenseTable } from './DenseTable';
-import { renderInTestApp, TestApiProvider } from '@backstage/test-utils';
+import { renderInTestApp } from '@backstage/test-utils';
 
-import useAsync from 'react-use/lib/useAsync';
+jest.mock('@backstage/core-components', () => {
+  const originalModule = jest.requireActual('@backstage/core-components');
 
-jest.mock('react-use/lib/useAsync');
+  const MockOverflowTooltip = ({ text }: { text: string }) => (
+    <p>{`Mock OverflowTooltip: ${text}`}</p>
+  );
 
-// jest.mock('@backstage/core-components', () => {
-//   const originalModule = jest.requireActual('@backstage/core-components');
-
-//   const MockLogViewer = ({ text }: { text: string }) => (
-//     <div>{`Mock TerraformRuns: ${text}`}</div>
-//   );
-
-//   return {
-//     __esModule: true,
-//     ...originalModule,
-//     LogViewer: MockLogViewer,
-//   };
-// });
+  return {
+    __esModule: true,
+    OverflowTooltip: MockOverflowTooltip,
+    Table: originalModule.Table,
+    TableColumn: originalModule.TableColumn,
+  };
+});
 
 const testData = {
   id: '123',
@@ -29,46 +26,60 @@ const testData = {
   confirmedBy: {
     name: 'ABC',
     avatar: 'icon',
-  }, 
+  },
   plan: {
-    logs: "some text",
+    logs: 'some text',
   },
 };
 
 describe('DenseTable', () => {
-  // beforeEach(() => {
-  //   (useAsync as jest.Mock).mockReturnValue({
-  //     value: undefined,
-  //     loading: true,
-  //     error: undefined,
-  //   });
-  // });
+  it('renders the table when data is empty', async () => {
+    render(
+      <DenseTable
+        isLoading={false}
+        title={'Runs for test workspace'}
+        data={[]}
+      />,
+    );
 
-  // afterEach(() => {
-  //   (useAsync as jest.Mock).mockRestore();
-  // });
+    const title = await screen.findByText(/Runs for test workspace/i);
+    const text = await screen.findByText(/User/i);
 
-
-it('renders the table',  async () => {
-  render(<DenseTable  isLoading={false}
-    title={'Runs for test workspace'} data={[]}  />);
-   const text =  await screen.findByText(/User/i);
-    // const text = await waitFor(() =>{
-    //   screen.findByText(/User/i);
-    //       }) 
     expect(text).toBeInTheDocument();
+    expect(title).toBeInTheDocument();
   });
 
-  it.only('opens the logs on click of action button',  async () => {
-    renderInTestApp(<DenseTable  isLoading={false}
-      title={'Runs for test workspace'} data={[testData]}  />);
-      console.log("testdata", testData);
-      const actionButton = await waitFor(() =>{
-        screen.getByTestId('open-logs-123');
-      }) 
-   //const actionButton =  await screen.getByTestId('open-logs-123');
+  it('renders the table when data is set', async () => {
+    render(
+      <DenseTable
+        isLoading={false}
+        title={'Runs for test workspace'}
+        data={[testData]}
+      />,
+    );
+
+    const title = await screen.findByText(/Runs for test workspace/i);
+    const text = await screen.findByText(/User/i);
+    const user = await screen.findByText(/ABC/i);
+    const msg = await screen.findByText(/this is a text message/i);
+
+    expect(text).toBeInTheDocument();
+    expect(title).toBeInTheDocument();
+    expect(user).toBeInTheDocument();
+    expect(msg).toBeInTheDocument();
+  });
+
+  it('opens the logs on click of action button', async () => {
+    await renderInTestApp(
+      <DenseTable
+        isLoading={false}
+        title={'Runs for test workspace'}
+        data={[testData]}
+      />,
+    );
+
+    const actionButton = screen.getByTestId('open-logs-123');
 
     expect(actionButton).toBeInTheDocument();
   });
-  
 });

@@ -82,7 +82,7 @@ export const DenseTable = ({ data, isLoading, title }: DenseTableProps) => {
         <>
           {run.plan?.logs && (
             <IconButton
-            data-testid={`open-logs-${run.id}`}
+              data-testid={`open-logs-${run.id}`}
               size="small"
               onClick={() => {
                 setDialogContent(run.plan?.logs);
