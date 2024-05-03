@@ -30,30 +30,31 @@ jest.mock('@backstage/core-components', () => {
   };
 });
 
-const testData = {
-  id: '123',
-  message: 'this is a text message',
-  status: 'done',
-  createdAt: '2023-05-24T10:23:40.172Z',
-  confirmedBy: {
-    name: 'ABC',
-    avatar: 'icon',
+const mockData = [
+  {
+    id: '1234',
+    message: 'Triggered via UI',
+    status: 'applied',
+    createdAt: '2023-05-24T10:23:40.172Z',
+    confirmedBy: {
+      name: 'ABC',
+      avatar: 'icon',
+    },
+    plan: {
+      logs: 'some text',
+    },
   },
-  plan: {
-    logs: 'some text',
+  {
+    id: '123',
+    message: 'Triggered via CLI',
+    status: 'done',
+    createdAt: '2023-05-24T10:23:40.172Z',
+    confirmedBy: undefined,
+    plan: {
+      logs: 'some text',
+    },
   },
-};
-
-const testData1 = {
-  id: '123',
-  message: 'this is a text message',
-  status: 'done',
-  createdAt: '2023-05-24T10:23:40.172Z',
-  confirmedBy: undefined,
-  plan: {
-    logs: 'some text',
-  },
-};
+];
 
 describe('DenseTable', () => {
   it('renders the table when data is empty', async () => {
@@ -77,7 +78,7 @@ describe('DenseTable', () => {
       <DenseTable
         isLoading={false}
         title="Runs for test workspace"
-        data={[testData1]}
+        data={mockData}
       />,
     );
 
@@ -95,14 +96,14 @@ describe('DenseTable', () => {
       <DenseTable
         isLoading={false}
         title="Runs for test workspace"
-        data={[testData]}
+        data={mockData}
       />,
     );
 
     const title = await screen.findByText(/Runs for test workspace/i);
     const text = await screen.findByText(/User/i);
     const user = await screen.findByText(/ABC/i);
-    const msg = await screen.findByText(/this is a text message/i);
+    const msg = await screen.findByText(/Triggered via CLI/i);
 
     expect(text).toBeInTheDocument();
     expect(title).toBeInTheDocument();
@@ -115,7 +116,7 @@ describe('DenseTable', () => {
       <DenseTable
         isLoading={false}
         title="Runs for test workspace"
-        data={[testData]}
+        data={mockData}
       />,
     );
 
@@ -125,7 +126,6 @@ describe('DenseTable', () => {
     await act(async () => {
       fireEvent.click(actionButton);
     });
-
     const logs = screen.getByText('Logs');
     const heading = screen.getByRole('heading', { level: 5 });
     expect(logs).toBeInTheDocument();
@@ -137,7 +137,7 @@ describe('DenseTable', () => {
       <DenseTable
         isLoading={false}
         title="Runs for test workspace"
-        data={[testData]}
+        data={mockData}
       />,
     );
 
@@ -147,7 +147,6 @@ describe('DenseTable', () => {
     await act(async () => {
       fireEvent.click(actionButton);
     });
-
     const logs = screen.getByText('Logs');
     const heading = screen.getByRole('heading', { level: 5 });
     expect(logs).toBeInTheDocument();
@@ -158,5 +157,107 @@ describe('DenseTable', () => {
     await waitFor(() => {
       expect(logs).not.toBeVisible();
     });
+  });
+
+  it('renders filter option', () => {
+    render(
+      <DenseTable
+        isLoading={false}
+        title="Runs for test workspace"
+        data={mockData}
+      />,
+    );
+    const filterInput = screen.getByPlaceholderText(/Filter/i);
+
+    expect(filterInput).toBeInTheDocument();
+  });
+
+  it('filter on user column', async () => {
+    render(
+      <DenseTable
+        isLoading={false}
+        title="Runs for test workspace"
+        data={mockData}
+      />,
+    );
+    const filterInput = screen.getByPlaceholderText(/Filter/i);
+    const user = await screen.findByText(/ABC/i);
+    const unknownUser = await screen.findByText(/Unknown/i);
+
+    expect(user).toBeInTheDocument();
+    expect(unknownUser).toBeInTheDocument();
+    expect(filterInput).toBeInTheDocument();
+
+    fireEvent.change(filterInput, { target: { value: 'Unknown' } });
+    await waitFor(() => {
+      expect(user).not.toBeInTheDocument();
+      expect(unknownUser).toBeInTheDocument();
+    });
+  });
+
+  it('filter on message column', async () => {
+    render(
+      <DenseTable
+        isLoading={false}
+        title="Runs for test workspace"
+        data={mockData}
+      />,
+    );
+    const filterInput = screen.getByPlaceholderText(/Filter/i);
+    const message = await screen.findByText(/Triggered via CLI/i);
+    const message1 = await screen.findByText(/Triggered via UI/i);
+
+    expect(message).toBeInTheDocument();
+    expect(message1).toBeInTheDocument();
+
+    fireEvent.change(filterInput, { target: { value: 'UI' } });
+    await waitFor(() => {
+      expect(message).not.toBeInTheDocument();
+      expect(message1).toBeInTheDocument();
+    });
+  });
+
+  it('filter on status column', async () => {
+    render(
+      <DenseTable
+        isLoading={false}
+        title="Runs for test workspace"
+        data={mockData}
+      />,
+    );
+    const filterInput = screen.getByPlaceholderText(/Filter/i);
+    const status = await screen.findByText(/done/i);
+    const status1 = await screen.findByText(/applied/i);
+
+    expect(status).toBeInTheDocument();
+    expect(status1).toBeInTheDocument();
+
+    fireEvent.change(filterInput, { target: { value: 'applied' } });
+    await waitFor(() => {
+      expect(status).not.toBeInTheDocument();
+      expect(status1).toBeInTheDocument();
+    });
+  });
+
+  it('sort the column', () => {
+    render(
+      <DenseTable
+        isLoading={false}
+        title="Runs for test workspace"
+        data={mockData}
+      />,
+    );
+    const userColumn = screen.getByText(/User/i);
+    const user = screen.getByText(/ABC/i);
+    const unknownUser = screen.getByText(/Unknown/i);
+
+    expect(userColumn).toBeInTheDocument();
+    expect(user).toBeInTheDocument();
+    expect(unknownUser).toBeInTheDocument();
+    expect(user.compareDocumentPosition(unknownUser)).toBe(4);
+    fireEvent.click(userColumn);
+    expect(user.compareDocumentPosition(unknownUser)).toBe(2);
+    fireEvent.click(userColumn);
+    expect(user.compareDocumentPosition(unknownUser)).toBe(4);
   });
 });
