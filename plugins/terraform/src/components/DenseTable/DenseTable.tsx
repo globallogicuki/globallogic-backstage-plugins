@@ -126,7 +126,7 @@ export const DenseTable = ({ data, isLoading, title }: DenseTableProps) => {
               </Grid>
               <Grid item>
                 <IconButton
-                 data-testid="close-icon"
+                  data-testid="close-icon"
                   aria-label="close"
                   className={classes.closeButton}
                   onClick={closeDialog}

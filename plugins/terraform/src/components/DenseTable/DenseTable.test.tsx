@@ -1,5 +1,11 @@
 import React from 'react';
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { DenseTable } from './DenseTable';
 import { renderInTestApp } from '@backstage/test-utils';
 
@@ -54,7 +60,7 @@ describe('DenseTable', () => {
     render(
       <DenseTable
         isLoading={false}
-        title={'Runs for test workspace'}
+        title="Runs for test workspace"
         data={[]}
       />,
     );
@@ -70,7 +76,7 @@ describe('DenseTable', () => {
     render(
       <DenseTable
         isLoading={false}
-        title={'Runs for test workspace'}
+        title="Runs for test workspace"
         data={[testData1]}
       />,
     );
@@ -78,7 +84,6 @@ describe('DenseTable', () => {
     const title = await screen.findByText(/Runs for test workspace/i);
     const text = await screen.findByText(/User/i);
     const user = await screen.findByText(/Unknown/i);
-
 
     expect(text).toBeInTheDocument();
     expect(title).toBeInTheDocument();
@@ -89,7 +94,7 @@ describe('DenseTable', () => {
     render(
       <DenseTable
         isLoading={false}
-        title={'Runs for test workspace'}
+        title="Runs for test workspace"
         data={[testData]}
       />,
     );
@@ -109,7 +114,7 @@ describe('DenseTable', () => {
     await renderInTestApp(
       <DenseTable
         isLoading={false}
-        title={'Runs for test workspace'}
+        title="Runs for test workspace"
         data={[testData]}
       />,
     );
@@ -120,7 +125,7 @@ describe('DenseTable', () => {
     await act(async () => {
       fireEvent.click(actionButton);
     });
-    
+
     const logs = screen.getByText('Logs');
     const heading = screen.getByRole('heading', { level: 5 });
     expect(logs).toBeInTheDocument();
@@ -131,7 +136,7 @@ describe('DenseTable', () => {
     await renderInTestApp(
       <DenseTable
         isLoading={false}
-        title={'Runs for test workspace'}
+        title="Runs for test workspace"
         data={[testData]}
       />,
     );
@@ -142,16 +147,16 @@ describe('DenseTable', () => {
     await act(async () => {
       fireEvent.click(actionButton);
     });
-    
+
     const logs = screen.getByText('Logs');
     const heading = screen.getByRole('heading', { level: 5 });
     expect(logs).toBeInTheDocument();
     expect(heading).toHaveTextContent('Logs');
-    const close = screen.getByTestId('close-icon')
+    const close = screen.getByTestId('close-icon');
     expect(close).toBeInTheDocument();
     fireEvent.click(close);
     await waitFor(() => {
       expect(logs).not.toBeVisible();
-    })
+    });
   });
 });
