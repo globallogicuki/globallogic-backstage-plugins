@@ -1,9 +1,11 @@
 import React from 'react';
-import useAsync from 'react-use/lib/useAsync';
+import { useLogs } from '../../hooks';
 import { render, screen } from '@testing-library/react';
 import { LogViewer } from './LogViewer';
 
-jest.mock('react-use/lib/useAsync');
+jest.mock('../../hooks', () => ({
+  useLogs: jest.fn(),
+}));
 
 jest.mock('@backstage/core-components', () => {
   const originalModule = jest.requireActual('@backstage/core-components');
@@ -21,15 +23,15 @@ jest.mock('@backstage/core-components', () => {
 
 describe('LogViewer', () => {
   beforeEach(() => {
-    (useAsync as jest.Mock).mockReturnValue({
-      value: undefined,
-      loading: true,
+    (useLogs as jest.Mock).mockReturnValue({
+      data: undefined,
+      isLoading: true,
       error: undefined,
     });
   });
 
   afterEach(() => {
-    (useAsync as jest.Mock).mockRestore();
+    (useLogs as jest.Mock).mockRestore();
   });
 
   it('renders when loading', async () => {
@@ -39,9 +41,9 @@ describe('LogViewer', () => {
   });
 
   it('renders when error', async () => {
-    (useAsync as jest.Mock).mockReturnValue({
-      value: undefined,
-      loading: false,
+    (useLogs as jest.Mock).mockReturnValue({
+      data: undefined,
+      isLoading: false,
       error: new Error('Some fake error.'),
     });
 
@@ -53,9 +55,9 @@ describe('LogViewer', () => {
   });
 
   it('renders when successful', async () => {
-    (useAsync as jest.Mock).mockReturnValue({
-      value: 'this is some text to be shown',
-      loading: false,
+    (useLogs as jest.Mock).mockReturnValue({
+      data: 'this is some text to be shown',
+      isLoading: false,
       error: undefined,
     });
 

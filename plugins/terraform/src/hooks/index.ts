@@ -1,3 +1,4 @@
 import useRuns from './useRuns';
+import useLogs from './useLogs';
 
-export { useRuns };
+export { useRuns, useLogs };

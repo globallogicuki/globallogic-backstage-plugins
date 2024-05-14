@@ -1,25 +1,18 @@
 import React from 'react';
-import useAsync from 'react-use/lib/useAsync';
 import {
   LogViewer as LogViewerBackstage,
   Progress,
 } from '@backstage/core-components';
+import { useLogs } from '../../hooks';
 
 interface Props {
   txtUrl: string;
 }
 
-const getLogs = async (url: string) => {
-  const res = await fetch(url);
-  const text = await res.text();
-
-  return text;
-};
-
 export const LogViewer = ({ txtUrl }: Props) => {
-  const { value, loading, error } = useAsync(async () => getLogs(txtUrl), []);
+  const { data, isLoading, error } = useLogs(txtUrl);
 
-  if (loading) {
+  if (isLoading) {
     return <Progress style={{ width: '100%' }} />;
   }
 
@@ -29,7 +22,7 @@ export const LogViewer = ({ txtUrl }: Props) => {
 
   return (
     <div style={{ height: '100vh', width: '70vw' }}>
-      <LogViewerBackstage text={value!} />
+      <LogViewerBackstage text={data!} />
     </div>
   );
 };
