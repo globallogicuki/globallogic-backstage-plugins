@@ -38,4 +38,4 @@ annotations:
   terraform/workspace: workspaceName
 ```
 
-You will also need to have the terraform backend plugin installed and running.
+You will also need to have the [terraform backend plugin](https://www.npmjs.com/package/@globallogicuki/backstage-plugin-terraform-backend) installed and running.
