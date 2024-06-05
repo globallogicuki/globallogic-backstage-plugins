@@ -53,16 +53,15 @@ export const TerraformLatestRunCard = ({ run, workspace }: TerraformLatestRunCar
 
   return (
     <>
-      {/* <InfoCard title={title}> */}
-      {title}
-      {formattedData ?
-        <div>
-          <div>`User: ${formattedData.createdBy}`</div>
-          <div>${formattedData.message}</div>
-        </div>
-        : <div />
-      }
-      {/* </InfoCard> */}
+      <InfoCard title={title}>
+        {formattedData ?
+          <div>
+            <div><p>`User: ${formattedData.createdBy}`</p></div>
+            <div><p>${formattedData.message}</p></div>
+          </div> :
+          <div />
+        }
+      </InfoCard>
       {/* <Drawer
         variant="temporary"
         anchor="right"
@@ -116,7 +115,7 @@ function createFormattedDataFromRun(
   formattedData?: {
     // createdBy: JSX.Element,
     createdBy?: string,
-    message: JSX.Element,
+    message: string,
     // createdAt: string,
     // status: JSX.Element,
     // actions: JSX.Element
@@ -135,7 +134,8 @@ function createFormattedDataFromRun(
       //     variant="outlined"
       //     size="small" />
       // ),
-      message: <OverflowTooltip text={run.message} line={2} placement="top" />,
+      // message: <OverflowTooltip text={run.message} line={2} placement="top" />,
+      message: run.message,
       // createdAt: formatTimeToWords(run.createdAt, { strict: true }),
       // status: (
       //   <Chip

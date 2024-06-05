@@ -12,24 +12,32 @@ import { renderInTestApp } from '@backstage/test-utils';
 jest.mock('@backstage/core-components', () => {
   const originalModule = jest.requireActual('@backstage/core-components');
 
-  const MockOverflowTooltip = ({ text }: { text: string }) => (
-    <p>{`Mock OverflowTooltip: ${text}`}</p>
-  );
+  // const MockOverflowTooltip = ({ text }: { text: string }) => (
+  //   <p>{`Mock OverflowTooltip: ${text}`}</p>
+  // );
 
   const MockLogViewer = ({ text }: { text: string }) => (
     <div>{`Mock TerraformRuns: ${text}`}</div>
   );
 
+  const MockInfoCard = (props: React.PropsWithChildren<{ title: string }>) => (
+    <div>
+      <p>{`Mock InfoCard: ${props.title} `}</p>
+      {props.children}
+    </div>
+  )
+
   return {
     __esModule: true,
-    OverflowTooltip: MockOverflowTooltip,
-    InfoCard: originalModule.InfoCard,
+    // InfoCard: originalModule.InfoCard,
+    InfoCard: MockInfoCard,
+    // OverflowTooltip: MockOverflowTooltip,
     LogViewer: MockLogViewer,
     Progress: originalModule.Progress,
   };
 });
 
-const testDataNoName = {
+const testDataUndefinedName = {
   id: '123',
   message: 'this is a text message',
   status: 'done',
@@ -76,7 +84,7 @@ describe('TerraformLatestRunCard', () => {
     render(
       <TerraformLatestRunCard
         workspace="test workspace"
-        run={testDataNoName}
+        run={testDataUndefinedName}
       />
     );
 
