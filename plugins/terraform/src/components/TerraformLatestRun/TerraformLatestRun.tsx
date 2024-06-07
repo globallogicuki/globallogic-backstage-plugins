@@ -4,19 +4,18 @@ import RefreshIcon from '@material-ui/icons/Refresh';
 import { ResponseErrorPanel } from '@backstage/core-components';
 import { TerraformLatestRunCard } from '../TerraformLatestRunCard';
 import { useRuns } from '../../hooks';
+import { Run } from '../../hooks/types';
 
 interface Props {
   organization: string;
   workspaceName: string;
-  hideDescription?: boolean;
 }
 
 export const TerraformLatestRun = ({
   organization,
   workspaceName,
-  hideDescription = false,
 }: Props) => {
-  const { data, error, isLoading, refetch } = useRuns(
+  const { data, error, refetch } = useRuns(
     organization,
     workspaceName,
   );
@@ -29,14 +28,11 @@ export const TerraformLatestRun = ({
     return <ResponseErrorPanel error={error} />;
   }
 
-  if (hideDescription) {
+  const latestRun: Run | undefined = data ? data[0] : undefined
+
+  if (!latestRun) {
     return (
-      <TerraformLatestRunCard run={data ? data[0] : undefined} workspace={workspaceName} />
-      // <DenseTable
-      //   data={data || []}
-      //   isLoading={isLoading}
-      //   title={`Runs for ${workspaceName}`}
-      // />
+      <TerraformLatestRunCard run={latestRun} workspace={workspaceName} />
     );
   }
 
@@ -67,7 +63,7 @@ export const TerraformLatestRun = ({
         </Grid>
       </Grid>
       <Grid item>
-        <TerraformLatestRunCard run={data ? data[0] : undefined} workspace={workspaceName} />
+        <TerraformLatestRunCard run={latestRun} workspace={workspaceName} />
         {/* <DenseTable
           data={data || []}
           isLoading={isLoading}
