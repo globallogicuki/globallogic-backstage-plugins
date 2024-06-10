@@ -12,6 +12,10 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: example-website
+  annotations:
+    terraform/organization: GLUK
+    terraform/workspace: ha-vault-internal-vault-ha-kickstarter-ec2
+
 spec:
   type: website
   lifecycle: experimental

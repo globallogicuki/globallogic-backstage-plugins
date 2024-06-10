@@ -102,13 +102,12 @@ describe('TerraformLatestRun', () => {
       error: error,
       refetch: refetchMock,
     });
-    ;
   }
 
 
 
   function _buildValidUseRunsMock() {
-    _buildUseRunMock([{
+    return _buildUseRunMock([{
       id: "testId",
       message: "testMessage",
       status: "testStatus",

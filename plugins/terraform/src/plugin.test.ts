@@ -2,6 +2,7 @@ import {
   terraformPlugin,
   EntityTerraformCard,
   EntityTerraformContent,
+  EntityTerraformLatestRunContent,
 } from './plugin';
 
 describe('terraform', () => {
@@ -15,5 +16,9 @@ describe('terraform', () => {
 
   it('should export card', () => {
     expect(EntityTerraformCard).toBeDefined();
+  });
+
+  it('should export latest run content', () => {
+    expect(EntityTerraformLatestRunContent).toBeDefined();
   });
 });
