@@ -24,8 +24,6 @@ export const Terraform = ({ isCard = false, showLatestRun = false }: Props) => {
     entity.metadata.annotations?.[TERRAFORM_WORKSPACE_ANNOTATION];
 
   if (isTerraformAvailable(entity)) {
-    console.log("entity:", entity);
-
     if (showLatestRun) return (
       <TerraformLatestRun
         organization={organization!}

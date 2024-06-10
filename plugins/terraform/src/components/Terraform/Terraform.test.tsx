@@ -15,7 +15,7 @@ jest.mock('../TerraformLatestRun', () => {
 });
 
 describe('Terraform', () => {
-  it.only('renders TerraformRuns when annotation is present', async () => {
+  it('renders TerraformRuns when annotation is present', async () => {
     render(
       <EntityProvider entity={mockEntity}>
         <Terraform />
@@ -28,8 +28,8 @@ describe('Terraform', () => {
   });
 
   it('renders MissingAnnotationEmptyState when annotation is not present', async () => {
-    const missingAnnotation = { ...mockEntity };
-    // @ts-ignore
+    // If the following is refactored, ensure it is cloning mockEntity, and not merely referencing it!
+    const missingAnnotation = JSON.parse(JSON.stringify(mockEntity));
     missingAnnotation.metadata.annotations = {};
 
     render(
@@ -43,28 +43,9 @@ describe('Terraform', () => {
     expect(missingAnnotationText).toBeInTheDocument();
   });
 
-  it('renders TerraformLatestRun', async () => {
-    const testEntity = {
-      apiVersion: 'backstage.io/v1alpha1',
-      kind: 'Component',
-      metadata: {
-        name: 'mock-component-entity',
-        title: 'Mock Component Entity',
-        namespace: 'default',
-        annotations: {
-          'terraform/organization': 'gluk',
-          // 'terraform/workspace': 'terraform-cloud-gluk-project-config',
-        },
-        spec: {
-          owner: 'guest',
-          type: 'service',
-          lifecycle: 'production',
-        },
-      },
-    };
-
+  it('calls TerraformLatestRun', async () => {
     render(
-      <EntityProvider entity={testEntity}>
+      <EntityProvider entity={mockEntity}>
         <Terraform showLatestRun={true} />
       </EntityProvider>,
     );
