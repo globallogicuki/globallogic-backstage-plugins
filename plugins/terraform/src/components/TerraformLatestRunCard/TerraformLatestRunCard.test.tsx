@@ -1,13 +1,11 @@
-import React from 'react';
 import {
   // act,
   // fireEvent,
   render,
   screen,
-  // waitFor,
 } from '@testing-library/react';
+import React from 'react';
 import { TerraformLatestRunCard } from './TerraformLatestRunCard';
-import { renderInTestApp } from '@backstage/test-utils';
 
 jest.mock('@backstage/core-components', () => {
   const originalModule = jest.requireActual('@backstage/core-components');
@@ -69,6 +67,7 @@ describe('TerraformLatestRunCard', () => {
     render(
       <TerraformLatestRunCard
         run={undefined}
+        isLoading={true}
         workspace="test workspace"
       />
     );
@@ -84,6 +83,7 @@ describe('TerraformLatestRunCard', () => {
     render(
       <TerraformLatestRunCard
         workspace="test workspace"
+        isLoading={true}
         run={testDataUndefinedName}
       />
     );
@@ -101,6 +101,7 @@ describe('TerraformLatestRunCard', () => {
     render(
       <TerraformLatestRunCard
         workspace="test workspace"
+        isLoading={true}
         run={testData1}
       />,
     );

@@ -111,7 +111,7 @@ describe('TerraformLatestRun', () => {
       id: "testId",
       message: "testMessage",
       status: "testStatus",
-      createdAt: "testDate",
+      createdAt: new Date().toISOString(),
       confirmedBy: {
         name: "testUser",
       }

@@ -15,7 +15,7 @@ export const TerraformLatestRun = ({
   organization,
   workspaceName,
 }: Props) => {
-  const { data, error, refetch } = useRuns(
+  const { data, isLoading, error, refetch } = useRuns(
     organization,
     workspaceName,
   );
@@ -32,7 +32,7 @@ export const TerraformLatestRun = ({
 
   if (!latestRun) {
     return (
-      <TerraformLatestRunCard run={latestRun} workspace={workspaceName} />
+      <TerraformLatestRunCard run={latestRun} isLoading={isLoading} workspace={workspaceName} />
     );
   }
 
@@ -63,7 +63,7 @@ export const TerraformLatestRun = ({
         </Grid>
       </Grid>
       <Grid item>
-        <TerraformLatestRunCard run={latestRun} workspace={workspaceName} />
+        <TerraformLatestRunCard run={latestRun} isLoading={isLoading} workspace={workspaceName} />
         {/* <DenseTable
           data={data || []}
           isLoading={isLoading}
