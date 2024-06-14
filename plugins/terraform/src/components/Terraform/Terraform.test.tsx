@@ -9,10 +9,6 @@ jest.mock('../TerraformRuns', () => {
   return { TerraformRuns: MockTerraformRuns };
 });
 
-jest.mock('../TerraformLatestRun', () => {
-  const MockTerraformLatestRun = () => <div>Mock TerraformLatestRun</div>;
-  return { TerraformLatestRun: MockTerraformLatestRun };
-});
 
 describe('Terraform', () => {
   it('renders TerraformRuns when annotation is present', async () => {
@@ -43,15 +39,4 @@ describe('Terraform', () => {
     expect(missingAnnotationText).toBeInTheDocument();
   });
 
-  it('calls TerraformLatestRun', async () => {
-    render(
-      <EntityProvider entity={mockEntity}>
-        <Terraform showLatestRun={true} />
-      </EntityProvider>,
-    );
-
-    const mockText = await screen.findByText('Mock TerraformLatestRun');
-
-    expect(mockText).toBeInTheDocument();
-  })
 });

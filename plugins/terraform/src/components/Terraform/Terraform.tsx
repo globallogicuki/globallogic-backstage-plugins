@@ -9,14 +9,12 @@ import {
   TERRAFORM_WORKSPACE_ANNOTATION,
   TERRAFORM_WORKSPACE_ORGANIZATION,
 } from '../../annotations';
-import { TerraformLatestRun } from '../TerraformLatestRun';
 
 interface Props {
   isCard?: boolean;
-  showLatestRun?: boolean;
 }
 
-export const Terraform = ({ isCard = false, showLatestRun = false }: Props) => {
+export const Terraform = ({ isCard = false }: Props) => {
   const { entity } = useEntity();
   const organization =
     entity.metadata.annotations?.[TERRAFORM_WORKSPACE_ORGANIZATION];
@@ -24,13 +22,6 @@ export const Terraform = ({ isCard = false, showLatestRun = false }: Props) => {
     entity.metadata.annotations?.[TERRAFORM_WORKSPACE_ANNOTATION];
 
   if (isTerraformAvailable(entity)) {
-    if (showLatestRun) return (
-      <TerraformLatestRun
-        organization={organization!}
-        workspaceName={workspaceName!}
-      />
-
-    );
     return (
       <TerraformRuns
         organization={organization!}

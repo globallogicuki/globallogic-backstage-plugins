@@ -1,40 +1,58 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Grid, IconButton, Typography } from '@material-ui/core';
 import RefreshIcon from '@material-ui/icons/Refresh';
 import { ResponseErrorPanel } from '@backstage/core-components';
-import { TerraformLatestRunCard } from '../TerraformLatestRunCard';
+import { TerraformLatestRunContent } from '../TerraformLatestRunContent';
 import { useRuns } from '../../hooks';
 import { Run } from '../../hooks/types';
+import {
+  isTerraformAvailable,
+  TERRAFORM_WORKSPACE_ANNOTATION,
+  TERRAFORM_WORKSPACE_ORGANIZATION,
+} from '../../annotations';
+import { MissingAnnotationEmptyState, useEntity } from '@backstage/plugin-catalog-react';
 
-interface Props {
-  organization: string;
-  workspaceName: string;
-}
 
-export const TerraformLatestRun = ({
-  organization,
-  workspaceName,
-}: Props) => {
-  const { data, isLoading, error, refetch } = useRuns(
-    organization,
-    workspaceName,
-  );
+export const TerraformLatestRun = () => {
 
-  useEffect(() => {
-    refetch();
-  }, [refetch]);
+  const { entity } = useEntity();
+  const { annotations } = entity.metadata;
+  const organization = annotations?.[TERRAFORM_WORKSPACE_ORGANIZATION] ?? 'undefined';
+  const workspaceName = annotations?.[TERRAFORM_WORKSPACE_ANNOTATION] ?? 'undefined';
+
+  if (!isTerraformAvailable(entity)) {
+    return (
+      <MissingAnnotationEmptyState
+        annotation={[TERRAFORM_WORKSPACE_ANNOTATION]}
+      />
+    );
+  }
+
+  const { data, isLoading, error, refetch } = useRuns(organization, workspaceName);
 
   if (error) {
     return <ResponseErrorPanel error={error} />;
+  }
+
+
+  if (isLoading) {
+    return (
+      <>
+        {`Getting data for workspace ${workspaceName}`}
+      </>
+    )
   }
 
   const latestRun: Run | undefined = data ? data[0] : undefined
 
   if (!latestRun) {
     return (
-      <TerraformLatestRunCard run={latestRun} isLoading={isLoading} workspace={workspaceName} />
+      <>
+        {`No runs for ${workspaceName}`}
+      </>
     );
-  }
+  };
+
 
   return (
     <Grid container spacing={2} direction="column">
@@ -63,13 +81,9 @@ export const TerraformLatestRun = ({
         </Grid>
       </Grid>
       <Grid item>
-        <TerraformLatestRunCard run={latestRun} isLoading={isLoading} workspace={workspaceName} />
-        {/* <DenseTable
-          data={data || []}
-          isLoading={isLoading}
-          title={`Latest run for ${workspaceName}`}
-        /> */}
+        <TerraformLatestRunContent run={latestRun} workspace={workspaceName} />
       </Grid>
     </Grid>
-  );
+  )
+
 };

@@ -5,6 +5,9 @@ import { Matcher, render, screen } from '@testing-library/react';
 import { TerraformLatestRun } from './TerraformLatestRun';
 import { useRuns } from '../../hooks';
 import { Run } from '../../hooks/types';
+import { EntityProvider } from '@backstage/plugin-catalog-react';
+import { mockEntity } from '../../mocks/entity';
+import { TERRAFORM_WORKSPACE_ANNOTATION } from '../../annotations';
 
 jest.mock('../../hooks/useRuns');
 
@@ -14,13 +17,34 @@ const mockErrorApi = {
 };
 const apis = [[errorApiRef, mockErrorApi] as const] as const;
 
+const testDataUndefinedName = {
+  id: '123',
+  message: 'this is a text message',
+  status: 'done',
+  createdAt: '2023-05-24T10:23:40.172Z',
+  confirmedBy: undefined,
+  plan: {
+    logs: 'some text',
+  },
+};
+
+
+const testDataValid = {
+  id: "testId",
+  message: "testMessage",
+  status: "testStatus",
+  createdAt: new Date().toISOString(),
+  confirmedBy: {
+    name: "testUser",
+  }
+};
 
 describe('TerraformLatestRun', () => {
   const refetchMock = jest.fn(() => { });
-  const runProps = { organization: 'testOrganization', workspaceName: 'testWorkspaceName' };
+  const workspaceName = mockEntity.metadata.annotations[TERRAFORM_WORKSPACE_ANNOTATION];
   const runDescription: RegExp = /This contains some useful information/i
+  const buildTitleRegEx = (runStatusContext: string) => new RegExp(`${runStatusContext} for ${workspaceName}`);
 
-  // beforeEach(buildUseRunMock());
 
   afterEach(() => {
     (useRuns as jest.Mock).mockRestore();
@@ -28,43 +52,93 @@ describe('TerraformLatestRun', () => {
   });
 
 
+  it('renders the card when isLoading', async () => {
+    buildUseRunMock({ isLoading: true });
+    render(
+      <EntityProvider entity={mockEntity}>
+        <TerraformLatestRun />
+      </EntityProvider>
+    );
+
+    const title = await screen.findByText(/Getting data for workspace/i);
+    const userLabel = screen.queryByText(/User/i);
+
+    expect(title).toBeInTheDocument();
+    expect(userLabel).toBeNull();
+  });
+
+
+  it('renders the card when data is empty', async () => {
+    buildUseRunMock({});
+    render(
+      <EntityProvider entity={mockEntity}>
+        <TerraformLatestRun />
+      </EntityProvider>
+    );
+
+    const title = await screen.findByText(buildTitleRegEx('No runs'));
+    const userLabel = screen.queryByText(/User/i);
+
+    expect(title).toBeInTheDocument();
+    expect(userLabel).toBeNull();
+  });
+
+
+  it('renders the card when empty name is passed', async () => {
+    buildUseRunMock({ runs: [testDataUndefinedName] })
+    render(
+      <EntityProvider entity={mockEntity}>
+        <TerraformLatestRun />
+      </EntityProvider>
+    );
+
+    const title = await screen.findByText(buildTitleRegEx('Latest run'));
+    const userLabel = await screen.findByText(/User/i);
+    const userName = await screen.findByText(/Unknown/i);
+
+    expect(title).toBeInTheDocument();
+    expect(userLabel).toBeInTheDocument();
+    expect(userName).toBeInTheDocument();
+  });
+
   it('renders empty data message', async () => {
-    _buildUseRunMock();
-    render(<TerraformLatestRun {...runProps} />);
+    buildUseRunMock({});
+    render(
+      <EntityProvider entity={mockEntity}>
+        <TerraformLatestRun />
+      </EntityProvider>
+    );
 
-    await _expectation(`No runs for ${runProps.workspaceName}`);
+    await expectation(buildTitleRegEx('No runs'));
 
-    _expectNotFound([runDescription, 'Refresh']);
+    expectNotFound([runDescription, 'Refresh']);
   });
 
 
   it('renders normally with correct data', async () => {
-    _buildValidUseRunsMock();
+    buildUseRunMock({ runs: [testDataValid] });
 
-    render(<TerraformLatestRun {...runProps} />);
+    render(
+      <EntityProvider entity={mockEntity}>
+        <TerraformLatestRun />
+      </EntityProvider>
+    );
 
-    await _expectation(runDescription);
+    await expectation(runDescription);
   })
 
 
-  // test.skip('does not render description and refresh if hideDescription is true', async () => {
-  //   render(<TerraformLatestRun hideDescription {...props} />);
-
-  //   const description = screen.queryByText(
-  //     runDescription,
-  //   );
-  //   const refresh = screen.queryByLabelText('Refresh');
-
-  //   expect(description).not.toBeInTheDocument();
-  //   expect(refresh).not.toBeInTheDocument();
-  // });
-
 
   it('calls refetch when refresh is clicked', async () => {
-    _buildValidUseRunsMock();
-    render(<TerraformLatestRun {...runProps} />);
+    buildUseRunMock({ runs: [testDataValid], refetch: refetchMock });
+    render(
+      <EntityProvider entity={mockEntity}>
+        <TerraformLatestRun />
+      </EntityProvider>
+    );
 
     const refresh = await screen.findByLabelText('Refresh');
+    refresh.click();
     refresh.click();
 
     expect(refetchMock).toHaveBeenCalledTimes(2);
@@ -72,8 +146,8 @@ describe('TerraformLatestRun', () => {
 
 
   it('renders error panel on error fetching', async () => {
-    (useRuns as jest.Mock).mockReturnValue({
-      data: undefined,
+    buildUseRunMock({
+      runs: undefined,
       isLoading: false,
       error: new Error('Some fake error.'),
       refetch: refetchMock,
@@ -81,7 +155,9 @@ describe('TerraformLatestRun', () => {
 
     await renderInTestApp(
       <TestApiProvider apis={apis}>
-        <TerraformLatestRun {...runProps} />
+        <EntityProvider entity={mockEntity}>
+          <TerraformLatestRun />
+        </EntityProvider>
       </TestApiProvider>,
     );
 
@@ -91,42 +167,47 @@ describe('TerraformLatestRun', () => {
   });
 
 
-  function _buildUseRunMock(
-    runs: Run[] = [],
-    error?: Error,
-    isLoading: boolean = true,
+  it('renders MissingAnnotationEmptyState when annotation is not present', async () => {
+    // If the following is refactored, ensure it is cloning mockEntity, and not merely referencing it!
+    const missingAnnotation = JSON.parse(JSON.stringify(mockEntity));
+    missingAnnotation.metadata.annotations = {};
+
+    render(
+      <EntityProvider entity={missingAnnotation}>
+        <TerraformLatestRun />
+      </EntityProvider>,
+    );
+
+    const missingAnnotationText = await screen.findByText('Missing Annotation');
+
+    expect(missingAnnotationText).toBeInTheDocument();
+  });
+
+
+  function buildUseRunMock({ runs, error, isLoading, refetch }:
+    {
+      runs?: Run[],
+      error?: Error,
+      isLoading?: boolean
+      refetch?: Promise<Run[]> | jest.Mock<void, [], any>
+    }
   ): jest.ProvidesHookCallback {
     return (useRuns as jest.Mock).mockReturnValue({
       data: runs,
-      isLoading: isLoading,
-      error: error,
-      refetch: refetchMock,
+      isLoading,
+      error,
+      refetch,
     });
   }
 
 
-
-  function _buildValidUseRunsMock() {
-    return _buildUseRunMock([{
-      id: "testId",
-      message: "testMessage",
-      status: "testStatus",
-      createdAt: new Date().toISOString(),
-      confirmedBy: {
-        name: "testUser",
-      }
-    }]);
-  }
-
-
-
-  async function _expectation(matcher: Matcher) {
+  async function expectation(matcher: Matcher) {
     const htmlElement = await screen.findByText(matcher);
     expect(htmlElement).toBeInTheDocument();
   }
 
 
-  function _expectNotFound(notFoundExpectations: Matcher[]) {
+  function expectNotFound(notFoundExpectations: Matcher[]) {
 
     notFoundExpectations
       .map(m => screen.queryByText(m))
