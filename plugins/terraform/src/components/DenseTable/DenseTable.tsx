@@ -45,39 +45,77 @@ export const DenseTable = ({ data, isLoading, title }: DenseTableProps) => {
 
   const closeDialog = () => setIsOpen(false);
 
-  const columns: TableColumn[] = [
-    { title: 'User', field: 'createdBy' },
-    { title: 'Message', field: 'message' },
-    { title: 'Created', field: 'createdAt' },
-    { title: 'Status', field: 'status' },
-    { title: 'Actions', field: 'actions' },
+  type RowData = {
+    createdBy: { name: string; avatar?: string };
+    message: string;
+    createdAt: string;
+    status: string;
+  };
+
+  const columns: TableColumn<RowData>[] = [
+    {
+      title: 'User',
+      customFilterAndSearch: (query, row) =>
+        row.createdBy.name?.includes(query),
+      render: row => {
+        return (
+          <Chip
+            avatar={
+              <Avatar alt={row.createdBy.name} src={row.createdBy.avatar} />
+            }
+            label={row.createdBy.name}
+            variant="outlined"
+            size="small"
+          />
+        );
+      },
+      customSort: (row1, row2) =>
+        row1.createdBy.name < row2.createdBy.name ? 1 : -1,
+      field: 'createdBy',
+    },
+    {
+      title: 'Message',
+      customFilterAndSearch: (query, row) => row.message?.includes(query),
+      render: row => {
+        return <OverflowTooltip text={row.message} line={2} placement="top" />;
+      },
+      field: 'message',
+    },
+    {
+      title: 'Created',
+      customFilterAndSearch: (query, row) => row.createdAt?.includes(query),
+      render: row => {
+        return row.createdAt;
+      },
+      field: 'createdAt',
+    },
+    {
+      title: 'Status',
+      customFilterAndSearch: (query, row) => row.status?.includes(query),
+      render: row => {
+        return (
+          <Chip
+            label={row.status}
+            style={{ backgroundColor: getColor(row.status) }}
+            size="small"
+            variant="default"
+          />
+        );
+      },
+      field: 'status',
+    },
+    { title: 'Actions', field: 'actions', sorting: false, filtering: false },
   ];
 
-  const formattedData = data.map(run => {
+  const formattedData: RowData[] = data.map(run => {
     return {
-      createdBy: (
-        <Chip
-          avatar={
-            <Avatar
-              alt={run.confirmedBy?.name || 'Unknown'}
-              src={run.confirmedBy?.avatar}
-            />
-          }
-          label={run.confirmedBy?.name || 'Unknown'}
-          variant="outlined"
-          size="small"
-        />
-      ),
-      message: <OverflowTooltip text={run.message} line={2} placement="top" />,
+      createdBy: {
+        name: run.confirmedBy?.name || 'Unknown',
+        avatar: run.confirmedBy?.avatar,
+      },
+      message: run.message,
       createdAt: formatTimeToWords(run.createdAt, { strict: true }),
-      status: (
-        <Chip
-          label={run.status}
-          style={{ backgroundColor: getColor(run.status) }}
-          size="small"
-          variant="default"
-        />
-      ),
+      status: run.status,
       actions: (
         <>
           {run.plan?.logs && (
@@ -101,7 +139,7 @@ export const DenseTable = ({ data, isLoading, title }: DenseTableProps) => {
     <>
       <Table
         title={title}
-        options={{ search: false, paging: true, pageSize: 10 }}
+        options={{ paging: true, pageSize: 10 }}
         columns={columns}
         data={formattedData}
         isLoading={isLoading}
