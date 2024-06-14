@@ -1,5 +1,11 @@
 # @globallogicuki/backstage-plugin-terraform
 
+## 0.5.0
+
+### Minor Changes
+
+- cd2e130: Enabling filtering of terraform runs
+
 ## 0.4.0
 
 ### Minor Changes
