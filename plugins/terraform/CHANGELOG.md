@@ -1,5 +1,13 @@
 # @globallogicuki/backstage-plugin-terraform
 
+## 0.4.0
+
+### Minor Changes
+
+- 85f968b: BREAKING: Changing API endpoints to support `0.4.0` of `@globallogicuki/terraform-backend`
+
+  To upgrade this package, please also update `@globallogicuki/terraform-backend` to `0.4.0` or above
+
 ## 0.3.0
 
 ### Minor Changes
