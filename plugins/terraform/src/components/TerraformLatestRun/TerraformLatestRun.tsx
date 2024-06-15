@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Grid, IconButton, Typography } from '@material-ui/core';
 import RefreshIcon from '@material-ui/icons/Refresh';
 import { ResponseErrorPanel } from '@backstage/core-components';
@@ -16,9 +16,16 @@ import { MissingAnnotationEmptyState, useEntity } from '@backstage/plugin-catalo
 export const TerraformLatestRun = () => {
 
   const { entity } = useEntity();
+
   const { annotations } = entity.metadata;
   const organization = annotations?.[TERRAFORM_WORKSPACE_ORGANIZATION] ?? 'undefined';
   const workspaceName = annotations?.[TERRAFORM_WORKSPACE_ANNOTATION] ?? 'undefined';
+
+  const { data, isLoading, isError, error, refetch } = useRuns(organization, workspaceName);
+
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
 
   if (!isTerraformAvailable(entity)) {
     return (
@@ -28,7 +35,12 @@ export const TerraformLatestRun = () => {
     );
   }
 
-  const { data, isLoading, error, refetch } = useRuns(organization, workspaceName);
+  console.log('[TerraformLatestRun] data:', data);
+  console.log('[TerraformLatestRun] isLoading:', isLoading);
+  console.log('[TerraformLatestRun] isError:', isError);
+  console.log('[TerraformLatestRun] error:', error);
+
+
 
   if (error) {
     return <ResponseErrorPanel error={error} />;

@@ -53,7 +53,7 @@ describe('TerraformLatestRun', () => {
 
 
   it('renders the card when isLoading', async () => {
-    buildUseRunMock({ isLoading: true });
+    buildUseRunMock({ isLoading: true, refetch: refetchMock });
     render(
       <EntityProvider entity={mockEntity}>
         <TerraformLatestRun />
@@ -69,7 +69,7 @@ describe('TerraformLatestRun', () => {
 
 
   it('renders the card when data is empty', async () => {
-    buildUseRunMock({});
+    buildUseRunMock({ refetch: refetchMock });
     render(
       <EntityProvider entity={mockEntity}>
         <TerraformLatestRun />
@@ -85,7 +85,7 @@ describe('TerraformLatestRun', () => {
 
 
   it('renders the card when empty name is passed', async () => {
-    buildUseRunMock({ runs: [testDataUndefinedName] })
+    buildUseRunMock({ runs: [testDataUndefinedName], refetch: refetchMock })
     render(
       <EntityProvider entity={mockEntity}>
         <TerraformLatestRun />
@@ -102,7 +102,7 @@ describe('TerraformLatestRun', () => {
   });
 
   it('renders empty data message', async () => {
-    buildUseRunMock({});
+    buildUseRunMock({ refetch: refetchMock });
     render(
       <EntityProvider entity={mockEntity}>
         <TerraformLatestRun />
@@ -116,7 +116,7 @@ describe('TerraformLatestRun', () => {
 
 
   it('renders normally with correct data', async () => {
-    buildUseRunMock({ runs: [testDataValid] });
+    buildUseRunMock({ runs: [testDataValid], refetch: refetchMock });
 
     render(
       <EntityProvider entity={mockEntity}>
@@ -138,7 +138,6 @@ describe('TerraformLatestRun', () => {
     );
 
     const refresh = await screen.findByLabelText('Refresh');
-    refresh.click();
     refresh.click();
 
     expect(refetchMock).toHaveBeenCalledTimes(2);
@@ -171,6 +170,8 @@ describe('TerraformLatestRun', () => {
     // If the following is refactored, ensure it is cloning mockEntity, and not merely referencing it!
     const missingAnnotation = JSON.parse(JSON.stringify(mockEntity));
     missingAnnotation.metadata.annotations = {};
+
+    buildUseRunMock({ refetch: refetchMock });
 
     render(
       <EntityProvider entity={missingAnnotation}>
