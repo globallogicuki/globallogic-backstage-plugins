@@ -185,7 +185,7 @@ describe('TerraformLatestRun', () => {
   });
 
 
-  function buildUseRunMock({ runs, error, isLoading, refetch }:
+  function buildUseRunMock({ runs, isLoading, error, refetch }:
     {
       runs?: Run[],
       error?: Error,

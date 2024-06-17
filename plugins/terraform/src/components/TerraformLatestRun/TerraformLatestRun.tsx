@@ -21,7 +21,7 @@ export const TerraformLatestRun = () => {
   const organization = annotations?.[TERRAFORM_WORKSPACE_ORGANIZATION] ?? 'undefined';
   const workspaceName = annotations?.[TERRAFORM_WORKSPACE_ANNOTATION] ?? 'undefined';
 
-  const { data, isLoading, isError, error, refetch } = useRuns(organization, workspaceName);
+  const { data, isLoading, error, refetch } = useRuns(organization, workspaceName);
 
   useEffect(() => {
     refetch();
@@ -34,11 +34,6 @@ export const TerraformLatestRun = () => {
       />
     );
   }
-
-  console.log('[TerraformLatestRun] data:', data);
-  console.log('[TerraformLatestRun] isLoading:', isLoading);
-  console.log('[TerraformLatestRun] isError:', isError);
-  console.log('[TerraformLatestRun] error:', error);
 
 
 
