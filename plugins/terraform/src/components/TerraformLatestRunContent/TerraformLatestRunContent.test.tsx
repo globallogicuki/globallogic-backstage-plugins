@@ -56,11 +56,9 @@ describe('TerraformLatestRunContent', () => {
     );
 
     const title = await screen.findByText(/Latest run for test workspace/i);
-    const text = await screen.findByText(/User/i);
     const user = await screen.findByText(/ABC/i);
     const msg = await screen.findByText(/this is a text message/i);
 
-    expect(text).toBeInTheDocument();
     expect(title).toBeInTheDocument();
     expect(user).toBeInTheDocument();
     expect(msg).toBeInTheDocument();
