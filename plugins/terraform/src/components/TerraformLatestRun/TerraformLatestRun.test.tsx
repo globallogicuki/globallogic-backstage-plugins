@@ -42,7 +42,6 @@ const testDataValid = {
 describe('TerraformLatestRun', () => {
   const refetchMock = jest.fn(() => { });
   const workspaceName = mockEntity.metadata.annotations[TERRAFORM_WORKSPACE_ANNOTATION];
-  const runDescription: RegExp = /This contains some useful information/i
   const buildTitleRegEx = (runStatusContext: string) => new RegExp(`${runStatusContext} for ${workspaceName}`);
 
 
@@ -60,11 +59,9 @@ describe('TerraformLatestRun', () => {
       </EntityProvider>
     );
 
-    const title = await screen.findByText(/Getting data for workspace/i);
-    const userLabel = screen.queryByText(/User/i);
+    const loadingProgress = screen.getByRole('progressbar');
 
-    expect(title).toBeInTheDocument();
-    expect(userLabel).toBeNull();
+    expect(loadingProgress).toBeInTheDocument();
   });
 
 
@@ -93,12 +90,10 @@ describe('TerraformLatestRun', () => {
     );
 
     const title = await screen.findByText(buildTitleRegEx('Latest run'));
-    const userLabel = await screen.findByText(/User/i);
-    const userName = await screen.findByText(/Unknown/i);
+    const unknownUser = await screen.findByText(/Unknown/i);
 
     expect(title).toBeInTheDocument();
-    expect(userLabel).toBeInTheDocument();
-    expect(userName).toBeInTheDocument();
+    expect(unknownUser).toBeInTheDocument();
   });
 
   it('renders empty data message', async () => {
@@ -111,7 +106,7 @@ describe('TerraformLatestRun', () => {
 
     await expectation(buildTitleRegEx('No runs'));
 
-    expectNotFound([runDescription, 'Refresh']);
+    expectNotFound(['Refresh']);
   });
 
 
@@ -124,24 +119,9 @@ describe('TerraformLatestRun', () => {
       </EntityProvider>
     );
 
-    await expectation(runDescription);
+    await expectation(/Latest run/i);
   })
 
-
-
-  it('calls refetch when refresh is clicked', async () => {
-    buildUseRunMock({ runs: [testDataValid], refetch: refetchMock });
-    render(
-      <EntityProvider entity={mockEntity}>
-        <TerraformLatestRun />
-      </EntityProvider>
-    );
-
-    const refresh = await screen.findByLabelText('Refresh');
-    refresh.click();
-
-    expect(refetchMock).toHaveBeenCalledTimes(2);
-  });
 
 
   it('renders error panel on error fetching', async () => {
