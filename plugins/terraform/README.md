@@ -39,3 +39,9 @@ annotations:
 ```
 
 You will also need to have the terraform backend plugin installed and running.
+
+## Terraform Latest Run component
+
+![terraform-plugin-latest-run-content](./docs/terraform-plugin-latest-run-content.png)
+
+This is an additional component that can be referenced with `<EntityTerraformLatestRunCard>` and imported and added to the `EntityPage.tsx` file for routing.

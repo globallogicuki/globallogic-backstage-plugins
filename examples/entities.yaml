@@ -13,8 +13,8 @@ kind: Component
 metadata:
   name: example-website
   annotations:
-    terraform/organization: GLUK
-    terraform/workspace: ha-vault-internal-vault-ha-kickstarter-ec2
+    terraform/organization:
+    terraform/workspace:
 
 spec:
   type: website

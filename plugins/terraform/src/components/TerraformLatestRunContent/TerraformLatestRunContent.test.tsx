@@ -6,7 +6,6 @@ import React from 'react';
 import { TerraformLatestRunContent } from './TerraformLatestRunContent';
 
 jest.mock('@backstage/core-components', () => {
-  const originalModule = jest.requireActual('@backstage/core-components');
 
   const MockInfoCard = (props: React.PropsWithChildren<{ title: string }>) => (
     <div>
@@ -15,22 +14,17 @@ jest.mock('@backstage/core-components', () => {
     </div>
   )
 
-  const MockLogViewer = ({ text }: { text: string }) => (
-    <div>{`Mock TerraformRuns: ${text}`}</div>
-  );
 
   return {
     __esModule: true,
     InfoCard: MockInfoCard,
-    LogViewer: MockLogViewer,
-    Progress: originalModule.Progress,
   };
 });
 
 
 
 
-const testData1 = {
+const testRunData = {
   id: '123',
   message: 'this is a text message',
   status: 'done',
@@ -51,7 +45,7 @@ describe('TerraformLatestRunContent', () => {
     render(
       <TerraformLatestRunContent
         workspace="test workspace"
-        run={testData1}
+        run={testRunData}
       />,
     );
 
