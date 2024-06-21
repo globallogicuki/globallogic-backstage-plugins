@@ -1,51 +1,48 @@
+import { useEntity } from '@backstage/plugin-catalog-react';
+import { CircularProgress } from '@material-ui/core';
 import React, { useEffect } from 'react';
-import { CircularProgress, Grid } from '@material-ui/core';
-import { ResponseErrorPanel } from '@backstage/core-components';
-import { TerraformLatestRunContent } from '../TerraformLatestRunContent';
 import { useRuns } from '../../hooks';
 import { Run } from '../../hooks/types';
-import {
-  isTerraformAvailable,
-  TERRAFORM_WORKSPACE_ANNOTATION,
-  TERRAFORM_WORKSPACE_ORGANIZATION,
-} from '../../annotations';
-import { MissingAnnotationEmptyState, useEntity } from '@backstage/plugin-catalog-react';
+import { TerraformLatestRunContent } from '../TerraformLatestRunContent';
+import { TerraformLatestRunError } from '../TerraformLatestRunError';
+import { TerraformNoRuns } from '../TerraformNoRuns';
+import { TerraformLatestRunWrapperCard } from '../TerraformLatestRunWrapperCard';
+import { getAnnotations } from './utils';
 
-
+/**
+ * React component to display the latest Terraform run for a specific organization and workspace.
+ * Fetches and displays the latest run information, handles loading, errors, and no runs scenarios.
+ *
+ * NB: This component should only invoked after assuring Terraform is availabe and the Entity is valid.
+ */
 export const TerraformLatestRun = () => {
 
   const { entity } = useEntity();
 
-  const { annotations } = entity.metadata;
-  const organization = annotations?.[TERRAFORM_WORKSPACE_ORGANIZATION] ?? 'undefined';
-  const workspaceName = annotations?.[TERRAFORM_WORKSPACE_ANNOTATION] ?? 'undefined';
+  const { organization, workspace } = getAnnotations(entity);
 
-  const { data, isLoading, error, refetch } = useRuns(organization, workspaceName);
+  const { data, isLoading, error, refetch } = useRuns(organization!, workspace!);
 
   useEffect(() => {
     refetch();
   }, [refetch]);
 
-  if (!isTerraformAvailable(entity)) {
-    return (
-      <MissingAnnotationEmptyState
-        annotation={[TERRAFORM_WORKSPACE_ANNOTATION]}
-      />
-    );
-  }
-
 
 
   if (error) {
-    return <ResponseErrorPanel error={error} />;
+    return (
+      <TerraformLatestRunWrapperCard workspace={workspace!}>
+        <TerraformLatestRunError error={error} />
+      </TerraformLatestRunWrapperCard>
+    )
   }
 
 
   if (isLoading) {
     return (
-      <div>
+      <TerraformLatestRunWrapperCard workspace={workspace!}>
         <CircularProgress aria-describedby='Getting latest run' aria-busy={true} />
-      </div>
+      </TerraformLatestRunWrapperCard>
     )
   }
 
@@ -53,19 +50,17 @@ export const TerraformLatestRun = () => {
 
   if (!latestRun) {
     return (
-      <>
-        {`No runs for ${workspaceName}`}
-      </>
+      <TerraformLatestRunWrapperCard workspace={workspace!}>
+        <TerraformNoRuns />
+      </TerraformLatestRunWrapperCard>
     );
   };
 
 
   return (
-    <Grid container spacing={2} direction="column">
-      <Grid item>
-        <TerraformLatestRunContent run={latestRun} workspace={workspaceName} />
-      </Grid>
-    </Grid>
+    <TerraformLatestRunWrapperCard workspace={workspace!}>
+      <TerraformLatestRunContent run={latestRun} />
+    </TerraformLatestRunWrapperCard>
   )
 
 };

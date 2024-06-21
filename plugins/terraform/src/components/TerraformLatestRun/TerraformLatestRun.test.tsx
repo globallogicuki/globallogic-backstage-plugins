@@ -7,7 +7,6 @@ import { useRuns } from '../../hooks';
 import { Run } from '../../hooks/types';
 import { EntityProvider } from '@backstage/plugin-catalog-react';
 import { mockEntity } from '../../mocks/entity';
-import { TERRAFORM_WORKSPACE_ANNOTATION } from '../../annotations';
 
 jest.mock('../../hooks/useRuns');
 
@@ -17,6 +16,10 @@ const mockErrorApi = {
 };
 const apis = [[errorApiRef, mockErrorApi] as const] as const;
 
+const testAnnotation = {
+  organization: 'gluk',
+  workspace: 'terraform-cloud-gluk-project-config',
+}
 const testDataUndefinedName = {
   id: '123',
   message: 'this is a text message',
@@ -41,8 +44,7 @@ const testDataValid = {
 
 describe('TerraformLatestRun', () => {
   const refetchMock = jest.fn(() => { });
-  const workspaceName = mockEntity.metadata.annotations[TERRAFORM_WORKSPACE_ANNOTATION];
-  const buildTitleRegEx = (runStatusContext: string) => new RegExp(`${runStatusContext} for ${workspaceName}`);
+  const buildTitleRegEx = (runStatusContext: string) => new RegExp(`${runStatusContext} for ${testAnnotation.workspace}`);
 
 
   afterEach(() => {
@@ -67,13 +69,13 @@ describe('TerraformLatestRun', () => {
 
   it('renders the card when data is empty', async () => {
     buildUseRunMock({ refetch: refetchMock });
-    render(
+    await renderInTestApp(
       <EntityProvider entity={mockEntity}>
         <TerraformLatestRun />
       </EntityProvider>
     );
 
-    const title = await screen.findByText(buildTitleRegEx('No runs'));
+    const title = await screen.findByText('No runs for this workspace!');
     const userLabel = screen.queryByText(/User/i);
 
     expect(title).toBeInTheDocument();
@@ -94,19 +96,6 @@ describe('TerraformLatestRun', () => {
 
     expect(title).toBeInTheDocument();
     expect(unknownUser).toBeInTheDocument();
-  });
-
-  it('renders empty data message', async () => {
-    buildUseRunMock({ refetch: refetchMock });
-    render(
-      <EntityProvider entity={mockEntity}>
-        <TerraformLatestRun />
-      </EntityProvider>
-    );
-
-    await expectation(buildTitleRegEx('No runs'));
-
-    expectNotFound(['Refresh']);
   });
 
 
@@ -140,29 +129,14 @@ describe('TerraformLatestRun', () => {
       </TestApiProvider>,
     );
 
-    const error = await screen.findByText('Error: Some fake error.');
+    const errorTitle = await screen.findByText('Error');
+    const error = await screen.findByText('Some fake error.');
 
+    expect(errorTitle).toBeInTheDocument();
     expect(error).toBeInTheDocument();
   });
 
 
-  it('renders MissingAnnotationEmptyState when annotation is not present', async () => {
-    // If the following is refactored, ensure it is cloning mockEntity, and not merely referencing it!
-    const missingAnnotation = JSON.parse(JSON.stringify(mockEntity));
-    missingAnnotation.metadata.annotations = {};
-
-    buildUseRunMock({ refetch: refetchMock });
-
-    render(
-      <EntityProvider entity={missingAnnotation}>
-        <TerraformLatestRun />
-      </EntityProvider>,
-    );
-
-    const missingAnnotationText = await screen.findByText('Missing Annotation');
-
-    expect(missingAnnotationText).toBeInTheDocument();
-  });
 
 
   function buildUseRunMock({ runs, isLoading, error, refetch }:
@@ -186,14 +160,5 @@ describe('TerraformLatestRun', () => {
     const htmlElement = await screen.findByText(matcher);
     expect(htmlElement).toBeInTheDocument();
   }
-
-
-  function expectNotFound(notFoundExpectations: Matcher[]) {
-
-    notFoundExpectations
-      .map(m => screen.queryByText(m))
-      .map((e: HTMLElement | null) => expect(e).toBeNull());
-  }
-
 
 });
