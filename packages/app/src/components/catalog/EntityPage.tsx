@@ -57,7 +57,10 @@ import {
 import { TechDocsAddons } from '@backstage/plugin-techdocs-react';
 import { ReportIssue } from '@backstage/plugin-techdocs-module-addons-contrib';
 
-import { EntityTerraformContent, EntityTerraformLatestRunCard } from '@globallogicuki/backstage-plugin-terraform';
+import {
+  EntityTerraformContent,
+  EntityTerraformLatestRunCard,
+} from '@globallogicuki/backstage-plugin-terraform';
 import { isTerraformAvailable } from '@globallogicuki/backstage-plugin-terraform/src/annotations';
 
 const techdocsContent = (
@@ -72,7 +75,6 @@ const cicdContent = (
   // This is an example of how you can implement your company's logic in entity page.
   // You can for example enforce that all components of type 'service' should use GitHubActions
   <EntitySwitch>
-
     <EntitySwitch.Case if={isGithubActionsAvailable}>
       <EntityGithubActionsContent />
     </EntitySwitch.Case>
@@ -80,7 +82,6 @@ const cicdContent = (
     <EntitySwitch.Case if={isTerraformAvailable}>
       <EntityTerraformLatestRunCard />
     </EntitySwitch.Case>
-
   </EntitySwitch>
 );
 

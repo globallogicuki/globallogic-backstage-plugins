@@ -19,7 +19,7 @@ const apis = [[errorApiRef, mockErrorApi] as const] as const;
 const testAnnotation = {
   organization: 'gluk',
   workspace: 'terraform-cloud-gluk-project-config',
-}
+};
 const testDataUndefinedName = {
   id: '123',
   message: 'this is a text message',
@@ -31,34 +31,32 @@ const testDataUndefinedName = {
   },
 };
 
-
 const testDataValid = {
-  id: "testId",
-  message: "testMessage",
-  status: "testStatus",
+  id: 'testId',
+  message: 'testMessage',
+  status: 'testStatus',
   createdAt: new Date().toISOString(),
   confirmedBy: {
-    name: "testUser",
-  }
+    name: 'testUser',
+  },
 };
 
 describe('TerraformLatestRun', () => {
-  const refetchMock = jest.fn(() => { });
-  const buildTitleRegEx = (runStatusContext: string) => new RegExp(`${runStatusContext} for ${testAnnotation.workspace}`);
-
+  const refetchMock = jest.fn(() => {});
+  const buildTitleRegEx = (runStatusContext: string) =>
+    new RegExp(`${runStatusContext} for ${testAnnotation.workspace}`);
 
   afterEach(() => {
     (useRuns as jest.Mock).mockRestore();
     refetchMock.mockReset();
   });
 
-
   it('renders the card when isLoading', async () => {
     buildUseRunMock({ isLoading: true, refetch: refetchMock });
     render(
       <EntityProvider entity={mockEntity}>
         <TerraformLatestRun />
-      </EntityProvider>
+      </EntityProvider>,
     );
 
     const loadingProgress = screen.getByRole('progressbar');
@@ -66,13 +64,12 @@ describe('TerraformLatestRun', () => {
     expect(loadingProgress).toBeInTheDocument();
   });
 
-
   it('renders the card when data is empty', async () => {
     buildUseRunMock({ refetch: refetchMock });
     await renderInTestApp(
       <EntityProvider entity={mockEntity}>
         <TerraformLatestRun />
-      </EntityProvider>
+      </EntityProvider>,
     );
 
     const title = await screen.findByText('No runs for this workspace!');
@@ -82,13 +79,12 @@ describe('TerraformLatestRun', () => {
     expect(userLabel).toBeNull();
   });
 
-
   it('renders the card when empty name is passed', async () => {
-    buildUseRunMock({ runs: [testDataUndefinedName], refetch: refetchMock })
+    buildUseRunMock({ runs: [testDataUndefinedName], refetch: refetchMock });
     render(
       <EntityProvider entity={mockEntity}>
         <TerraformLatestRun />
-      </EntityProvider>
+      </EntityProvider>,
     );
 
     const title = await screen.findByText(buildTitleRegEx('Latest run'));
@@ -98,20 +94,17 @@ describe('TerraformLatestRun', () => {
     expect(unknownUser).toBeInTheDocument();
   });
 
-
   it('renders normally with correct data', async () => {
     buildUseRunMock({ runs: [testDataValid], refetch: refetchMock });
 
     render(
       <EntityProvider entity={mockEntity}>
         <TerraformLatestRun />
-      </EntityProvider>
+      </EntityProvider>,
     );
 
     await expectation(/Latest run/i);
-  })
-
-
+  });
 
   it('renders error panel on error fetching', async () => {
     buildUseRunMock({
@@ -136,17 +129,17 @@ describe('TerraformLatestRun', () => {
     expect(error).toBeInTheDocument();
   });
 
-
-
-
-  function buildUseRunMock({ runs, isLoading, error, refetch }:
-    {
-      runs?: Run[],
-      error?: Error,
-      isLoading?: boolean
-      refetch?: Promise<Run[]> | jest.Mock<void, [], any>
-    }
-  ): jest.ProvidesHookCallback {
+  function buildUseRunMock({
+    runs,
+    isLoading,
+    error,
+    refetch,
+  }: {
+    runs?: Run[];
+    error?: Error;
+    isLoading?: boolean;
+    refetch?: Promise<Run[]> | jest.Mock<void, [], any>;
+  }): jest.ProvidesHookCallback {
     return (useRuns as jest.Mock).mockReturnValue({
       data: runs,
       isLoading,
@@ -155,10 +148,8 @@ describe('TerraformLatestRun', () => {
     });
   }
 
-
   async function expectation(matcher: Matcher) {
     const htmlElement = await screen.findByText(matcher);
     expect(htmlElement).toBeInTheDocument();
   }
-
 });

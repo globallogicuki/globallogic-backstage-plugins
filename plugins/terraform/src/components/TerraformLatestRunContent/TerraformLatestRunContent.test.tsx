@@ -1,22 +1,13 @@
-import {
-  render,
-  screen,
-} from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import React from 'react';
 import { TerraformLatestRunContent } from './TerraformLatestRunContent';
 
 jest.mock('@backstage/core-components', () => {
-  const originalModule = jest.requireActual('@backstage/core-components');
-
   const MockInfoCard = (props: React.PropsWithChildren<{ title: string }>) => (
     <div>
       <p>{`Mock InfoCard: ${props.title} `}</p>
       {props.children}
     </div>
-  )
-
-  const MockLogViewer = ({ text }: { text: string }) => (
-    <div>{`Mock TerraformRuns: ${text}`}</div>
   );
 
   return {
@@ -26,9 +17,6 @@ jest.mock('@backstage/core-components', () => {
     Progress: originalModule.Progress,
   };
 });
-
-
-
 
 const testRunData = {
   id: '123',
@@ -44,13 +32,9 @@ const testRunData = {
   },
 };
 
-
 describe('TerraformLatestRunContent', () => {
-
   it('renders the card when data is set', async () => {
-    render(
-      <TerraformLatestRunContent run={testRunData} />
-    );
+    render(<TerraformLatestRunContent run={testRunData} />);
 
     const user = await screen.findByText(/ABC/i);
     const msg = await screen.findByText(/this is a text message/i);
@@ -58,6 +42,4 @@ describe('TerraformLatestRunContent', () => {
     expect(user).toBeInTheDocument();
     expect(msg).toBeInTheDocument();
   });
-
 });
-
