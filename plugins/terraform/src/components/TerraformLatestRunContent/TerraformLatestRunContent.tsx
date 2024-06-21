@@ -1,23 +1,15 @@
-import { InfoCard } from '@backstage/core-components';
 import { Avatar, Chip, Grid, Typography } from '@material-ui/core';
 import React from 'react';
 import { Run } from '../../hooks/types';
 import { formatTimeToWords } from '../../utils';
 import { getColor } from '../DenseTable/utils';
 
-interface TerraformLatestRunCardProps {
-  run: Run;
-  workspace: string;
-}
-
-
-export const TerraformLatestRunContent = ({ run, workspace }: TerraformLatestRunCardProps) => {
+export const TerraformLatestRunContent = ({ run }: { run: Run }) => {
 
   const userName = run.confirmedBy?.name ?? 'Unknown';
 
   return (
-    <InfoCard title={`Latest run for ${workspace}`}>
-
+    <>
       <Grid container direction='row' spacing={2} justifyContent='space-between' alignItems='center'>
         <Grid item>
           <Typography variant='body1'>
@@ -57,8 +49,8 @@ export const TerraformLatestRunContent = ({ run, workspace }: TerraformLatestRun
           </Typography>
         </Grid>
       </Grid>
+    </>
 
-    </InfoCard>
   );
 
 };

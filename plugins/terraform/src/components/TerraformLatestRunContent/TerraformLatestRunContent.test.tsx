@@ -43,17 +43,12 @@ describe('TerraformLatestRunContent', () => {
 
   it('renders the card when data is set', async () => {
     render(
-      <TerraformLatestRunContent
-        workspace="test workspace"
-        run={testRunData}
-      />,
+      <TerraformLatestRunContent run={testRunData} />
     );
 
-    const title = await screen.findByText(/Latest run for test workspace/i);
     const user = await screen.findByText(/ABC/i);
     const msg = await screen.findByText(/this is a text message/i);
 
-    expect(title).toBeInTheDocument();
     expect(user).toBeInTheDocument();
     expect(msg).toBeInTheDocument();
   });
