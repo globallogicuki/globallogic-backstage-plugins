@@ -61,7 +61,7 @@ import {
   EntityTerraformContent,
   EntityTerraformLatestRunCard,
 } from '@globallogicuki/backstage-plugin-terraform';
-import { isTerraformAvailable } from '@globallogicuki/backstage-plugin-terraform/src/annotations';
+import { isEitherTerraformOrGitubActionsAvailable, isTerraformAvailable } from '@globallogicuki/backstage-plugin-terraform/src/annotations';
 import { EmptyState } from '@backstage/core-components';
 
 const techdocsContent = (
@@ -76,7 +76,7 @@ const cicdContent = (
   // This is an example of how you can implement your company's logic in entity page.
   // You can for example enforce that all components of type 'service' should use GitHubActions
   <EntitySwitch>
-    <EntitySwitch.Case if={isGithubActionsAvailable || isTerraformAvailable}>
+    <EntitySwitch.Case if={isEitherTerraformOrGitubActionsAvailable}>
       <EntitySwitch>
         <EntitySwitch.Case if={isGithubActionsAvailable}>
           <EntityGithubActionsContent />
