@@ -54,7 +54,7 @@ export const EntityTerraformLatestRunCard = terraformPlugin.provide(
     component: {
       lazy: () =>
         import('./components/TerraformLatestRun').then(
-          m => m.TerraformLatestRun
+          m => m.TerraformLatestRun,
         ),
     },
   }),

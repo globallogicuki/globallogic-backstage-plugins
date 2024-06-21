@@ -1,4 +1,6 @@
-import { formatTimeToWords } from './index';
+import { formatTimeToWords, getAnnotations } from './index';
+import { Entity } from '@backstage/catalog-model';
+import { mockEntity } from '../mocks/entity';
 
 const isoString = '2023-05-24T10:23:40.172Z';
 
@@ -33,6 +35,23 @@ describe('utils', () => {
       const result = formatTimeToWords(now, { strict: false });
 
       expect(result).toEqual('less than a minute ago');
+    });
+  });
+
+  describe('getAnnotations', () => {
+    it('should return organization and workspace when both annotations are present', () => {
+      const { organization, workspace } = getAnnotations(mockEntity);
+      expect(organization).toBe('gluk');
+      expect(workspace).toBe('terraform-cloud-gluk-project-config');
+    });
+
+    it('should return undefined organization and workspace when both annotations are absent', () => {
+      const emptyEntity: Entity = JSON.parse(JSON.stringify(mockEntity));
+      emptyEntity.metadata.annotations = {};
+
+      const { organization, workspace } = getAnnotations(emptyEntity);
+      expect(organization).toBeUndefined();
+      expect(workspace).toBeUndefined();
     });
   });
 });

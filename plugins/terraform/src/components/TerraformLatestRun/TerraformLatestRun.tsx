@@ -7,7 +7,7 @@ import { TerraformLatestRunContent } from '../TerraformLatestRunContent';
 import { TerraformLatestRunError } from '../TerraformLatestRunError';
 import { TerraformNoRuns } from '../TerraformNoRuns';
 import { TerraformLatestRunWrapperCard } from '../TerraformLatestRunWrapperCard';
-import { getAnnotations } from './utils';
+import { getAnnotations } from '../../utils';
 
 /**
  * React component to display the latest Terraform run for a specific organization and workspace.
@@ -16,37 +16,39 @@ import { getAnnotations } from './utils';
  * NB: This component should only invoked after assuring Terraform is availabe and the Entity is valid.
  */
 export const TerraformLatestRun = () => {
-
   const { entity } = useEntity();
 
   const { organization, workspace } = getAnnotations(entity);
 
-  const { data, isLoading, error, refetch } = useRuns(organization!, workspace!);
+  const { data, isLoading, error, refetch } = useRuns(
+    organization!,
+    workspace!,
+  );
 
   useEffect(() => {
     refetch();
   }, [refetch]);
-
-
 
   if (error) {
     return (
       <TerraformLatestRunWrapperCard workspace={workspace!}>
         <TerraformLatestRunError error={error} />
       </TerraformLatestRunWrapperCard>
-    )
+    );
   }
-
 
   if (isLoading) {
     return (
       <TerraformLatestRunWrapperCard workspace={workspace!}>
-        <CircularProgress aria-describedby='Getting latest run' aria-busy={true} />
+        <CircularProgress
+          aria-describedby="Getting latest run"
+          aria-busy={true}
+        />
       </TerraformLatestRunWrapperCard>
-    )
+    );
   }
 
-  const latestRun: Run | undefined = data ? data[0] : undefined
+  const latestRun: Run | undefined = data ? data[0] : undefined;
 
   if (!latestRun) {
     return (
@@ -54,13 +56,11 @@ export const TerraformLatestRun = () => {
         <TerraformNoRuns />
       </TerraformLatestRunWrapperCard>
     );
-  };
-
+  }
 
   return (
     <TerraformLatestRunWrapperCard workspace={workspace!}>
       <TerraformLatestRunContent run={latestRun} />
     </TerraformLatestRunWrapperCard>
-  )
-
+  );
 };

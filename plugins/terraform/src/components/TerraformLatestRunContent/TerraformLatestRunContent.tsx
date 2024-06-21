@@ -5,16 +5,19 @@ import { formatTimeToWords } from '../../utils';
 import { getColor } from '../DenseTable/utils';
 
 export const TerraformLatestRunContent = ({ run }: { run: Run }) => {
-
   const userName = run.confirmedBy?.name ?? 'Unknown';
 
   return (
     <>
-      <Grid container direction='row' spacing={2} justifyContent='space-between' alignItems='center'>
+      <Grid
+        container
+        direction="row"
+        spacing={2}
+        justifyContent="space-between"
+        alignItems="center"
+      >
         <Grid item>
-          <Typography variant='body1'>
-            {run.message}
-          </Typography>
+          <Typography variant="body1">{run.message}</Typography>
         </Grid>
         <Grid item>
           <Chip
@@ -26,32 +29,30 @@ export const TerraformLatestRunContent = ({ run }: { run: Run }) => {
         </Grid>
       </Grid>
 
-      <Grid container direction='row' spacing={2} justifyContent='space-between' alignItems='center'>
+      <Grid
+        container
+        direction="row"
+        spacing={2}
+        justifyContent="space-between"
+        alignItems="center"
+      >
         <Grid item>
-          <Grid container direction='row' alignItems='center'>
+          <Grid container direction="row" alignItems="center">
             <Grid item>
-              <Avatar
-                alt={userName}
-                src={run.confirmedBy?.avatar}
-              />
+              <Avatar alt={userName} src={run.confirmedBy?.avatar} />
             </Grid>
 
             <Grid item>
-              <Typography variant='body1'>
-                {userName}
-              </Typography>
+              <Typography variant="body1">{userName}</Typography>
             </Grid>
           </Grid>
         </Grid>
         <Grid item>
-          <Typography variant='body1'>
+          <Typography variant="body1">
             triggered a run {formatTimeToWords(run.createdAt, { strict: true })}
           </Typography>
         </Grid>
       </Grid>
     </>
-
   );
-
 };
-

@@ -9,7 +9,6 @@ jest.mock('../TerraformRuns', () => {
   return { TerraformRuns: MockTerraformRuns };
 });
 
-
 describe('Terraform', () => {
   it('renders TerraformRuns when annotation is present', async () => {
     render(
@@ -38,5 +37,4 @@ describe('Terraform', () => {
 
     expect(missingAnnotationText).toBeInTheDocument();
   });
-
 });
