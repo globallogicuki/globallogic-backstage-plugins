@@ -1,9 +1,11 @@
 import {
+  isEitherTerraformOrGitubActionsAvailable,
   isTerraformAvailable,
   TERRAFORM_WORKSPACE_ANNOTATION,
   TERRAFORM_WORKSPACE_ORGANIZATION,
 } from './annotations';
 import { mockEntity } from './mocks/entity';
+import { Entity } from '@backstage/catalog-model';
 
 describe('annotations', () => {
   describe('isTerraformAvailable', () => {
@@ -30,5 +32,25 @@ describe('annotations', () => {
     it('exports TERRAFORM_WORKSPACE_ORGANIZATION', () => {
       expect(TERRAFORM_WORKSPACE_ORGANIZATION).toBeDefined();
     });
+  });
+
+  jest.mock('./annotations', () => {
+    const originalModule = jest.requireActual('./annotations');
+
+    const mockIsGithubActionsAvailable = (entity: Entity): boolean => true;
+
+    return {
+      isTerraformAvailable: originalModule.isTerraformAvailable,
+      isGithubActionsAvailable: mockIsGithubActionsAvailable,
+    };
+  });
+
+  describe('isEitherTerraformOrGitubActionsAvailable', () => {
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('returns true if only isGithubActionsAvailable is true', () => {});
+    expect(isEitherTerraformOrGitubActionsAvailable(mockEntity)).toBeTruthy();
   });
 });
