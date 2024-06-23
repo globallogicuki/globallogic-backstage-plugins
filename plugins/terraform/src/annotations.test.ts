@@ -4,20 +4,23 @@ import {
   TERRAFORM_WORKSPACE_ANNOTATION,
   TERRAFORM_WORKSPACE_ORGANIZATION,
 } from './annotations';
+import { isGithubActionsAvailable } from '@backstage/plugin-github-actions';
 import { mockEntity } from './mocks/entity';
-import { Entity } from '@backstage/catalog-model';
+
+jest.mock('@backstage/plugin-github-actions', () => ({
+  isGithubActionsAvailable: jest.fn(),
+}));
 
 describe('annotations', () => {
+  const missingAnnotation = JSON.parse(JSON.stringify(mockEntity));
+  missingAnnotation.metadata.annotations = {};
+
   describe('isTerraformAvailable', () => {
     it('returns truthy if the expected annotations are present', () => {
       expect(isTerraformAvailable(mockEntity)).toBeTruthy();
     });
 
     it('returns falsey if the expected annotations are not present', () => {
-      const missingAnnotation = { ...mockEntity };
-      // @ts-ignore
-      missingAnnotation.metadata.annotations = {};
-
       expect(isTerraformAvailable(missingAnnotation)).toBeFalsy();
     });
   });
@@ -34,23 +37,32 @@ describe('annotations', () => {
     });
   });
 
-  jest.mock('./annotations', () => {
-    const originalModule = jest.requireActual('./annotations');
-
-    const mockIsGithubActionsAvailable = (entity: Entity): boolean => true;
-
-    return {
-      isTerraformAvailable: originalModule.isTerraformAvailable,
-      isGithubActionsAvailable: mockIsGithubActionsAvailable,
-    };
-  });
-
   describe('isEitherTerraformOrGitubActionsAvailable', () => {
-    afterEach(() => {
-      jest.clearAllMocks();
+    const setGithubActionsAvailabilityMock = (isAvailable: boolean) =>
+      (isGithubActionsAvailable as jest.Mock).mockReturnValue(isAvailable);
+
+    it('returns truthy for valid Entity and isGithubActionsAvailable is true', () => {
+      setGithubActionsAvailabilityMock(true);
+      expect(isEitherTerraformOrGitubActionsAvailable(mockEntity)).toBeTruthy();
     });
 
-    it('returns true if only isGithubActionsAvailable is true', () => {});
-    expect(isEitherTerraformOrGitubActionsAvailable(mockEntity)).toBeTruthy();
+    it('returns truthy for valid Entity and isGithubActionsAvailable is false', () => {
+      setGithubActionsAvailabilityMock(false);
+      expect(isEitherTerraformOrGitubActionsAvailable(mockEntity)).toBeTruthy();
+    });
+
+    it('returns truthy for missingAnnotation and isGithubActionsAvailable is true', () => {
+      setGithubActionsAvailabilityMock(true);
+      expect(
+        isEitherTerraformOrGitubActionsAvailable(missingAnnotation),
+      ).toBeTruthy();
+    });
+
+    it('returns falsy for missingAnnotation and isGithubActionsAvailable is false', () => {
+      setGithubActionsAvailabilityMock(false);
+      expect(
+        isEitherTerraformOrGitubActionsAvailable(missingAnnotation),
+      ).toBeFalsy();
+    });
   });
 });
