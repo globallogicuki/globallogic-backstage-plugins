@@ -1,4 +1,6 @@
-export const mockEntity = {
+import { Entity } from '@backstage/catalog-model';
+
+export const mockEntity: Entity = {
   apiVersion: 'backstage.io/v1alpha1',
   kind: 'Component',
   metadata: {
