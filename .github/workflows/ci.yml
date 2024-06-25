@@ -37,4 +37,4 @@ jobs:
         run: yarn build:all
       - name: Changeset
         run: yarn changeset status --since origin/main
-        if: ${{ github.ref_name != 'main' }}
+        if: ${{ github.ref_name != 'main' && github.head_ref != 'changeset-release/main' }}
