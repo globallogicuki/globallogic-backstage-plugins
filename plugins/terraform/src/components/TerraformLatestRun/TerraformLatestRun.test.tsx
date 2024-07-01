@@ -42,7 +42,7 @@ const testDataValid = {
 };
 
 describe('TerraformLatestRun', () => {
-  const refetchMock = jest.fn(() => { });
+  const refetchMock = jest.fn(() => {});
   const buildTitleRegEx = (runStatusContext: string) =>
     new RegExp(`${runStatusContext} for ${testAnnotation.workspace}`);
 
@@ -104,7 +104,6 @@ describe('TerraformLatestRun', () => {
 
     const latestRunText = await screen.findByText(/Latest run/i);
     expect(latestRunText).toBeInTheDocument();
-
   });
 
   it('renders error panel on error fetching', async () => {
@@ -148,5 +147,4 @@ describe('TerraformLatestRun', () => {
       refetch,
     });
   }
-
 });

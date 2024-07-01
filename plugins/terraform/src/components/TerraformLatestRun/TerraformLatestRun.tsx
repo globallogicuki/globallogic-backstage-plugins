@@ -40,10 +40,7 @@ export const TerraformLatestRun = () => {
   if (isLoading) {
     return (
       <TerraformLatestRunWrapperCard workspace={workspace!}>
-        <CircularProgress
-          aria-describedby="Getting latest run"
-          aria-busy
-        />
+        <CircularProgress aria-describedby="Getting latest run" aria-busy />
       </TerraformLatestRunWrapperCard>
     );
   }
