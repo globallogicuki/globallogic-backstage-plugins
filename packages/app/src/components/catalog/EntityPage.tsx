@@ -61,8 +61,8 @@ import { ReportIssue } from '@backstage/plugin-techdocs-module-addons-contrib';
 import {
   EntityTerraformContent,
   EntityTerraformLatestRunCard,
+  isTerraformAvailable,
 } from '@globallogicuki/backstage-plugin-terraform';
-import { isTerraformAvailable } from '@globallogicuki/backstage-plugin-terraform/src/annotations';
 import { EmptyState } from '@backstage/core-components';
 
 const techdocsContent = (
