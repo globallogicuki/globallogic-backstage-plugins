@@ -1,7 +1,7 @@
 import React from 'react';
 import { renderInTestApp, TestApiProvider } from '@backstage/test-utils';
 import { errorApiRef } from '@backstage/core-plugin-api';
-import { Matcher, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { TerraformLatestRun } from './TerraformLatestRun';
 import { useRuns } from '../../hooks';
 import { Run } from '../../hooks/types';
