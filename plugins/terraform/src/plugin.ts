@@ -47,3 +47,15 @@ export const EntityTerraformCard = terraformPlugin.provide(
     },
   }),
 );
+
+export const EntityTerraformLatestRunCard = terraformPlugin.provide(
+  createComponentExtension({
+    name: 'EntityTerraformLatestRunCard',
+    component: {
+      lazy: () =>
+        import('./components/TerraformLatestRun').then(
+          m => m.TerraformLatestRun,
+        ),
+    },
+  }),
+);

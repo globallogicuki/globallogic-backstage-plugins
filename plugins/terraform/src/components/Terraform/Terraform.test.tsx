@@ -23,8 +23,8 @@ describe('Terraform', () => {
   });
 
   it('renders MissingAnnotationEmptyState when annotation is not present', async () => {
-    const missingAnnotation = { ...mockEntity };
-    // @ts-ignore
+    // If the following is refactored, ensure it is cloning mockEntity, and not merely referencing it!
+    const missingAnnotation = JSON.parse(JSON.stringify(mockEntity));
     missingAnnotation.metadata.annotations = {};
 
     render(

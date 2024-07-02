@@ -6,16 +6,15 @@ import {
 import { mockEntity } from './mocks/entity';
 
 describe('annotations', () => {
+  const missingAnnotation = JSON.parse(JSON.stringify(mockEntity));
+  missingAnnotation.metadata.annotations = {};
+
   describe('isTerraformAvailable', () => {
     it('returns truthy if the expected annotations are present', () => {
       expect(isTerraformAvailable(mockEntity)).toBeTruthy();
     });
 
     it('returns falsey if the expected annotations are not present', () => {
-      const missingAnnotation = { ...mockEntity };
-      // @ts-ignore
-      missingAnnotation.metadata.annotations = {};
-
       expect(isTerraformAvailable(missingAnnotation)).toBeFalsy();
     });
   });

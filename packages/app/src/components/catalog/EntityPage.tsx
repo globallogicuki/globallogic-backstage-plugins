@@ -39,12 +39,12 @@ import {
   EntityOwnershipCard,
 } from '@backstage/plugin-org';
 import { EntityTechdocsContent } from '@backstage/plugin-techdocs';
-import { EmptyState } from '@backstage/core-components';
 import {
   Direction,
   EntityCatalogGraphCard,
 } from '@backstage/plugin-catalog-graph';
 import {
+  Entity,
   RELATION_API_CONSUMED_BY,
   RELATION_API_PROVIDED_BY,
   RELATION_CONSUMES_API,
@@ -58,7 +58,12 @@ import {
 import { TechDocsAddons } from '@backstage/plugin-techdocs-react';
 import { ReportIssue } from '@backstage/plugin-techdocs-module-addons-contrib';
 
-import { EntityTerraformContent } from '@globallogicuki/backstage-plugin-terraform';
+import {
+  EntityTerraformContent,
+  EntityTerraformLatestRunCard,
+  isTerraformAvailable,
+} from '@globallogicuki/backstage-plugin-terraform';
+import { EmptyState } from '@backstage/core-components';
 
 const techdocsContent = (
   <EntityTechdocsContent>
@@ -68,31 +73,43 @@ const techdocsContent = (
   </EntityTechdocsContent>
 );
 
+const isCiCdContentEmpty = (entity: Entity) =>
+  !isGithubActionsAvailable(entity) && !isTerraformAvailable(entity);
 const cicdContent = (
   // This is an example of how you can implement your company's logic in entity page.
   // You can for example enforce that all components of type 'service' should use GitHubActions
-  <EntitySwitch>
-    <EntitySwitch.Case if={isGithubActionsAvailable}>
-      <EntityGithubActionsContent />
-    </EntitySwitch.Case>
+  <>
+    <EntitySwitch>
+      <EntitySwitch.Case if={isGithubActionsAvailable}>
+        <EntityGithubActionsContent />
+      </EntitySwitch.Case>
+    </EntitySwitch>
 
-    <EntitySwitch.Case>
-      <EmptyState
-        title="No CI/CD available for this entity"
-        missing="info"
-        description="You need to add an annotation to your component if you want to enable CI/CD for it. You can read more about annotations in Backstage by clicking the button below."
-        action={
-          <Button
-            variant="contained"
-            color="primary"
-            href="https://backstage.io/docs/features/software-catalog/well-known-annotations"
-          >
-            Read more
-          </Button>
-        }
-      />
-    </EntitySwitch.Case>
-  </EntitySwitch>
+    <EntitySwitch>
+      <EntitySwitch.Case if={isTerraformAvailable}>
+        <EntityTerraformLatestRunCard />
+      </EntitySwitch.Case>
+    </EntitySwitch>
+
+    <EntitySwitch>
+      <EntitySwitch.Case if={isCiCdContentEmpty}>
+        <EmptyState
+          title="No CI/CD available for this entity"
+          missing="info"
+          description="You need to add an annotation to your component if you want to enable CI/CD for it. You can read more about annotations in Backstage by clicking the button below."
+          action={
+            <Button
+              variant="contained"
+              color="primary"
+              href="https://backstage.io/docs/features/software-catalog/well-known-annotations"
+            >
+              Read more
+            </Button>
+          }
+        />
+      </EntitySwitch.Case>
+    </EntitySwitch>
+  </>
 );
 
 const entityWarningContent = (

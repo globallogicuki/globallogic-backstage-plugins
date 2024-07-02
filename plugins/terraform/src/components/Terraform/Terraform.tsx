@@ -7,8 +7,8 @@ import { TerraformRuns } from '../TerraformRuns';
 import {
   isTerraformAvailable,
   TERRAFORM_WORKSPACE_ANNOTATION,
-  TERRAFORM_WORKSPACE_ORGANIZATION,
 } from '../../annotations';
+import { getAnnotations } from '../../utils';
 
 interface Props {
   isCard?: boolean;
@@ -16,16 +16,13 @@ interface Props {
 
 export const Terraform = ({ isCard = false }: Props) => {
   const { entity } = useEntity();
-  const organization =
-    entity.metadata.annotations?.[TERRAFORM_WORKSPACE_ORGANIZATION];
-  const workspaceName =
-    entity.metadata.annotations?.[TERRAFORM_WORKSPACE_ANNOTATION];
+  const { organization, workspace } = getAnnotations(entity);
 
   if (isTerraformAvailable(entity)) {
     return (
       <TerraformRuns
         organization={organization!}
-        workspaceName={workspaceName!}
+        workspaceName={workspace!}
         hideDescription={isCard}
       />
     );
