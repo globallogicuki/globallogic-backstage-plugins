@@ -6,7 +6,11 @@ import express from 'express';
 import request from 'supertest';
 import { createRouter } from './router';
 import { mockConfig } from '../mocks/config';
-import { findWorkspace, getRunsForWorkspace } from '../lib';
+import {
+  findWorkspace,
+  getRunsForWorkspace,
+  getLatestRunForWorkspace,
+} from '../lib';
 import { mockRun } from '../mocks/run';
 
 jest.mock('../lib');
@@ -67,6 +71,41 @@ describe('createRouter', () => {
 
       (findWorkspace as jest.Mock).mockResolvedValue({ id: 'fakeWorkspaceId' });
       (getRunsForWorkspace as jest.Mock).mockRejectedValue(
+        new Error('Some error.'),
+      );
+
+      expect(response.status).toEqual(500);
+    });
+  });
+
+  describe('GET /organizations/:orgName/workspaces/:workspaceName/latestRun', () => {
+    const TEST_URL =
+      '/organizations/testOrg/workspaces/testWorkspace/latestRun';
+
+    it('returns latest run', async () => {
+      (findWorkspace as jest.Mock).mockResolvedValue({ id: 'fakeWorkspaceId' });
+      (getLatestRunForWorkspace as jest.Mock).mockResolvedValue([mockRun]);
+
+      const response = await request(app).get(TEST_URL);
+
+      expect(response.status).toEqual(200);
+      expect(response.body).toEqual([mockRun]);
+    });
+
+    it('returns error if findWorkspace throws', async () => {
+      const response = await request(app).get(TEST_URL);
+
+      (findWorkspace as jest.Mock).mockRejectedValue(new Error('Some error.'));
+      (getLatestRunForWorkspace as jest.Mock).mockResolvedValue([mockRun]);
+
+      expect(response.status).toEqual(500);
+    });
+
+    it('returns error if getLatestRunForWorkspace throws', async () => {
+      const response = await request(app).get(TEST_URL);
+
+      (findWorkspace as jest.Mock).mockResolvedValue({ id: 'fakeWorkspaceId' });
+      (getLatestRunForWorkspace as jest.Mock).mockRejectedValue(
         new Error('Some error.'),
       );
 

@@ -73,6 +73,44 @@ export const spec = {
           }
         }
       }
+    },
+    "/organizations/{orgName}/workspaces/{workspaceName}/latestRun": {
+      "get": {
+        "description": "Returns data about the most recent Terraform Run",
+        "operationId": "getLatestRun",
+        "parameters": [
+          {
+            "name": "orgName",
+            "in": "path",
+            "description": "Name of organization for which to return the latest run",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "workspaceName",
+            "in": "path",
+            "description": "Name of workspace for which to return the latest run",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/latestRun"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -126,6 +164,47 @@ export const spec = {
                 "logs": {
                   "type": "string"
                 }
+              }
+            }
+          }
+        }
+      },
+      "latestRun": {
+        "title": "Terraform Latest Run",
+        "description": "Description of the latest terraform run",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "confirmedBy": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "user": {
+                "type": "string"
+              },
+              "avatar": {
+                "type": "string"
+              }
+            }
+          },
+          "plan": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "logs": {
+                "type": "string"
               }
             }
           }
