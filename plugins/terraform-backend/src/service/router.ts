@@ -3,7 +3,11 @@ import { LoggerService } from '@backstage/backend-plugin-api';
 import { Config } from '@backstage/config';
 import express from 'express';
 import { createOpenApiRouter } from '../schema/openapi.generated';
-import { findWorkspace, getRunsForWorkspace } from '../lib';
+import {
+  findWorkspace,
+  getRunsForWorkspace,
+  getLatestRunForWorkspace,
+} from '../lib';
 
 export interface RouterOptions {
   logger: LoggerService;
@@ -17,6 +21,19 @@ export async function createRouter(
 
   const router = await createOpenApiRouter();
   router.use(express.json());
+
+  router.get(
+    '/organizations/:orgName/workspaces/:workspaceName/latestRun',
+    (request, response, next) => {
+      const token = config.getString('integrations.terraform.token');
+      const { orgName, workspaceName } = request.params;
+
+      findWorkspace(token, orgName, workspaceName)
+        .then(workspace => getLatestRunForWorkspace(token, workspace.id))
+        .then(latestRun => response.json(latestRun))
+        .catch(next);
+    },
+  );
 
   router.get(
     '/organizations/:orgName/workspaces/:workspaceName/runs',
