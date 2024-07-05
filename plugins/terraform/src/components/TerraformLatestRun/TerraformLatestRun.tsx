@@ -1,7 +1,7 @@
 import { useEntity } from '@backstage/plugin-catalog-react';
 import { CircularProgress } from '@material-ui/core';
 import React, { useEffect } from 'react';
-import { useRuns } from '../../hooks';
+import { useLatestRun } from '../../hooks';
 import { Run } from '../../hooks/types';
 import { TerraformLatestRunContent } from '../TerraformLatestRunContent';
 import { TerraformLatestRunError } from '../TerraformLatestRunError';
@@ -20,7 +20,7 @@ export const TerraformLatestRun = () => {
 
   const { organization, workspace } = getAnnotations(entity);
 
-  const { data, isLoading, error, refetch } = useRuns(
+  const { data, isLoading, error, refetch } = useLatestRun(
     organization!,
     workspace!,
   );
@@ -45,7 +45,7 @@ export const TerraformLatestRun = () => {
     );
   }
 
-  const latestRun: Run | undefined = data ? data[0] : undefined;
+  const latestRun: Run | undefined = data;
 
   if (!latestRun) {
     return (
