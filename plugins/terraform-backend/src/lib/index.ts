@@ -9,7 +9,7 @@ export const getLatestRunForWorkspace = async (
   workspaceId: string,
 ) => {
   const res = await axios.get<TerraformResponse<TerraformRun[]>>(
-    `${TF_BASE_URL}/workspaces/${workspaceId}/runs?include=created_by,plan&page%5B1%5D`,
+    `${TF_BASE_URL}/workspaces/${workspaceId}/runs?include=created_by,plan&page%5Bnumber%5D=1&page%5Bsize%5D=1`,
     { headers: { Authorization: `Bearer ${token}` } },
   );
 
