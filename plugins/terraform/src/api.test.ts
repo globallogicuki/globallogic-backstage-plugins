@@ -8,143 +8,145 @@ jest.mock('@backstage/core-plugin-api', () => ({
 }));
 
 describe('TerraformApiClient', () => {
-  let discoveryApiMock: DiscoveryApi;
-  let fetchApiMock: FetchApi;
-  let client: TerraformApiClient;
+  describe('getRuns', () => {
+    let discoveryApiMock: DiscoveryApi;
+    let fetchApiMock: FetchApi;
+    let client: TerraformApiClient;
 
-  const mockRuns = [{ id: 'run1' }, { id: 'run2' }];
+    const mockRuns = [{ id: 'run1' }, { id: 'run2' }];
 
-  beforeEach(() => {
-    discoveryApiMock = {
-      getBaseUrl: jest.fn().mockResolvedValue('http://mock-api.com'),
-    };
-    fetchApiMock = {
-      fetch: jest.fn().mockResolvedValue({
-        ok: true,
-        json: jest.fn().mockResolvedValue(mockRuns),
-      }),
-    };
+    beforeEach(() => {
+      discoveryApiMock = {
+        getBaseUrl: jest.fn().mockResolvedValue('http://mock-api.com'),
+      };
+      fetchApiMock = {
+        fetch: jest.fn().mockResolvedValue({
+          ok: true,
+          json: jest.fn().mockResolvedValue(mockRuns),
+        }),
+      };
 
-    client = new TerraformApiClient({
-      discoveryApi: discoveryApiMock,
-      fetchApi: fetchApiMock,
+      client = new TerraformApiClient({
+        discoveryApi: discoveryApiMock,
+        fetchApi: fetchApiMock,
+      });
+    });
+
+    it('calls DiscoveryApi with the correct id', async () => {
+      await client.getRuns('org1', 'workspace1');
+      expect(discoveryApiMock.getBaseUrl).toHaveBeenCalledWith('terraform');
+    });
+
+    it('calls FetchApi with the correct args', async () => {
+      await client.getRuns('org1', 'workspace1');
+
+      expect(fetchApiMock.fetch).toHaveBeenCalledWith(
+        'http://mock-api.com/organizations/org1/workspaces/workspace1/runs',
+        { credentials: 'include' },
+      );
+    });
+
+    it('returns runs when successful', async () => {
+      const runs = await client.getRuns('org1', 'workspace1');
+
+      expect(runs).toEqual(mockRuns);
+    });
+
+    it('should throw an error when the FetchApi call is unsuccessful', async () => {
+      const response = {
+        ok: false,
+        json: jest
+          .fn()
+          .mockResolvedValue({ error: { message: 'Failed to fetch runs' } }),
+      };
+      (fetchApiMock.fetch as jest.Mock).mockResolvedValue(response);
+
+      await expect(client.getRuns('org1', 'workspace1')).rejects.toThrow(
+        'Failed to fetch runs',
+      );
+    });
+
+    it('should throw an error when the FetchApi call is unsuccessful and no error message is present', async () => {
+      const response = {
+        ok: false,
+        json: jest.fn().mockResolvedValue({ error: undefined }),
+      };
+      (fetchApiMock.fetch as jest.Mock).mockResolvedValue(response);
+
+      await expect(client.getRuns('org1', 'workspace1')).rejects.toThrow(
+        'Error fetching runs!',
+      );
     });
   });
 
-  it('calls DiscoveryApi with the correct id', async () => {
-    await client.getRuns('org1', 'workspace1');
-    expect(discoveryApiMock.getBaseUrl).toHaveBeenCalledWith('terraform');
-  });
+  describe('getLatestRun', () => {
+    let discoveryApiMock: DiscoveryApi;
+    let fetchApiMock: FetchApi;
+    let client: TerraformApiClient;
 
-  it('calls FetchApi with the correct args', async () => {
-    await client.getRuns('org1', 'workspace1');
+    const mockLatestRun = { id: 'run1' };
 
-    expect(fetchApiMock.fetch).toHaveBeenCalledWith(
-      'http://mock-api.com/organizations/org1/workspaces/workspace1/runs',
-      { credentials: 'include' },
-    );
-  });
+    beforeEach(() => {
+      discoveryApiMock = {
+        getBaseUrl: jest.fn().mockResolvedValue('http://mock-api.com'),
+      };
+      fetchApiMock = {
+        fetch: jest.fn().mockResolvedValue({
+          ok: true,
+          json: jest.fn().mockResolvedValue(mockLatestRun),
+        }),
+      };
 
-  it('returns runs when successful', async () => {
-    const runs = await client.getRuns('org1', 'workspace1');
-
-    expect(runs).toEqual(mockRuns);
-  });
-
-  it('should throw an error when the FetchApi call is unsuccessful', async () => {
-    const response = {
-      ok: false,
-      json: jest
-        .fn()
-        .mockResolvedValue({ error: { message: 'Failed to fetch runs' } }),
-    };
-    (fetchApiMock.fetch as jest.Mock).mockResolvedValue(response);
-
-    await expect(client.getRuns('org1', 'workspace1')).rejects.toThrow(
-      'Failed to fetch runs',
-    );
-  });
-
-  it('should throw an error when the FetchApi call is unsuccessful and no error message is present', async () => {
-    const response = {
-      ok: false,
-      json: jest.fn().mockResolvedValue({ error: undefined }),
-    };
-    (fetchApiMock.fetch as jest.Mock).mockResolvedValue(response);
-
-    await expect(client.getRuns('org1', 'workspace1')).rejects.toThrow(
-      'Error fetching runs!',
-    );
-  });
-});
-
-describe('TerraformApiClient - latest run', () => {
-  let discoveryApiMock: DiscoveryApi;
-  let fetchApiMock: FetchApi;
-  let client: TerraformApiClient;
-
-  const mockLatestRun = { id: 'run1' };
-
-  beforeEach(() => {
-    discoveryApiMock = {
-      getBaseUrl: jest.fn().mockResolvedValue('http://mock-api.com'),
-    };
-    fetchApiMock = {
-      fetch: jest.fn().mockResolvedValue({
-        ok: true,
-        json: jest.fn().mockResolvedValue(mockLatestRun),
-      }),
-    };
-
-    client = new TerraformApiClient({
-      discoveryApi: discoveryApiMock,
-      fetchApi: fetchApiMock,
+      client = new TerraformApiClient({
+        discoveryApi: discoveryApiMock,
+        fetchApi: fetchApiMock,
+      });
     });
-  });
 
-  it('calls DiscoveryApi with the correct id', async () => {
-    await client.getLatestRun('org1', 'workspace1');
-    expect(discoveryApiMock.getBaseUrl).toHaveBeenCalledWith('terraform');
-  });
+    it('calls DiscoveryApi with the correct id', async () => {
+      await client.getLatestRun('org1', 'workspace1');
+      expect(discoveryApiMock.getBaseUrl).toHaveBeenCalledWith('terraform');
+    });
 
-  it('calls FetchApi with the correct args', async () => {
-    await client.getLatestRun('org1', 'workspace1');
+    it('calls FetchApi with the correct args', async () => {
+      await client.getLatestRun('org1', 'workspace1');
 
-    expect(fetchApiMock.fetch).toHaveBeenCalledWith(
-      'http://mock-api.com/organizations/org1/workspaces/workspace1/latestRun',
-      { credentials: 'include' },
-    );
-  });
+      expect(fetchApiMock.fetch).toHaveBeenCalledWith(
+        'http://mock-api.com/organizations/org1/workspaces/workspace1/latestRun',
+        { credentials: 'include' },
+      );
+    });
 
-  it('returns latest run when successful', async () => {
-    const latestRunResult = await client.getLatestRun('org1', 'workspace1');
+    it('returns latest run when successful', async () => {
+      const latestRunResult = await client.getLatestRun('org1', 'workspace1');
 
-    expect(latestRunResult).toEqual(mockLatestRun);
-  });
+      expect(latestRunResult).toEqual(mockLatestRun);
+    });
 
-  it('should throw an error when the FetchApi call is unsuccessful', async () => {
-    const response = {
-      ok: false,
-      json: jest
-        .fn()
-        .mockResolvedValue({ error: { message: 'Failed to fetch runs' } }),
-    };
-    (fetchApiMock.fetch as jest.Mock).mockResolvedValue(response);
+    it('should throw an error when the FetchApi call is unsuccessful', async () => {
+      const response = {
+        ok: false,
+        json: jest
+          .fn()
+          .mockResolvedValue({ error: { message: 'Failed to fetch runs' } }),
+      };
+      (fetchApiMock.fetch as jest.Mock).mockResolvedValue(response);
 
-    await expect(client.getLatestRun('org1', 'workspace1')).rejects.toThrow(
-      'Failed to fetch runs',
-    );
-  });
+      await expect(client.getLatestRun('org1', 'workspace1')).rejects.toThrow(
+        'Failed to fetch runs',
+      );
+    });
 
-  it('should throw an error when the FetchApi call is unsuccessful and no error message is present', async () => {
-    const response = {
-      ok: false,
-      json: jest.fn().mockResolvedValue({ error: undefined }),
-    };
-    (fetchApiMock.fetch as jest.Mock).mockResolvedValue(response);
+    it('should throw an error when the FetchApi call is unsuccessful and no error message is present', async () => {
+      const response = {
+        ok: false,
+        json: jest.fn().mockResolvedValue({ error: undefined }),
+      };
+      (fetchApiMock.fetch as jest.Mock).mockResolvedValue(response);
 
-    await expect(client.getRuns('org1', 'workspace1')).rejects.toThrow(
-      'Error fetching runs!',
-    );
+      await expect(client.getRuns('org1', 'workspace1')).rejects.toThrow(
+        'Error fetching runs!',
+      );
+    });
   });
 });
