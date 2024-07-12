@@ -7,6 +7,7 @@ import { Run } from './hooks/types';
 
 export interface TerraformApi {
   getRuns(organization: string, workspaceName: string): Promise<Run[]>;
+  getLatestRun(organization: string, workspaceName: string): Promise<Run>;
 }
 
 export const terraformApiRef = createApiRef<TerraformApi>({
@@ -40,6 +41,25 @@ export class TerraformApiClient implements TerraformApi {
 
     const data = (await response.json()) as Run[];
     return data;
+  }
+
+  public async getLatestRun(organization: string, workspaceName: string) {
+    const apiOrigin = await this.getApiOrigin();
+
+    const response = await this.fetchApi.fetch(
+      `${apiOrigin}/organizations/${organization}/workspaces/${workspaceName}/latestRun`,
+      {
+        credentials: 'include',
+      },
+    );
+
+    if (!response.ok) {
+      const data = await response.json();
+
+      throw new Error(data.error?.message ?? 'Error fetching runs!');
+    }
+
+    return (await response.json()) as Run;
   }
 
   async getApiOrigin(): Promise<string> {
