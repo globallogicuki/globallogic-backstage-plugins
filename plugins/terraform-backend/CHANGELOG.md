@@ -1,5 +1,11 @@
 # @globallogicuki/backstage-plugin-terraform-backend
 
+## 0.4.1
+
+### Patch Changes
+
+- 417c1db: created new terraform latest run endpoint
+
 ## 0.4.0
 
 ### Minor Changes

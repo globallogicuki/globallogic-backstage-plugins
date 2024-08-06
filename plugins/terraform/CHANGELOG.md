@@ -1,5 +1,15 @@
 # @globallogicuki/backstage-plugin-terraform
 
+## 0.6.0
+
+### Minor Changes
+
+- 0bc9d5d: feat: add card to display status of latest run for Terraform workspace
+
+### Patch Changes
+
+- 417c1db: created new terraform latest run endpoint
+
 ## 0.5.0
 
 ### Minor Changes
