@@ -2530,28 +2530,6 @@
     "@babel/helper-validator-identifier" "^7.22.20"
     to-fast-properties "^2.0.0"
 
-"@backstage-community/plugin-github-actions@^0.6.16":
-  version "0.6.22"
-  resolved "https://registry.yarnpkg.com/@backstage-community/plugin-github-actions/-/plugin-github-actions-0.6.22.tgz#9236b47da5d415c574fbb431a5a7d53e228b954f"
-  integrity sha512-xXe9aNnXkoIewh8xUje5CPTRGfF21ZLP7oqSlKrwiTOJ+RKw4MOZ+C0Id7lAcWi/JvnPOLuHMdGhk9F4Dqy0qA==
-  dependencies:
-    "@backstage/catalog-model" "^1.6.0"
-    "@backstage/core-compat-api" "^0.2.8"
-    "@backstage/core-components" "^0.14.10"
-    "@backstage/core-plugin-api" "^1.9.3"
-    "@backstage/frontend-plugin-api" "^0.7.0"
-    "@backstage/integration" "^1.14.0"
-    "@backstage/integration-react" "^1.1.30"
-    "@backstage/plugin-catalog-react" "^1.12.3"
-    "@material-ui/core" "^4.12.2"
-    "@material-ui/icons" "^4.9.1"
-    "@material-ui/lab" "4.0.0-alpha.61"
-    "@octokit/rest" "^19.0.3"
-    "@types/react" "^16.13.1 || ^17.0.0 || ^18.0.0"
-    git-url-parse "^14.0.0"
-    luxon "^3.0.0"
-    react-use "^17.2.4"
-
 "@backstage/app-defaults@^1.5.10":
   version "1.5.10"
   resolved "https://registry.yarnpkg.com/@backstage/app-defaults/-/app-defaults-1.5.10.tgz#34931c564c5c6404f0a89b3f4457ccea877772f2"
@@ -11663,7 +11641,6 @@ anymatch@^3.0.3, anymatch@~3.1.2:
 "app@link:packages/app":
   version "0.0.0"
   dependencies:
-    "@backstage-community/plugin-github-actions" "^0.6.16"
     "@backstage/app-defaults" "^1.5.10"
     "@backstage/catalog-model" "^1.6.0"
     "@backstage/cli" "^0.27.0"
