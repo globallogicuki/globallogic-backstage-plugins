@@ -3,26 +3,38 @@ import { TerraformRun, TerraformEntity } from './types';
 const findEntityById = (entities: TerraformEntity[], id: string) =>
   entities.find(e => e.id === id);
 
-const getPlanDetails = (plans: TerraformEntity[], planId?: string) => {
+const getPlanDetails = (entities: TerraformEntity[], planId?: string) => {
   if (!planId) return null;
 
-  const plan = findEntityById(plans, planId);
+  const entity = findEntityById(entities, planId);
 
-  if (!plan) return null;
+  if (!entity || entity.type !== 'plans') return null;
 
-  return { logs: plan.attributes['log-read-url'] };
+  return { logs: entity.attributes['log-read-url'] };
 };
 
-const getUserDetails = (users: TerraformEntity[], userId?: string) => {
+const getUserDetails = (entities: TerraformEntity[], userId?: string) => {
   if (!userId) return null;
 
-  const user = findEntityById(users, userId);
+  const entity = findEntityById(entities, userId);
 
-  if (!user) return null;
+  if (!entity || entity.type !== 'users') return null;
 
   return {
-    name: user.attributes.username,
-    avatar: user.attributes['avatar-url'],
+    name: entity.attributes.username,
+    avatar: entity.attributes['avatar-url'],
+  };
+};
+
+const getWorkspaceDetails = (entities: TerraformEntity[], userId?: string) => {
+  if (!userId) return null;
+
+  const entity = findEntityById(entities, userId);
+
+  if (!entity || entity.type !== 'workspaces') return null;
+
+  return {
+    name: entity.attributes.name,
   };
 };
 
@@ -39,4 +51,8 @@ export const formatTerraformRun = (
     terraformRun.relationships['confirmed-by']?.data.id,
   ),
   plan: getPlanDetails(included, terraformRun.relationships.plan?.data.id),
+  workspace: getWorkspaceDetails(
+    included,
+    terraformRun.relationships.workspace?.data.id,
+  ),
 });

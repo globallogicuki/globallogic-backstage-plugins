@@ -7,19 +7,26 @@ import { useRuns } from '../../hooks';
 
 interface Props {
   organization: string;
-  workspaceName: string;
+  workspaceNames: string[];
   hideDescription?: boolean;
 }
 
 export const TerraformRuns = ({
   organization,
-  workspaceName,
+  workspaceNames,
   hideDescription = false,
 }: Props) => {
+  const hasMultipleWorkspaces = workspaceNames.length > 1;
   const { data, error, isLoading, refetch } = useRuns(
     organization,
-    workspaceName,
+    workspaceNames,
   );
+
+  const tableTitle = `Runs for ${
+    hasMultipleWorkspaces
+      ? `${workspaceNames.length} workspaces`
+      : workspaceNames[0]
+  }`;
 
   useEffect(() => {
     refetch();
@@ -34,7 +41,8 @@ export const TerraformRuns = ({
       <DenseTable
         data={data || []}
         isLoading={isLoading}
-        title={`Runs for ${workspaceName}`}
+        title={tableTitle}
+        hasMultipleWorkspaces={hasMultipleWorkspaces}
       />
     );
   }
@@ -60,8 +68,9 @@ export const TerraformRuns = ({
         </Grid>
         <Grid item>
           <Typography variant="body2">
-            This contains some useful information around the terraform workspace
-            "{workspaceName}".
+            This contains some useful information for the terraform workspace
+            {hasMultipleWorkspaces ? 's' : ''} "{workspaceNames.join(', ')}
+            ".
           </Typography>
         </Grid>
       </Grid>
@@ -69,7 +78,8 @@ export const TerraformRuns = ({
         <DenseTable
           data={data || []}
           isLoading={isLoading}
-          title={`Runs for ${workspaceName}`}
+          title={tableTitle}
+          hasMultipleWorkspaces={hasMultipleWorkspaces}
         />
       </Grid>
     </Grid>

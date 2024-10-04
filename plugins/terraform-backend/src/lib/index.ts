@@ -1,53 +1,106 @@
 import axios from 'axios';
-import { TerraformResponse, TerraformRun, TerraformWorkspace } from './types';
+import {
+  TerraformEntity,
+  TerraformPlan,
+  TerraformResponse,
+  TerraformRun,
+  TerraformUser,
+  TerraformWorkspace,
+} from './types';
 import { formatTerraformRun } from './formatTerraformRun';
 
-export const TF_BASE_URL = 'https://app.terraform.io/api/v2';
+const TF_DOMAIN = 'https://app.terraform.io';
+export const TF_BASE_URL = `${TF_DOMAIN}/api/v2`;
 
-export const getLatestRunForWorkspace = async (
+const fetchRelatedEntity = async <EntityType>(
   token: string,
-  workspaceId: string,
+  url?: string | null,
 ) => {
-  const res = await axios.get<TerraformResponse<TerraformRun[]>>(
-    `${TF_BASE_URL}/workspaces/${workspaceId}/runs?include=created_by,plan&page%5Bnumber%5D=1&page%5Bsize%5D=1`,
+  if (!url) return null;
+
+  const res = await axios.get<TerraformResponse<EntityType>>(
+    `${TF_DOMAIN}${url}`,
     { headers: { Authorization: `Bearer ${token}` } },
   );
 
-  const latestRunData = res.data.data?.[0];
-  return latestRunData
-    ? formatTerraformRun(latestRunData, res.data.included)
-    : undefined;
+  return res.data.data;
 };
 
-export const getRunsForWorkspace = async (
+// Need to do in series as will hit Terraform API rate limits
+const listRelatedEntities = async (
   token: string,
-  workspaceId: string,
-) => {
-  const res = await axios.get<TerraformResponse<TerraformRun[]>>(
-    `${TF_BASE_URL}/workspaces/${workspaceId}/runs?include=created_by,plan`,
-    { headers: { Authorization: `Bearer ${token}` } },
-  );
+  runs: TerraformRun[],
+): Promise<TerraformEntity[]> => {
+  let settled: PromiseSettledResult<TerraformEntity | null>[] = [];
 
-  return res.data.data.map(singleRun =>
-    formatTerraformRun(singleRun, res.data.included),
-  );
-};
+  for (const run of runs) {
+    // workspace doesn't contain links.related every time
+    const workspaceUrl =
+      run.relationships.workspace?.links?.related ||
+      (run.relationships.workspace?.data?.id
+        ? `/api/v2/workspaces/${run.relationships.workspace.data.id}`
+        : null);
+    const userUrl = run.relationships['confirmed-by']?.links?.related;
+    const planUrl = run.relationships.plan?.links?.related;
 
-export const findWorkspace = async (
-  token: string,
-  organization: string,
-  workspaceName: string,
-) => {
-  const res = await axios.get<TerraformResponse<TerraformWorkspace[]>>(
-    `${TF_BASE_URL}/organizations/${organization}/workspaces?search[wildcard-name]=${workspaceName}`,
-    { headers: { Authorization: `Bearer ${token}` } },
-  );
-
-  const workspaces = res.data?.data;
-
-  if (!workspaces.length) {
-    throw new Error(`Workspace with name '${workspaceName}' not found.`);
+    settled = [
+      ...settled,
+      ...(await Promise.allSettled([
+        fetchRelatedEntity<TerraformWorkspace>(token, workspaceUrl),
+        fetchRelatedEntity<TerraformUser>(token, userUrl),
+        fetchRelatedEntity<TerraformPlan>(token, planUrl),
+      ])),
+    ];
   }
 
-  return { id: workspaces[0].id };
+  return (
+    settled
+      .map(p => {
+        if (p.status === 'rejected') {
+          return null;
+        }
+
+        return p.value;
+      })
+      // Need to cast as TS can't figure out .filter removes null values
+      .filter(e => !!e) as unknown as TerraformEntity[]
+  );
+};
+
+type ListOrgRunsArgs = {
+  token: string;
+  organization: string;
+  workspaces: string[];
+  latestOnly?: boolean;
+};
+export const listOrgRuns = async ({
+  token,
+  organization,
+  workspaces,
+  latestOnly,
+}: ListOrgRunsArgs) => {
+  const res = await axios.get<TerraformResponse<TerraformRun[]>>(
+    `${TF_BASE_URL}/organizations/${organization}/runs?filter[workspace_names]=${workspaces.join(
+      ',',
+    )}${latestOnly ? '&page[number]=1&page[size]=1' : ''}`,
+    { headers: { Authorization: `Bearer ${token}` } },
+  );
+  const relatedEntities = await listRelatedEntities(token, res.data.data);
+
+  return res.data.data.map(run => formatTerraformRun(run, relatedEntities));
+};
+
+export const getLatestRunForWorkspaces = async (
+  token: string,
+  organization: string,
+  workspaces: string[],
+) => {
+  const latestRun = await listOrgRuns({
+    token,
+    organization,
+    workspaces,
+    latestOnly: true,
+  });
+
+  return latestRun[0];
 };

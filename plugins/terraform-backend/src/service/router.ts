@@ -3,11 +3,7 @@ import { LoggerService } from '@backstage/backend-plugin-api';
 import { Config } from '@backstage/config';
 import express from 'express';
 import { createOpenApiRouter } from '../schema/openapi.generated';
-import {
-  findWorkspace,
-  getRunsForWorkspace,
-  getLatestRunForWorkspace,
-} from '../lib';
+import { getLatestRunForWorkspaces, listOrgRuns } from '../lib';
 
 export interface RouterOptions {
   logger: LoggerService;
@@ -23,27 +19,26 @@ export async function createRouter(
   router.use(express.json());
 
   router.get(
-    '/organizations/:orgName/workspaces/:workspaceName/latestRun',
+    '/organizations/:orgName/workspaces/:workspaceNames/latestRun',
     (request, response, next) => {
       const token = config.getString('integrations.terraform.token');
-      const { orgName, workspaceName } = request.params;
+      const organization = request.params.orgName;
+      const workspaces = request.params.workspaceNames.split(',');
 
-      findWorkspace(token, orgName, workspaceName)
-        .then(workspace => getLatestRunForWorkspace(token, workspace.id))
+      getLatestRunForWorkspaces(token, organization, workspaces)
         .then(latestRun => response.json(latestRun))
         .catch(next);
     },
   );
 
   router.get(
-    '/organizations/:orgName/workspaces/:workspaceName/runs',
+    '/organizations/:orgName/workspaces/:workspaceNames/runs',
     (request, response, next) => {
       const token = config.getString('integrations.terraform.token');
       const organization = request.params.orgName;
-      const workspaceName = request.params.workspaceName;
+      const workspaces = request.params.workspaceNames.split(',');
 
-      findWorkspace(token, organization, workspaceName)
-        .then(workspace => getRunsForWorkspace(token, workspace.id))
+      listOrgRuns({ token, organization, workspaces })
         .then(runs => {
           response.json(runs);
         })

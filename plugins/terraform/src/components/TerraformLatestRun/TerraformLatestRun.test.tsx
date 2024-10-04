@@ -16,10 +16,6 @@ const mockErrorApi = {
 };
 const apis = [[errorApiRef, mockErrorApi] as const] as const;
 
-const testAnnotation = {
-  organization: 'gluk',
-  workspace: 'terraform-cloud-gluk-project-config',
-};
 const testDataUndefinedName = {
   id: '123',
   message: 'this is a text message',
@@ -43,8 +39,6 @@ const testDataValid = {
 
 describe('TerraformLatestRun', () => {
   const refetchMock = jest.fn(() => {});
-  const buildTitleRegEx = (runStatusContext: string) =>
-    new RegExp(`${runStatusContext} for ${testAnnotation.workspace}`);
 
   afterEach(() => {
     (useLatestRun as jest.Mock).mockRestore();
@@ -90,7 +84,7 @@ describe('TerraformLatestRun', () => {
       </EntityProvider>,
     );
 
-    const title = await screen.findByText(buildTitleRegEx('Latest run'));
+    const title = await screen.findByText(/Latest Terraform run/i);
     const unknownUser = await screen.findByText(/Unknown/i);
 
     expect(title).toBeInTheDocument();
@@ -105,7 +99,7 @@ describe('TerraformLatestRun', () => {
       </EntityProvider>,
     );
 
-    const latestRunText = await screen.findByText(/Latest run/i);
+    const latestRunText = await screen.findByText(/Latest Terraform run/i);
     expect(latestRunText).toBeInTheDocument();
   });
 

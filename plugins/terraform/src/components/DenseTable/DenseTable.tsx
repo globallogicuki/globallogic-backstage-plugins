@@ -24,6 +24,7 @@ interface DenseTableProps {
   data: Run[];
   isLoading?: boolean;
   title: string;
+  hasMultipleWorkspaces?: boolean;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -36,7 +37,12 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-export const DenseTable = ({ data, isLoading, title }: DenseTableProps) => {
+export const DenseTable = ({
+  data,
+  isLoading,
+  title,
+  hasMultipleWorkspaces,
+}: DenseTableProps) => {
   const classes = useStyles();
   const [isOpen, setIsOpen] = useState(false);
   const [dialogContent, setDialogContent] = useState<string | null | undefined>(
@@ -46,13 +52,24 @@ export const DenseTable = ({ data, isLoading, title }: DenseTableProps) => {
   const closeDialog = () => setIsOpen(false);
 
   type RowData = {
+    id: string;
     createdBy: { name: string; avatar?: string };
     message: string;
     createdAt: string;
     status: string;
+    workspaceName: string;
+    actions: {
+      logs?: string | null;
+    };
   };
 
   const columns: TableColumn<RowData>[] = [
+    {
+      title: 'Workspace',
+      customFilterAndSearch: (query, row) => row.workspaceName?.includes(query),
+      field: 'workspaceName',
+      hidden: !hasMultipleWorkspaces,
+    },
     {
       title: 'User',
       customFilterAndSearch: (query, row) =>
@@ -104,11 +121,35 @@ export const DenseTable = ({ data, isLoading, title }: DenseTableProps) => {
       },
       field: 'status',
     },
-    { title: 'Actions', field: 'actions', sorting: false, filtering: false },
+    {
+      title: 'Actions',
+      field: 'actions',
+      sorting: false,
+      filtering: false,
+      render: row => {
+        return (
+          <>
+            {row.actions.logs && (
+              <IconButton
+                data-testid={`open-logs-${row.id}`}
+                size="small"
+                onClick={() => {
+                  setDialogContent(row.actions.logs);
+                  setIsOpen(true);
+                }}
+              >
+                <NotesIcon />
+              </IconButton>
+            )}
+          </>
+        );
+      },
+    },
   ];
 
   const formattedData: RowData[] = data.map(run => {
     return {
+      id: run.id,
       createdBy: {
         name: run.confirmedBy?.name || 'Unknown',
         avatar: run.confirmedBy?.avatar,
@@ -116,22 +157,10 @@ export const DenseTable = ({ data, isLoading, title }: DenseTableProps) => {
       message: run.message,
       createdAt: formatTimeToWords(run.createdAt, { strict: true }),
       status: run.status,
-      actions: (
-        <>
-          {run.plan?.logs && (
-            <IconButton
-              data-testid={`open-logs-${run.id}`}
-              size="small"
-              onClick={() => {
-                setDialogContent(run.plan?.logs);
-                setIsOpen(true);
-              }}
-            >
-              <NotesIcon />
-            </IconButton>
-          )}
-        </>
-      ),
+      workspaceName: run.workspace?.name || 'Unknown',
+      actions: {
+        logs: run.plan?.logs,
+      },
     };
   });
 

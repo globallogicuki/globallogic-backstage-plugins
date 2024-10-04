@@ -15,7 +15,10 @@ const apis = [[errorApiRef, mockErrorApi] as const] as const;
 
 describe('TerraformRuns', () => {
   const refetchMock = jest.fn(() => {});
-  const props = { organization: 'gluk', workspaceName: 'fakeWorkspaceName' };
+  const props = {
+    organization: 'gluk',
+    workspaceNames: ['fakeWorkspaceName', 'anotherFakeWorkspaceName'],
+  };
 
   beforeEach(() => {
     (useRuns as jest.Mock).mockReturnValue({
@@ -31,16 +34,32 @@ describe('TerraformRuns', () => {
     refetchMock.mockReset();
   });
 
-  it('renders title, description and refresh', async () => {
+  it('renders title when single workspace', async () => {
+    render(
+      <TerraformRuns {...props} workspaceNames={['fakeSingleWorkspace']} />,
+    );
+
+    const title = await screen.findByText('Runs for fakeSingleWorkspace');
+
+    expect(title).toBeInTheDocument();
+  });
+
+  it('renders title when multiple workspaces', async () => {
     render(<TerraformRuns {...props} />);
 
-    const title = await screen.findByText('Runs for fakeWorkspaceName');
+    const title = await screen.findByText('Runs for 2 workspaces');
+
+    expect(title).toBeInTheDocument();
+  });
+
+  it('renders description and refresh', async () => {
+    render(<TerraformRuns {...props} />);
+
     const description = await screen.findByText(
       /This contains some useful information/i,
     );
     const refresh = await screen.findByLabelText('Refresh');
 
-    expect(title).toBeInTheDocument();
     expect(description).toBeInTheDocument();
     expect(refresh).toBeInTheDocument();
   });

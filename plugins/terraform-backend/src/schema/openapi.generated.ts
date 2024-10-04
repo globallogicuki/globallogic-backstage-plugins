@@ -36,7 +36,7 @@ export const spec = {
         }
       }
     },
-    "/organizations/{orgName}/workspaces/{workspaceName}/runs": {
+    "/organizations/{orgName}/workspaces/{workspaceNames}/runs": {
       "get": {
         "description": "Returns data about the recent Terraform Runs",
         "operationId": "getRuns",
@@ -51,9 +51,9 @@ export const spec = {
             }
           },
           {
-            "name": "workspaceName",
+            "name": "workspaceNames",
             "in": "path",
-            "description": "Name of workspace to return the runs for",
+            "description": "Names of workspace to return the runs for, comma-separated list",
             "required": true,
             "schema": {
               "type": "string"
@@ -74,7 +74,7 @@ export const spec = {
         }
       }
     },
-    "/organizations/{orgName}/workspaces/{workspaceName}/latestRun": {
+    "/organizations/{orgName}/workspaces/{workspaceNames}/latestRun": {
       "get": {
         "description": "Returns data about the most recent Terraform Run",
         "operationId": "getLatestRun",
@@ -89,9 +89,9 @@ export const spec = {
             }
           },
           {
-            "name": "workspaceName",
+            "name": "workspaceNames",
             "in": "path",
-            "description": "Name of workspace for which to return the latest run",
+            "description": "Names of workspace to return the runs for, comma-separated list",
             "required": true,
             "schema": {
               "type": "string"
@@ -165,6 +165,15 @@ export const spec = {
                   "type": "string"
                 }
               }
+            },
+            "workspace": {
+              "type": "object",
+              "nullable": true,
+              "properties": {
+                "name": {
+                  "type": "string"
+                }
+              }
             }
           }
         }
@@ -204,6 +213,15 @@ export const spec = {
             "nullable": true,
             "properties": {
               "logs": {
+                "type": "string"
+              }
+            }
+          },
+          "workspace": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "name": {
                 "type": "string"
               }
             }

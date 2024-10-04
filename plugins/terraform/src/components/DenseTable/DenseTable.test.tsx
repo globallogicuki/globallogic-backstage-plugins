@@ -43,6 +43,9 @@ const mockData = [
     plan: {
       logs: 'some text',
     },
+    workspace: {
+      name: 'workspace1',
+    },
   },
   {
     id: '123',
@@ -52,6 +55,9 @@ const mockData = [
     confirmedBy: undefined,
     plan: {
       logs: 'some text',
+    },
+    workspace: {
+      name: 'workspace2',
     },
   },
 ];
@@ -63,6 +69,7 @@ describe('DenseTable', () => {
         isLoading={false}
         title="Runs for test workspace"
         data={[]}
+        hasMultipleWorkspaces
       />,
     );
 
@@ -79,6 +86,7 @@ describe('DenseTable', () => {
         isLoading={false}
         title="Runs for test workspace"
         data={mockData}
+        hasMultipleWorkspaces
       />,
     );
 
@@ -97,18 +105,36 @@ describe('DenseTable', () => {
         isLoading={false}
         title="Runs for test workspace"
         data={mockData}
+        hasMultipleWorkspaces
       />,
     );
 
     const title = await screen.findByText(/Runs for test workspace/i);
     const text = await screen.findByText(/User/i);
+    const workspace = await screen.findByText(/workspace1/i);
     const user = await screen.findByText(/ABC/i);
     const msg = await screen.findByText(/Triggered via CLI/i);
 
-    expect(text).toBeInTheDocument();
     expect(title).toBeInTheDocument();
+    expect(text).toBeInTheDocument();
+    expect(workspace).toBeInTheDocument();
     expect(user).toBeInTheDocument();
     expect(msg).toBeInTheDocument();
+  });
+
+  it('hides workspace if hasMultipleWorkspaces is false', async () => {
+    render(
+      <DenseTable
+        isLoading={false}
+        title="Runs for test workspace"
+        data={mockData}
+        hasMultipleWorkspaces={false}
+      />,
+    );
+
+    const workspace = await screen.queryByText(/workspace1/i);
+
+    expect(workspace).not.toBeInTheDocument();
   });
 
   it('opens the logs on click of action button', async () => {
@@ -117,6 +143,7 @@ describe('DenseTable', () => {
         isLoading={false}
         title="Runs for test workspace"
         data={mockData}
+        hasMultipleWorkspaces
       />,
     );
 
@@ -138,6 +165,7 @@ describe('DenseTable', () => {
         isLoading={false}
         title="Runs for test workspace"
         data={mockData}
+        hasMultipleWorkspaces
       />,
     );
 
@@ -165,11 +193,36 @@ describe('DenseTable', () => {
         isLoading={false}
         title="Runs for test workspace"
         data={mockData}
+        hasMultipleWorkspaces
       />,
     );
     const filterInput = screen.getByPlaceholderText(/Filter/i);
 
     expect(filterInput).toBeInTheDocument();
+  });
+
+  it('filter on workspace column', async () => {
+    render(
+      <DenseTable
+        isLoading={false}
+        title="Runs for test workspace"
+        data={mockData}
+        hasMultipleWorkspaces
+      />,
+    );
+    const filterInput = screen.getByPlaceholderText(/Filter/i);
+    const workspace1 = await screen.findByText(/workspace1/i);
+    const workspace2 = await screen.findByText(/workspace2/i);
+
+    expect(workspace1).toBeInTheDocument();
+    expect(workspace2).toBeInTheDocument();
+    expect(filterInput).toBeInTheDocument();
+
+    fireEvent.change(filterInput, { target: { value: 'workspace2' } });
+    await waitFor(() => {
+      expect(workspace1).not.toBeInTheDocument();
+      expect(workspace2).toBeInTheDocument();
+    });
   });
 
   it('filter on user column', async () => {
@@ -178,6 +231,7 @@ describe('DenseTable', () => {
         isLoading={false}
         title="Runs for test workspace"
         data={mockData}
+        hasMultipleWorkspaces
       />,
     );
     const filterInput = screen.getByPlaceholderText(/Filter/i);
@@ -201,6 +255,7 @@ describe('DenseTable', () => {
         isLoading={false}
         title="Runs for test workspace"
         data={mockData}
+        hasMultipleWorkspaces
       />,
     );
     const filterInput = screen.getByPlaceholderText(/Filter/i);
@@ -223,6 +278,7 @@ describe('DenseTable', () => {
         isLoading={false}
         title="Runs for test workspace"
         data={mockData}
+        hasMultipleWorkspaces
       />,
     );
     const filterInput = screen.getByPlaceholderText(/Filter/i);
@@ -245,6 +301,7 @@ describe('DenseTable', () => {
         isLoading={false}
         title="Runs for test workspace"
         data={mockData}
+        hasMultipleWorkspaces
       />,
     );
     const userColumn = screen.getByText(/User/i);
