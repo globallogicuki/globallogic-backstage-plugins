@@ -33,12 +33,12 @@ describe('TerraformApiClient', () => {
     });
 
     it('calls DiscoveryApi with the correct id', async () => {
-      await client.getRuns('org1', 'workspace1');
+      await client.getRuns('org1', ['workspace1', 'workspace2']);
       expect(discoveryApiMock.getBaseUrl).toHaveBeenCalledWith('terraform');
     });
 
-    it('calls FetchApi with the correct args', async () => {
-      await client.getRuns('org1', 'workspace1');
+    it('calls FetchApi with the correct args when single workspace', async () => {
+      await client.getRuns('org1', ['workspace1']);
 
       expect(fetchApiMock.fetch).toHaveBeenCalledWith(
         'http://mock-api.com/organizations/org1/workspaces/workspace1/runs',
@@ -46,8 +46,17 @@ describe('TerraformApiClient', () => {
       );
     });
 
+    it('calls FetchApi with the correct args when multiple workspaces', async () => {
+      await client.getRuns('org1', ['workspace1', 'workspace2']);
+
+      expect(fetchApiMock.fetch).toHaveBeenCalledWith(
+        'http://mock-api.com/organizations/org1/workspaces/workspace1,workspace2/runs',
+        { credentials: 'include' },
+      );
+    });
+
     it('returns runs when successful', async () => {
-      const runs = await client.getRuns('org1', 'workspace1');
+      const runs = await client.getRuns('org1', ['workspace1', 'workspace2']);
 
       expect(runs).toEqual(mockRuns);
     });
@@ -61,9 +70,9 @@ describe('TerraformApiClient', () => {
       };
       (fetchApiMock.fetch as jest.Mock).mockResolvedValue(response);
 
-      await expect(client.getRuns('org1', 'workspace1')).rejects.toThrow(
-        'Failed to fetch runs',
-      );
+      await expect(
+        client.getRuns('org1', ['workspace1', 'workspace2']),
+      ).rejects.toThrow('Failed to fetch runs');
     });
 
     it('should throw an error when the FetchApi call is unsuccessful and no error message is present', async () => {
@@ -73,9 +82,9 @@ describe('TerraformApiClient', () => {
       };
       (fetchApiMock.fetch as jest.Mock).mockResolvedValue(response);
 
-      await expect(client.getRuns('org1', 'workspace1')).rejects.toThrow(
-        'Error fetching runs!',
-      );
+      await expect(
+        client.getRuns('org1', ['workspace1', 'workspace2']),
+      ).rejects.toThrow('Error fetching runs!');
     });
   });
 
@@ -104,12 +113,12 @@ describe('TerraformApiClient', () => {
     });
 
     it('calls DiscoveryApi with the correct id', async () => {
-      await client.getLatestRun('org1', 'workspace1');
+      await client.getLatestRun('org1', ['workspace1', 'workspace2']);
       expect(discoveryApiMock.getBaseUrl).toHaveBeenCalledWith('terraform');
     });
 
-    it('calls FetchApi with the correct args', async () => {
-      await client.getLatestRun('org1', 'workspace1');
+    it('calls FetchApi with the correct args when single workspace', async () => {
+      await client.getLatestRun('org1', ['workspace1']);
 
       expect(fetchApiMock.fetch).toHaveBeenCalledWith(
         'http://mock-api.com/organizations/org1/workspaces/workspace1/latestRun',
@@ -117,8 +126,20 @@ describe('TerraformApiClient', () => {
       );
     });
 
+    it('calls FetchApi with the correct args when multiple workspaces', async () => {
+      await client.getLatestRun('org1', ['workspace1', 'workspace2']);
+
+      expect(fetchApiMock.fetch).toHaveBeenCalledWith(
+        'http://mock-api.com/organizations/org1/workspaces/workspace1,workspace2/latestRun',
+        { credentials: 'include' },
+      );
+    });
+
     it('returns latest run when successful', async () => {
-      const latestRunResult = await client.getLatestRun('org1', 'workspace1');
+      const latestRunResult = await client.getLatestRun('org1', [
+        'workspace1',
+        'workspace2',
+      ]);
 
       expect(latestRunResult).toEqual(mockLatestRun);
     });
@@ -132,9 +153,9 @@ describe('TerraformApiClient', () => {
       };
       (fetchApiMock.fetch as jest.Mock).mockResolvedValue(response);
 
-      await expect(client.getLatestRun('org1', 'workspace1')).rejects.toThrow(
-        'Failed to fetch runs',
-      );
+      await expect(
+        client.getLatestRun('org1', ['workspace1', 'workspace2']),
+      ).rejects.toThrow('Failed to fetch runs');
     });
 
     it('should throw an error when the FetchApi call is unsuccessful and no error message is present', async () => {
@@ -144,9 +165,9 @@ describe('TerraformApiClient', () => {
       };
       (fetchApiMock.fetch as jest.Mock).mockResolvedValue(response);
 
-      await expect(client.getRuns('org1', 'workspace1')).rejects.toThrow(
-        'Error fetching runs!',
-      );
+      await expect(
+        client.getRuns('org1', ['workspace1', 'workspace2']),
+      ).rejects.toThrow('Error fetching runs!');
     });
   });
 });

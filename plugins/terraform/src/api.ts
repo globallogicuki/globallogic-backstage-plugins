@@ -6,8 +6,8 @@ import {
 import { Run } from './hooks/types';
 
 export interface TerraformApi {
-  getRuns(organization: string, workspaceName: string): Promise<Run[]>;
-  getLatestRun(organization: string, workspaceName: string): Promise<Run>;
+  getRuns(organization: string, workspaceNames: string[]): Promise<Run[]>;
+  getLatestRun(organization: string, workspaceNames: string[]): Promise<Run>;
 }
 
 export const terraformApiRef = createApiRef<TerraformApi>({
@@ -23,11 +23,13 @@ export class TerraformApiClient implements TerraformApi {
     this.fetchApi = options.fetchApi;
   }
 
-  public async getRuns(organization: string, workspaceName: string) {
+  public async getRuns(organization: string, workspaceNames: string[]) {
     const apiOrigin = await this.getApiOrigin();
 
     const response = await this.fetchApi.fetch(
-      `${apiOrigin}/organizations/${organization}/workspaces/${workspaceName}/runs`,
+      `${apiOrigin}/organizations/${organization}/workspaces/${workspaceNames.join(
+        ',',
+      )}/runs`,
       {
         credentials: 'include',
       },
@@ -43,11 +45,13 @@ export class TerraformApiClient implements TerraformApi {
     return data;
   }
 
-  public async getLatestRun(organization: string, workspaceName: string) {
+  public async getLatestRun(organization: string, workspaceNames: string[]) {
     const apiOrigin = await this.getApiOrigin();
 
     const response = await this.fetchApi.fetch(
-      `${apiOrigin}/organizations/${organization}/workspaces/${workspaceName}/latestRun`,
+      `${apiOrigin}/organizations/${organization}/workspaces/${workspaceNames.join(
+        ',',
+      )}/latestRun`,
       {
         credentials: 'include',
       },

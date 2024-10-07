@@ -1,8 +1,10 @@
 # Terraform Frontend Plugin for Backstage
 
-You can use this plugin to display a list of terraform runs for a specific workspace.
+You can use this plugin to display a list of terraform runs for one or more workspaces.
 
-![](./docs/terraform-plugin-content.png)
+![Terraform Runs - Single Workspace](./docs/terraform-plugin-content.png)
+
+![Terraform Runs - Multiple Workspaces](./docs/terraform-plugin-content-multiple.png)
 
 ## Install
 
@@ -35,13 +37,15 @@ There are two annotations that you should add to your `catalog-info.yaml` file:
 ```yaml
 annotations:
   terraform/organization: orgName
-  terraform/workspace: workspaceName
+  terraform/workspaces: workspaceName1,workspaceName2,workspaceName3
 ```
 
 You will also need to have the [terraform backend plugin](https://www.npmjs.com/package/@globallogicuki/backstage-plugin-terraform-backend) installed and running.
 
-## Terraform Latest Run component
+## Terraform Latest Run card
 
-![terraform-plugin-latest-run-content](./docs/terraform-plugin-latest-run-content.png)
+![Latest Run card - Single Workspace](./docs/terraform-plugin-latest-run-content.png)
+
+![Latest Run card - Multiple Workspaces](./docs/terraform-plugin-latest-run-content-multiple.png)
 
 This is an additional component that can be referenced with `<EntityTerraformLatestRunCard>` and imported and added to the `EntityPage.tsx` file for routing.

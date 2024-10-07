@@ -39,19 +39,22 @@ describe('utils', () => {
   });
 
   describe('getAnnotations', () => {
-    it('should return organization and workspace when both annotations are present', () => {
-      const { organization, workspace } = getAnnotations(mockEntity);
-      expect(organization).toBe('gluk');
-      expect(workspace).toBe('terraform-cloud-gluk-project-config');
+    it('should return organization and workspaces when both annotations are present', () => {
+      const { organization, workspaces } = getAnnotations(mockEntity);
+      expect(organization).toEqual('gluk');
+      expect(workspaces).toEqual([
+        'terraform-cloud-gluk-project-config',
+        'workspace-2',
+      ]);
     });
 
-    it('should return undefined organization and workspace when both annotations are absent', () => {
+    it('should return undefined organization and workspaces when both annotations are absent', () => {
       const emptyEntity: Entity = JSON.parse(JSON.stringify(mockEntity));
       emptyEntity.metadata.annotations = {};
 
-      const { organization, workspace } = getAnnotations(emptyEntity);
+      const { organization, workspaces } = getAnnotations(emptyEntity);
       expect(organization).toBeUndefined();
-      expect(workspace).toBeUndefined();
+      expect(workspaces).toBeUndefined();
     });
   });
 });

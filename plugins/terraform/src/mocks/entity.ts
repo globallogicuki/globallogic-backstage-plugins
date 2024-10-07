@@ -9,7 +9,7 @@ export const mockEntity: Entity = {
     namespace: 'default',
     annotations: {
       'terraform/organization': 'gluk',
-      'terraform/workspace': 'terraform-cloud-gluk-project-config',
+      'terraform/workspaces': 'terraform-cloud-gluk-project-config,workspace-2',
     },
     spec: {
       owner: 'guest',

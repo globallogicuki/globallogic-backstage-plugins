@@ -10,4 +10,7 @@ export interface Run {
   plan?: {
     logs?: string | null;
   };
+  workspace?: {
+    name?: string | null;
+  };
 }

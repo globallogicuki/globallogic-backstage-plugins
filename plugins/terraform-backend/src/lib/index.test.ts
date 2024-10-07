@@ -1,144 +1,188 @@
-import {
-  TF_BASE_URL,
-  findWorkspace,
-  getRunsForWorkspace,
-  getLatestRunForWorkspace,
-} from '.';
+import { TF_BASE_URL, getLatestRunForWorkspaces, listOrgRuns } from '.';
 import axios from 'axios';
-import { TerraformEntity, TerraformRun, TerraformWorkspace } from './types';
+import { TerraformEntity, TerraformRun } from './types';
 
 jest.mock('axios');
 
+const mockRun: TerraformRun = {
+  id: 'id-1',
+  type: 'runs',
+  relationships: {
+    'confirmed-by': {
+      data: {
+        id: 'id-confirmed',
+        type: 'users',
+      },
+      links: {
+        related: '/users/id-confirmed',
+      },
+    },
+    plan: {
+      data: {
+        id: 'id-plan',
+        type: 'plans',
+      },
+      links: {
+        related: '/plans/id-plan',
+      },
+    },
+    workspace: {
+      data: {
+        id: 'id-workspace',
+        type: 'workspaces',
+      },
+    },
+  },
+  attributes: {
+    status: 'status-1',
+    'created-at': '2020-01-01',
+    message: 'hello world',
+  },
+};
+const mockEntities: TerraformEntity[] = [
+  {
+    id: 'id-confirmed',
+    type: 'users',
+    attributes: { username: 'username', 'avatar-url': 'avatar' },
+  },
+  {
+    id: 'id-plan',
+    type: 'plans',
+    attributes: { 'log-read-url': 'logs' },
+  },
+  {
+    id: 'id-workspace',
+    type: 'workspaces',
+    attributes: {
+      name: 'workspaceName',
+      description: 'description',
+      'created-at': '2020-01-01',
+    },
+  },
+];
+
 describe('lib/index', () => {
+  beforeEach(() => {
+    (axios.get as jest.Mock).mockResolvedValue({
+      data: {
+        data: [mockRun],
+        included: mockEntities,
+      },
+    });
+  });
+
   afterEach(() => {
     jest.resetAllMocks();
   });
 
-  describe('getRunsForWorkspace method', () => {
-    it('should call the correct API url with the correct bearer token', async () => {
-      axios.get = jest.fn().mockResolvedValue({
-        data: {
-          data: [],
-        },
-      });
-      expect(axios.get).not.toHaveBeenCalled();
-      const workSpaceId = 'id-1';
-      const token = 'token-1';
-      await getRunsForWorkspace(token, workSpaceId);
+  describe('listOrgRuns', () => {
+    const workspaces = ['workspace-1', 'workspace-2'];
+    const token = 'token-1';
+    const organization = 'org-1';
+
+    it('should make the HTTP GET request correctly', async () => {
+      await listOrgRuns({ token, organization, workspaces });
 
       expect(axios.get).toHaveBeenCalledWith(
-        `${TF_BASE_URL}/workspaces/${workSpaceId}/runs?include=created_by,plan`,
+        `${TF_BASE_URL}/organizations/${organization}/runs?filter[workspace_names]=workspace-1,workspace-2`,
         { headers: { Authorization: `Bearer ${token}` } },
       );
     });
 
-    it('should correctly map the data received from the tearraform API', async () => {
-      const responseData: TerraformRun[] = [
-        {
-          id: 'id-1',
-          relationships: {
-            'confirmed-by': {
-              data: {
-                id: 'id-confirmed',
-              },
-            },
-            plan: {
-              data: {
-                id: 'id-plan',
-              },
-            },
-          },
-          attributes: {
-            status: 'status-1',
-            'created-at': '2020-01-01',
-            message: 'hello world',
-          },
-        },
-        {
-          id: 'id-2',
-          relationships: {},
-          attributes: { status: 'status-2', 'created-at': '2022-02-02' },
-        },
-      ];
+    it('should make the correct number of HTTP GET requests for other entities', async () => {
+      await listOrgRuns({ token, organization, workspaces });
 
-      const responseIncluded: TerraformEntity[] = [];
-
-      axios.get = jest.fn().mockResolvedValue({
-        data: {
-          data: responseData,
-          included: responseIncluded,
-        },
-      });
-
-      const result = await getRunsForWorkspace('token', 'workspaceId');
-
-      expect(result).toEqual([
-        {
-          id: 'id-1',
-          message: 'hello world',
-          status: 'status-1',
-          createdAt: '2020-01-01',
-          confirmedBy: null,
-          plan: null,
-        },
-        {
-          id: 'id-2',
-          message: undefined,
-          status: 'status-2',
-          createdAt: '2022-02-02',
-          confirmedBy: null,
-          plan: null,
-        },
-      ]);
+      expect(axios.get).toHaveBeenCalledTimes(4);
+      expect(axios.get).toHaveBeenCalledWith(
+        'https://app.terraform.io/api/v2/workspaces/id-workspace',
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      expect(axios.get).toHaveBeenCalledWith(
+        'https://app.terraform.io/users/id-confirmed',
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      expect(axios.get).toHaveBeenCalledWith(
+        'https://app.terraform.io/plans/id-plan',
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
     });
 
-    it('should map the correct confirmedBy to the correct element', async () => {
-      const responseData: TerraformRun[] = [
-        {
-          id: 'id-1',
-          relationships: {
-            'confirmed-by': {
-              data: {
-                id: 'id-confirmed',
-              },
-            },
-            plan: {
-              data: {
-                id: 'id-plan',
-              },
-            },
-          },
-          attributes: {
-            status: 'status-1',
-            'created-at': '2020-01-01',
-            message: 'hello world',
+    it('should make the correct HTTP GET request when workspace.links is set', async () => {
+      const mockRunNoWorkspace: TerraformRun = {
+        ...mockRun,
+        relationships: {
+          ...mockRun.relationships,
+          workspace: {
+            data: { id: 'id-workspace', type: 'workspaces' },
+            links: { related: '/api/v2/workspaces/id-workspace' },
           },
         },
-        {
-          id: 'id-2',
-          relationships: {},
-          attributes: { status: 'status-2', 'created-at': '2022-02-02' },
-        },
-      ];
+      };
 
-      const responseIncluded: TerraformEntity[] = [
-        {
-          id: 'id-confirmed',
-          attributes: {
-            username: 'confirmed-username',
-            'avatar-url': 'confirmed/avatar/url',
-          },
-        },
-      ];
-
-      axios.get = jest.fn().mockResolvedValue({
+      (axios.get as jest.Mock).mockResolvedValue({
         data: {
-          data: responseData,
-          included: responseIncluded,
+          data: [mockRunNoWorkspace],
+          included: mockEntities,
         },
       });
 
-      const result = await getRunsForWorkspace('token', 'workspaceId');
+      await listOrgRuns({ token, organization, workspaces });
+
+      expect(axios.get).toHaveBeenCalledTimes(4);
+      expect(axios.get).toHaveBeenCalledWith(
+        'https://app.terraform.io/api/v2/workspaces/id-workspace',
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+    });
+
+    it('should not make the HTTP GET request when workspace is undefined', async () => {
+      const mockRunNoWorkspace: TerraformRun = {
+        ...mockRun,
+        relationships: { ...mockRun.relationships, workspace: undefined },
+      };
+
+      (axios.get as jest.Mock).mockResolvedValue({
+        data: {
+          data: [mockRunNoWorkspace],
+          included: mockEntities,
+        },
+      });
+
+      await listOrgRuns({ token, organization, workspaces });
+
+      expect(axios.get).toHaveBeenCalledTimes(3);
+      expect(axios.get).not.toHaveBeenCalledWith(
+        'https://app.terraform.io/users/id-workspace',
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+    });
+
+    it('should return the correctly formatted data when a related entity errors', async () => {
+      (axios.get as jest.Mock).mockResolvedValueOnce({
+        data: {
+          data: [mockRun],
+          included: mockEntities,
+        },
+      });
+      (axios.get as jest.Mock).mockRejectedValueOnce(
+        new Error('OOPS! workspace'),
+      );
+      (axios.get as jest.Mock).mockResolvedValueOnce({
+        data: {
+          data: {
+            ...mockEntities[0],
+          },
+        },
+      });
+      (axios.get as jest.Mock).mockResolvedValueOnce({
+        data: {
+          data: {
+            ...mockEntities[1],
+          },
+        },
+      });
+
+      const result = await listOrgRuns({ token, organization, workspaces });
 
       expect(result).toEqual([
         {
@@ -147,63 +191,45 @@ describe('lib/index', () => {
           status: 'status-1',
           createdAt: '2020-01-01',
           confirmedBy: {
-            name: 'confirmed-username',
-            avatar: 'confirmed/avatar/url',
+            avatar: 'avatar',
+            name: 'username',
           },
-          plan: null,
-        },
-        {
-          id: 'id-2',
-          message: undefined,
-          status: 'status-2',
-          createdAt: '2022-02-02',
-          confirmedBy: null,
-          plan: null,
+          plan: { logs: 'logs' },
+          workspace: null,
         },
       ]);
     });
 
-    it('should map the correct plan to the correct element', async () => {
-      const responseData: TerraformRun[] = [
-        {
-          id: 'id-1',
-          relationships: {
-            'confirmed-by': {
-              data: {
-                id: 'id-confirmed',
-              },
-            },
-            plan: {
-              data: {
-                id: 'id-plan',
-              },
-            },
-          },
-          attributes: {
-            status: 'status-1',
-            'created-at': '2020-01-01',
-            message: 'hello world',
-          },
-        },
-        {
-          id: 'id-2',
-          relationships: {},
-          attributes: { status: 'status-2', 'created-at': '2022-02-02' },
-        },
-      ];
-
-      const responseIncluded: TerraformEntity[] = [
-        { id: 'id-plan', attributes: { 'log-read-url': 'the-logs' } },
-      ];
-
-      axios.get = jest.fn().mockResolvedValue({
+    it('should return the correctly formatted data', async () => {
+      (axios.get as jest.Mock).mockResolvedValueOnce({
         data: {
-          data: responseData,
-          included: responseIncluded,
+          data: [mockRun],
+          included: mockEntities,
+        },
+      });
+      (axios.get as jest.Mock).mockResolvedValueOnce({
+        data: {
+          data: {
+            ...mockEntities[0],
+          },
+        },
+      });
+      (axios.get as jest.Mock).mockResolvedValueOnce({
+        data: {
+          data: {
+            ...mockEntities[1],
+          },
+        },
+      });
+      (axios.get as jest.Mock).mockResolvedValueOnce({
+        data: {
+          data: {
+            ...mockEntities[2],
+          },
         },
       });
 
-      const result = await getRunsForWorkspace('token', 'workspaceId');
+      const result = await listOrgRuns({ token, organization, workspaces });
 
       expect(result).toEqual([
         {
@@ -211,252 +237,64 @@ describe('lib/index', () => {
           message: 'hello world',
           status: 'status-1',
           createdAt: '2020-01-01',
-          confirmedBy: null,
-          plan: { logs: 'the-logs' },
-        },
-        {
-          id: 'id-2',
-          message: undefined,
-          status: 'status-2',
-          createdAt: '2022-02-02',
-          confirmedBy: null,
-          plan: null,
+          confirmedBy: {
+            avatar: 'avatar',
+            name: 'username',
+          },
+          plan: { logs: 'logs' },
+          workspace: { name: 'workspaceName' },
         },
       ]);
     });
   });
 
-  describe('getLatestRunForWorkspace method', () => {
-    it('should call the correct API url with the correct bearer token', async () => {
-      axios.get = jest.fn().mockResolvedValue({
-        data: {
-          data: [],
-        },
-      });
-      expect(axios.get).not.toHaveBeenCalled();
-      const workSpaceId = 'id-1';
-      const token = 'token-1';
-      await getLatestRunForWorkspace(token, workSpaceId);
+  describe('getLatestRunForWorkspaces', () => {
+    const workSpaceNames = ['workspace-1', 'workspace-2'];
+    const token = 'token-1';
+    const organization = 'org-1';
+
+    it('should make the HTTP GET request correctly', async () => {
+      await getLatestRunForWorkspaces(token, organization, workSpaceNames);
 
       expect(axios.get).toHaveBeenCalledWith(
-        `${TF_BASE_URL}/workspaces/${workSpaceId}/runs?include=created_by,plan&page%5Bnumber%5D=1&page%5Bsize%5D=1`,
+        `${TF_BASE_URL}/organizations/${organization}/runs?filter[workspace_names]=workspace-1,workspace-2&page[number]=1&page[size]=1`,
         { headers: { Authorization: `Bearer ${token}` } },
       );
     });
 
-    it('should correctly map the data received from the terraform API', async () => {
-      const responseData: TerraformRun[] = [
-        {
-          id: 'id-1',
-          relationships: {
-            'confirmed-by': {
-              data: {
-                id: 'id-confirmed',
-              },
-            },
-            plan: {
-              data: {
-                id: 'id-plan',
-              },
-            },
-          },
-          attributes: {
-            status: 'status-1',
-            'created-at': '2020-01-01',
-            message: 'hello world',
-          },
-        },
-      ];
+    it('should make the correct number of HTTP GET requests for other entities', async () => {
+      await getLatestRunForWorkspaces(token, organization, workSpaceNames);
 
-      const responseIncluded: TerraformEntity[] = [];
-
-      axios.get = jest.fn().mockResolvedValue({
-        data: {
-          data: responseData,
-          included: responseIncluded,
-        },
-      });
-
-      const result = await getLatestRunForWorkspace('token', 'workspaceId');
-
-      expect(result).toEqual({
-        id: 'id-1',
-        message: 'hello world',
-        status: 'status-1',
-        createdAt: '2020-01-01',
-        confirmedBy: null,
-        plan: null,
-      });
-    });
-
-    it('should map the correct confirmedBy to the correct element', async () => {
-      const responseData: TerraformRun[] = [
-        {
-          id: 'id-1',
-          relationships: {
-            'confirmed-by': {
-              data: {
-                id: 'id-confirmed',
-              },
-            },
-            plan: {
-              data: {
-                id: 'id-plan',
-              },
-            },
-          },
-          attributes: {
-            status: 'status-1',
-            'created-at': '2020-01-01',
-            message: 'hello world',
-          },
-        },
-      ];
-
-      const responseIncluded: TerraformEntity[] = [
-        {
-          id: 'id-confirmed',
-          attributes: {
-            username: 'confirmed-username',
-            'avatar-url': 'confirmed/avatar/url',
-          },
-        },
-      ];
-
-      axios.get = jest.fn().mockResolvedValue({
-        data: {
-          data: responseData,
-          included: responseIncluded,
-        },
-      });
-
-      const result = await getLatestRunForWorkspace('token', 'workspaceId');
-
-      expect(result).toEqual({
-        id: 'id-1',
-        message: 'hello world',
-        status: 'status-1',
-        createdAt: '2020-01-01',
-        confirmedBy: {
-          name: 'confirmed-username',
-          avatar: 'confirmed/avatar/url',
-        },
-        plan: null,
-      });
-    });
-
-    it('should map the correct plan to the correct element', async () => {
-      const responseData: TerraformRun[] = [
-        {
-          id: 'id-1',
-          relationships: {
-            'confirmed-by': {
-              data: {
-                id: 'id-confirmed',
-              },
-            },
-            plan: {
-              data: {
-                id: 'id-plan',
-              },
-            },
-          },
-          attributes: {
-            status: 'status-1',
-            'created-at': '2020-01-01',
-            message: 'hello world',
-          },
-        },
-      ];
-
-      const responseIncluded: TerraformEntity[] = [
-        { id: 'id-plan', attributes: { 'log-read-url': 'the-logs' } },
-      ];
-
-      axios.get = jest.fn().mockResolvedValue({
-        data: {
-          data: responseData,
-          included: responseIncluded,
-        },
-      });
-
-      const result = await getLatestRunForWorkspace('token', 'workspaceId');
-
-      expect(result).toEqual({
-        id: 'id-1',
-        message: 'hello world',
-        status: 'status-1',
-        createdAt: '2020-01-01',
-        confirmedBy: null,
-        plan: { logs: 'the-logs' },
-      });
-    });
-  });
-
-  describe('findWorkspace method', () => {
-    const TOKEN = 'token-2';
-    const ORGANIZATION_NAME = 'ORGANIZATION-NAME';
-    const WORKSPACE_NAME = 'WORKSPACE-NAME';
-
-    it('should call the correct URL with the correct bearer token', async () => {
-      axios.get = jest.fn().mockResolvedValue({
-        data: {
-          data: [{}],
-        },
-      });
-      expect(axios.get).not.toHaveBeenCalled();
-      await findWorkspace(TOKEN, ORGANIZATION_NAME, WORKSPACE_NAME);
+      expect(axios.get).toHaveBeenCalledTimes(4);
       expect(axios.get).toHaveBeenCalledWith(
-        `${TF_BASE_URL}/organizations/${ORGANIZATION_NAME}/workspaces?search[wildcard-name]=${WORKSPACE_NAME}`,
-        { headers: { Authorization: `Bearer ${TOKEN}` } },
+        'https://app.terraform.io/api/v2/workspaces/id-workspace',
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      expect(axios.get).toHaveBeenCalledWith(
+        'https://app.terraform.io/users/id-confirmed',
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      expect(axios.get).toHaveBeenCalledWith(
+        'https://app.terraform.io/plans/id-plan',
+        { headers: { Authorization: `Bearer ${token}` } },
       );
     });
 
-    it('should throw an error if the API returns an empty array', async () => {
-      axios.get = jest.fn().mockResolvedValue({
-        data: {
-          data: [],
-        },
-      });
-
-      await expect(
-        findWorkspace(TOKEN, ORGANIZATION_NAME, WORKSPACE_NAME),
-      ).rejects.toMatchObject({
-        message: `Workspace with name '${WORKSPACE_NAME}' not found.`,
-      });
-    });
-
-    it('should return the correct workspace id', async () => {
-      const responseData: TerraformWorkspace[] = [
-        {
-          id: 'correct-workspace-id',
-          attributes: {
-            'created-at': '',
-            description: '',
-          },
-        },
-        {
-          id: 'wrong-workspace-id',
-          attributes: {
-            'created-at': '',
-            description: '',
-          },
-        },
-      ];
-      axios.get = jest.fn().mockResolvedValue({
-        data: {
-          data: responseData,
-        },
-      });
-
-      const result = await findWorkspace(
-        TOKEN,
-        ORGANIZATION_NAME,
-        WORKSPACE_NAME,
+    it('should return the correctly formatted data', async () => {
+      const result = await getLatestRunForWorkspaces(
+        token,
+        organization,
+        workSpaceNames,
       );
 
       expect(result).toEqual({
-        id: 'correct-workspace-id',
+        id: 'id-1',
+        message: 'hello world',
+        status: 'status-1',
+        createdAt: '2020-01-01',
+        confirmedBy: null,
+        plan: null,
+        workspace: null,
       });
     });
   });

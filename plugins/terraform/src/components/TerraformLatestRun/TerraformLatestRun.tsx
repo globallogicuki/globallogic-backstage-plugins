@@ -2,7 +2,6 @@ import { useEntity } from '@backstage/plugin-catalog-react';
 import { CircularProgress } from '@material-ui/core';
 import React, { useEffect } from 'react';
 import { useLatestRun } from '../../hooks';
-import { Run } from '../../hooks/types';
 import { TerraformLatestRunContent } from '../TerraformLatestRunContent';
 import { TerraformLatestRunError } from '../TerraformLatestRunError';
 import { TerraformNoRuns } from '../TerraformNoRuns';
@@ -18,12 +17,14 @@ import { getAnnotations } from '../../utils';
 export const TerraformLatestRun = () => {
   const { entity } = useEntity();
 
-  const { organization, workspace } = getAnnotations(entity);
+  const { organization, workspaces } = getAnnotations(entity);
 
-  const { data, isLoading, error, refetch } = useLatestRun(
-    organization!,
-    workspace!,
-  );
+  const {
+    data: latestRun,
+    isLoading,
+    error,
+    refetch,
+  } = useLatestRun(organization!, workspaces!);
 
   useEffect(() => {
     refetch();
@@ -31,7 +32,7 @@ export const TerraformLatestRun = () => {
 
   if (error) {
     return (
-      <TerraformLatestRunWrapperCard workspace={workspace!}>
+      <TerraformLatestRunWrapperCard workspaces={workspaces!}>
         <TerraformLatestRunError error={error} />
       </TerraformLatestRunWrapperCard>
     );
@@ -39,24 +40,22 @@ export const TerraformLatestRun = () => {
 
   if (isLoading) {
     return (
-      <TerraformLatestRunWrapperCard workspace={workspace!}>
+      <TerraformLatestRunWrapperCard workspaces={workspaces!}>
         <CircularProgress aria-describedby="Getting latest run" aria-busy />
       </TerraformLatestRunWrapperCard>
     );
   }
 
-  const latestRun: Run | undefined = data;
-
   if (!latestRun) {
     return (
-      <TerraformLatestRunWrapperCard workspace={workspace!}>
+      <TerraformLatestRunWrapperCard workspaces={workspaces!}>
         <TerraformNoRuns />
       </TerraformLatestRunWrapperCard>
     );
   }
 
   return (
-    <TerraformLatestRunWrapperCard workspace={workspace!}>
+    <TerraformLatestRunWrapperCard workspaces={workspaces!}>
       <TerraformLatestRunContent run={latestRun} />
     </TerraformLatestRunWrapperCard>
   );

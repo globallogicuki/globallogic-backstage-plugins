@@ -23,10 +23,10 @@ export function formatTimeToWords(
 
 export const getAnnotations = (
   entity: Entity,
-): { organization?: string; workspace?: string } => {
+): { organization?: string; workspaces?: string[] } => {
   const organization =
     entity.metadata.annotations?.[TERRAFORM_WORKSPACE_ORGANIZATION];
-  const workspace =
-    entity.metadata.annotations?.[TERRAFORM_WORKSPACE_ANNOTATION];
-  return { organization, workspace };
+  const workspaces =
+    entity.metadata.annotations?.[TERRAFORM_WORKSPACE_ANNOTATION]?.split(',');
+  return { organization, workspaces };
 };

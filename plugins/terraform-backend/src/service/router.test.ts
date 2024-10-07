@@ -6,11 +6,7 @@ import express from 'express';
 import request from 'supertest';
 import { createRouter } from './router';
 import { mockConfig } from '../mocks/config';
-import {
-  findWorkspace,
-  getRunsForWorkspace,
-  getLatestRunForWorkspace,
-} from '../lib';
+import { getLatestRunForWorkspaces, listOrgRuns } from '../lib';
 import { mockRun } from '../mocks/run';
 
 jest.mock('../lib');
@@ -40,72 +36,100 @@ describe('createRouter', () => {
     });
   });
 
-  describe('GET /organizations/:orgName/workspaces/:workspaceName/runs', () => {
+  describe('GET /organizations/:orgName/workspaces/:workspaceNames/runs', () => {
     it('returns all runs', async () => {
-      (findWorkspace as jest.Mock).mockResolvedValue({ id: 'fakeWorkspaceId' });
-      (getRunsForWorkspace as jest.Mock).mockResolvedValue([mockRun]);
+      (listOrgRuns as jest.Mock).mockResolvedValue([mockRun]);
 
       const response = await request(app).get(
-        '/organizations/testOrg/workspaces/testWorkspace/runs',
+        '/organizations/testOrg/workspaces/testWorkspace1,testWorkspace2/runs',
       );
 
       expect(response.status).toEqual(200);
       expect(response.body).toEqual([mockRun]);
     });
 
-    it('returns error if findWorkspace throws', async () => {
-      const response = await request(app).get(
-        '/organizations/testOrg/workspaces/testWorkspace/runs',
+    it('calls listOrgRuns correctly with single workspace', async () => {
+      (listOrgRuns as jest.Mock).mockResolvedValue([mockRun]);
+
+      await request(app).get(
+        '/organizations/testOrg/workspaces/testWorkspace1/runs',
       );
 
-      (findWorkspace as jest.Mock).mockRejectedValue(new Error('Some error.'));
-      (getRunsForWorkspace as jest.Mock).mockResolvedValue([mockRun]);
-
-      expect(response.status).toEqual(500);
+      expect(listOrgRuns).toHaveBeenCalledWith({
+        organization: 'testOrg',
+        token: 'fakeToken',
+        workspaces: ['testWorkspace1'],
+      });
     });
 
-    it('returns error if getRunsForWorkspace throws', async () => {
-      const response = await request(app).get(
-        '/organizations/testOrg/workspaces/testWorkspace/runs',
+    it('calls listOrgRuns correctly with multiple workspaces', async () => {
+      (listOrgRuns as jest.Mock).mockResolvedValue([mockRun]);
+
+      await request(app).get(
+        '/organizations/testOrg/workspaces/testWorkspace1,testWorkspace2/runs',
       );
 
-      (findWorkspace as jest.Mock).mockResolvedValue({ id: 'fakeWorkspaceId' });
-      (getRunsForWorkspace as jest.Mock).mockRejectedValue(
-        new Error('Some error.'),
+      expect(listOrgRuns).toHaveBeenCalledWith({
+        organization: 'testOrg',
+        token: 'fakeToken',
+        workspaces: ['testWorkspace1', 'testWorkspace2'],
+      });
+    });
+
+    it('returns error if listOrgRuns throws', async () => {
+      const response = await request(app).get(
+        '/organizations/testOrg/workspaces/testWorkspace1,testWorkspace2/runs',
       );
+
+      (listOrgRuns as jest.Mock).mockRejectedValue(new Error('Some error.'));
 
       expect(response.status).toEqual(500);
     });
   });
 
-  describe('GET /organizations/:orgName/workspaces/:workspaceName/latestRun', () => {
+  describe('GET /organizations/:orgName/workspaces/:workspaceNames/latestRun', () => {
     const TEST_URL =
-      '/organizations/testOrg/workspaces/testWorkspace/latestRun';
+      '/organizations/testOrg/workspaces/testWorkspace1,testWorkspace2/latestRun';
 
     it('returns latest run', async () => {
-      (findWorkspace as jest.Mock).mockResolvedValue({ id: 'fakeWorkspaceId' });
-      (getLatestRunForWorkspace as jest.Mock).mockResolvedValue([mockRun]);
+      (getLatestRunForWorkspaces as jest.Mock).mockResolvedValue(mockRun);
 
       const response = await request(app).get(TEST_URL);
 
       expect(response.status).toEqual(200);
-      expect(response.body).toEqual([mockRun]);
+      expect(response.body).toEqual(mockRun);
     });
 
-    it('returns error if findWorkspace throws', async () => {
-      const response = await request(app).get(TEST_URL);
+    it('calls getLatestRunForWorkspaces correctly with single workspace', async () => {
+      (getLatestRunForWorkspaces as jest.Mock).mockResolvedValue([mockRun]);
 
-      (findWorkspace as jest.Mock).mockRejectedValue(new Error('Some error.'));
-      (getLatestRunForWorkspace as jest.Mock).mockResolvedValue([mockRun]);
+      await request(app).get(
+        '/organizations/testOrg/workspaces/testWorkspace1/latestRun',
+      );
 
-      expect(response.status).toEqual(500);
+      expect(getLatestRunForWorkspaces).toHaveBeenCalledWith(
+        'fakeToken',
+        'testOrg',
+        ['testWorkspace1'],
+      );
     });
 
-    it('returns error if getLatestRunForWorkspace throws', async () => {
+    it('calls getLatestRunForWorkspaces correctly with multiple workspaces', async () => {
+      (getLatestRunForWorkspaces as jest.Mock).mockResolvedValue([mockRun]);
+
+      await request(app).get(TEST_URL);
+
+      expect(getLatestRunForWorkspaces).toHaveBeenCalledWith(
+        'fakeToken',
+        'testOrg',
+        ['testWorkspace1', 'testWorkspace2'],
+      );
+    });
+
+    it('returns error if getLatestRunForWorkspaces throws', async () => {
       const response = await request(app).get(TEST_URL);
 
-      (findWorkspace as jest.Mock).mockResolvedValue({ id: 'fakeWorkspaceId' });
-      (getLatestRunForWorkspace as jest.Mock).mockRejectedValue(
+      (getLatestRunForWorkspaces as jest.Mock).mockRejectedValue(
         new Error('Some error.'),
       );
 

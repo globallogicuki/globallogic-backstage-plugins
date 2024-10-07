@@ -19,7 +19,7 @@ describe('useLatestRun', () => {
   it('initial state is correct', () => {
     expect.assertions(5);
 
-    const { result } = renderHook(() => useLatestRun('org1', 'workspace1'));
+    const { result } = renderHook(() => useLatestRun('org1', ['workspace1']));
 
     expect(result.current.data).toBeUndefined();
     expect(result.current.isLoading).toBeFalsy();
@@ -30,7 +30,7 @@ describe('useLatestRun', () => {
 
   it('sets correct state when refetch is called', async () => {
     expect.assertions(1);
-    const { result } = renderHook(() => useLatestRun('org1', 'workspace1'));
+    const { result } = renderHook(() => useLatestRun('org1', ['workspace1']));
 
     act(() => {
       result.current.refetch();
@@ -42,7 +42,7 @@ describe('useLatestRun', () => {
   it('sets correct state when refetch is successful', async () => {
     expect.assertions(4);
 
-    const { result } = renderHook(() => useLatestRun('org1', 'workspace1'));
+    const { result } = renderHook(() => useLatestRun('org1', ['workspace1']));
 
     await act(async () => {
       await result.current.refetch();
@@ -62,7 +62,7 @@ describe('useLatestRun', () => {
       getLatestRun: jest.fn().mockRejectedValue(error),
     });
 
-    const { result } = renderHook(() => useLatestRun('org1', 'workspace1'));
+    const { result } = renderHook(() => useLatestRun('org1', ['workspace1']));
 
     await act(async () => {
       await result.current.refetch();

@@ -3,12 +3,12 @@ import { terraformApiRef } from '../api';
 import useAsyncFn from 'react-use/lib/useAsyncFn';
 import { Run } from './types';
 
-const useLatestRun = (organization: string, workspaceName: string) => {
+const useLatestRun = (organization: string, workspaceNames: string[]) => {
   const terraformApi = useApi(terraformApiRef);
 
   const [{ value, loading, error }, fetchLatestRun] = useAsyncFn(
     async (): Promise<Run> =>
-      terraformApi.getLatestRun(organization, workspaceName),
+      terraformApi.getLatestRun(organization, workspaceNames),
     [],
   );
 
