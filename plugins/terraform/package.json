@@ -19,7 +19,11 @@
     "types": "dist/index.d.ts"
   },
   "backstage": {
-    "role": "frontend-plugin"
+    "role": "frontend-plugin",
+    "pluginId": "terraform",
+    "pluginPackages": [
+      "@globallogicuki/backstage-plugin-terraform"
+    ]
   },
   "sideEffects": false,
   "scripts": {
