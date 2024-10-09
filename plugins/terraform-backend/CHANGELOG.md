@@ -1,5 +1,11 @@
 # @globallogicuki/backstage-plugin-terraform-backend
 
+## 0.5.0
+
+### Minor Changes
+
+- c5f4757: BREAKING: Allow multiple Terraform Workspaces to be specified
+
 ## 0.4.1
 
 ### Patch Changes
