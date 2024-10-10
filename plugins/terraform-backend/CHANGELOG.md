@@ -1,5 +1,11 @@
 # @globallogicuki/backstage-plugin-terraform-backend
 
+## 0.5.1
+
+### Patch Changes
+
+- f3c1c44: fix: add pluginId to each plugin
+
 ## 0.5.0
 
 ### Minor Changes
