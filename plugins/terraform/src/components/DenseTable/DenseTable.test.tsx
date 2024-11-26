@@ -196,7 +196,7 @@ describe('DenseTable', () => {
         hasMultipleWorkspaces
       />,
     );
-    const filterInput = screen.getByPlaceholderText(/Filter/i);
+    const filterInput = screen.getByPlaceholderText(/Search/i);
 
     expect(filterInput).toBeInTheDocument();
   });
@@ -210,7 +210,7 @@ describe('DenseTable', () => {
         hasMultipleWorkspaces
       />,
     );
-    const filterInput = screen.getByPlaceholderText(/Filter/i);
+    const filterInput = screen.getByPlaceholderText(/Search/i);
     const workspace1 = await screen.findByText(/workspace1/i);
     const workspace2 = await screen.findByText(/workspace2/i);
 
@@ -234,7 +234,7 @@ describe('DenseTable', () => {
         hasMultipleWorkspaces
       />,
     );
-    const filterInput = screen.getByPlaceholderText(/Filter/i);
+    const filterInput = screen.getByPlaceholderText(/Search/i);
     const user = await screen.findByText(/ABC/i);
     const unknownUser = await screen.findByText(/Unknown/i);
 
@@ -258,7 +258,7 @@ describe('DenseTable', () => {
         hasMultipleWorkspaces
       />,
     );
-    const filterInput = screen.getByPlaceholderText(/Filter/i);
+    const filterInput = screen.getByPlaceholderText(/Search/i);
     const message = await screen.findByText(/Triggered via CLI/i);
     const message1 = await screen.findByText(/Triggered via UI/i);
 
@@ -281,7 +281,7 @@ describe('DenseTable', () => {
         hasMultipleWorkspaces
       />,
     );
-    const filterInput = screen.getByPlaceholderText(/Filter/i);
+    const filterInput = screen.getByPlaceholderText(/Search/i);
     const status = await screen.findByText(/done/i);
     const status1 = await screen.findByText(/applied/i);
 
