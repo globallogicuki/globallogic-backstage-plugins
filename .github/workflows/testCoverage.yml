@@ -31,3 +31,4 @@ jobs:
           package-manager: yarn
           prnumber: ${{ steps.findPr.outputs.number }}
           skip-step: install
+          annotations: coverage
