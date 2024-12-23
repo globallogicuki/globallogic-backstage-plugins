@@ -20,8 +20,6 @@ jobs:
         with:
           node-version: 18.x
           cache: yarn
-      - name: Install Dependencies
-        run: yarn install --frozen-lockfile
       - uses: jwalton/gh-find-current-pr@v1
         id: findPr
       - name: Report Test Coverage
@@ -30,5 +28,4 @@ jobs:
           test-script: yarn test:all
           package-manager: yarn
           prnumber: ${{ steps.findPr.outputs.number }}
-          skip-step: install
           annotations: coverage
