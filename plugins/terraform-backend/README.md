@@ -16,6 +16,7 @@ To use the terraform backend, you will need to configure the following in your `
 integrations:
   terraform:
     token: tokenGoesHere
+    baseUrl: https://tfe.enterprise.com/api/v2 # Optional, for self-hosted TFE
 ```
 
 ### New Backstage backend system
