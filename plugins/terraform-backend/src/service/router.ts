@@ -1,9 +1,11 @@
-import { errorHandler } from '@backstage/backend-common';
+import { MiddlewareFactory } from '@backstage/backend-defaults/rootHttpRouter';
 import { LoggerService } from '@backstage/backend-plugin-api';
 import { Config } from '@backstage/config';
 import express from 'express';
-import { createOpenApiRouter } from '../schema/openapi.generated';
 import { getLatestRunForWorkspaces, listOrgRuns } from '../lib';
+import { createOpenApiRouter } from '../schema/openapi.generated';
+
+export const DEFAULT_TF_BASE_URL = 'https://app.terraform.io';
 
 export interface RouterOptions {
   logger: LoggerService;
@@ -18,14 +20,18 @@ export async function createRouter(
   const router = await createOpenApiRouter();
   router.use(express.json());
 
+  const token = config.getString('integrations.terraform.token');
+  const baseUrl =
+    config.getOptionalString('integrations.terraform.baseUrl') ??
+    DEFAULT_TF_BASE_URL;
+
   router.get(
     '/organizations/:orgName/workspaces/:workspaceNames/latestRun',
     (request, response, next) => {
-      const token = config.getString('integrations.terraform.token');
       const organization = request.params.orgName;
       const workspaces = request.params.workspaceNames.split(',');
 
-      getLatestRunForWorkspaces(token, organization, workspaces)
+      getLatestRunForWorkspaces(baseUrl, token, organization, workspaces)
         .then(latestRun => response.json(latestRun))
         .catch(next);
     },
@@ -34,11 +40,10 @@ export async function createRouter(
   router.get(
     '/organizations/:orgName/workspaces/:workspaceNames/runs',
     (request, response, next) => {
-      const token = config.getString('integrations.terraform.token');
       const organization = request.params.orgName;
       const workspaces = request.params.workspaceNames.split(',');
 
-      listOrgRuns({ token, organization, workspaces })
+      listOrgRuns({ token, baseUrl, organization, workspaces })
         .then(runs => {
           response.json(runs);
         })
@@ -51,6 +56,6 @@ export async function createRouter(
     response.json({ status: 'ok' });
   });
 
-  router.use(errorHandler());
+  router.use(MiddlewareFactory.create(options).error());
   return router;
 }

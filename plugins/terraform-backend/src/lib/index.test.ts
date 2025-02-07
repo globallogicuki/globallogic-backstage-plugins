@@ -1,6 +1,7 @@
-import { TF_BASE_URL, getLatestRunForWorkspaces, listOrgRuns } from '.';
+import { getLatestRunForWorkspaces, listOrgRuns } from '.';
 import axios from 'axios';
 import { TerraformEntity, TerraformRun } from './types';
+import { DEFAULT_TF_BASE_URL } from '../service/router';
 
 jest.mock('axios');
 
@@ -78,19 +79,20 @@ describe('lib/index', () => {
   describe('listOrgRuns', () => {
     const workspaces = ['workspace-1', 'workspace-2'];
     const token = 'token-1';
+    const baseUrl = DEFAULT_TF_BASE_URL;
     const organization = 'org-1';
 
     it('should make the HTTP GET request correctly', async () => {
-      await listOrgRuns({ token, organization, workspaces });
+      await listOrgRuns({ token, baseUrl, organization, workspaces });
 
       expect(axios.get).toHaveBeenCalledWith(
-        `${TF_BASE_URL}/organizations/${organization}/runs?filter[workspace_names]=workspace-1,workspace-2`,
+        `${baseUrl}/api/v2/organizations/${organization}/runs?filter[workspace_names]=workspace-1,workspace-2`,
         { headers: { Authorization: `Bearer ${token}` } },
       );
     });
 
     it('should make the correct number of HTTP GET requests for other entities', async () => {
-      await listOrgRuns({ token, organization, workspaces });
+      await listOrgRuns({ token, baseUrl, organization, workspaces });
 
       expect(axios.get).toHaveBeenCalledTimes(4);
       expect(axios.get).toHaveBeenCalledWith(
@@ -126,7 +128,7 @@ describe('lib/index', () => {
         },
       });
 
-      await listOrgRuns({ token, organization, workspaces });
+      await listOrgRuns({ token, baseUrl, organization, workspaces });
 
       expect(axios.get).toHaveBeenCalledTimes(4);
       expect(axios.get).toHaveBeenCalledWith(
@@ -148,7 +150,7 @@ describe('lib/index', () => {
         },
       });
 
-      await listOrgRuns({ token, organization, workspaces });
+      await listOrgRuns({ token, baseUrl, organization, workspaces });
 
       expect(axios.get).toHaveBeenCalledTimes(3);
       expect(axios.get).not.toHaveBeenCalledWith(
@@ -182,7 +184,12 @@ describe('lib/index', () => {
         },
       });
 
-      const result = await listOrgRuns({ token, organization, workspaces });
+      const result = await listOrgRuns({
+        token,
+        baseUrl,
+        organization,
+        workspaces,
+      });
 
       expect(result).toEqual([
         {
@@ -229,7 +236,12 @@ describe('lib/index', () => {
         },
       });
 
-      const result = await listOrgRuns({ token, organization, workspaces });
+      const result = await listOrgRuns({
+        token,
+        baseUrl,
+        organization,
+        workspaces,
+      });
 
       expect(result).toEqual([
         {
@@ -251,19 +263,30 @@ describe('lib/index', () => {
   describe('getLatestRunForWorkspaces', () => {
     const workSpaceNames = ['workspace-1', 'workspace-2'];
     const token = 'token-1';
+    const baseUrl = DEFAULT_TF_BASE_URL;
     const organization = 'org-1';
 
     it('should make the HTTP GET request correctly', async () => {
-      await getLatestRunForWorkspaces(token, organization, workSpaceNames);
+      await getLatestRunForWorkspaces(
+        baseUrl,
+        token,
+        organization,
+        workSpaceNames,
+      );
 
       expect(axios.get).toHaveBeenCalledWith(
-        `${TF_BASE_URL}/organizations/${organization}/runs?filter[workspace_names]=workspace-1,workspace-2&page[number]=1&page[size]=1`,
+        `${baseUrl}/api/v2/organizations/${organization}/runs?filter[workspace_names]=workspace-1,workspace-2&page[number]=1&page[size]=1`,
         { headers: { Authorization: `Bearer ${token}` } },
       );
     });
 
     it('should make the correct number of HTTP GET requests for other entities', async () => {
-      await getLatestRunForWorkspaces(token, organization, workSpaceNames);
+      await getLatestRunForWorkspaces(
+        baseUrl,
+        token,
+        organization,
+        workSpaceNames,
+      );
 
       expect(axios.get).toHaveBeenCalledTimes(4);
       expect(axios.get).toHaveBeenCalledWith(
@@ -282,6 +305,7 @@ describe('lib/index', () => {
 
     it('should return the correctly formatted data', async () => {
       const result = await getLatestRunForWorkspaces(
+        baseUrl,
         token,
         organization,
         workSpaceNames,
