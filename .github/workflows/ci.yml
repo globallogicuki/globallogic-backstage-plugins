@@ -24,9 +24,9 @@ jobs:
           node-version: 18.x
           cache: yarn
       - name: Install Dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable
       - name: Lint
-        run: yarn lint
+        run: yarn lint:all
       - name: Typecheck
         run: yarn tsc
       - name: Test
