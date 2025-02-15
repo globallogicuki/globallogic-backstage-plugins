@@ -12,6 +12,9 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: example-website
+  annotations:
+    terraform/organization: orgName
+    terraform/workspaces: workspaceName1,workspaceName2,workspaceName3
 spec:
   type: website
   lifecycle: experimental
