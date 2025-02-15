@@ -8,12 +8,12 @@ on:
         default: next
         type: choice
         options:
-        - next
-        - main
-  
+          - next
+          - main
+
   # Run Weekly on Wednesday at 10:00 UTC time
   schedule:
-    - cron: "0 10 * * 3"
+    - cron: '0 10 * * 3'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
