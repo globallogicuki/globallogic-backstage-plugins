@@ -1,16 +1,5 @@
 name: 'Version Bump'
 on:
-  workflow_dispatch:
-    inputs:
-      release_line:
-        description: 'Release Line'
-        required: true
-        default: next
-        type: choice
-        options:
-          - next
-          - main
-
   # Run Weekly on Wednesday at 10:00 UTC time
   schedule:
     - cron: '0 10 * * 3'
@@ -71,8 +60,8 @@ jobs:
               git branch -D topic/v${{ steps.set_release_name.outputs.release_version }}
           fi
           git checkout -b topic/v${{ steps.set_release_name.outputs.release_version }}
-      - name: Run backstage-cli versions:bump --release ${{ inputs.release_line || 'next' }} command
-        run: yarn backstage-cli versions:bump --release ${{ inputs.release_line || 'next' }}
+      - name: Run backstage-cli versions:bump --release main command
+        run: yarn backstage-cli versions:bump --release main
         env:
           YARN_ENABLE_IMMUTABLE_INSTALLS: false
       - name: 'Check for changes'
@@ -97,7 +86,6 @@ jobs:
         if: ${{ steps.check_for_changes.outputs.HAS_CHANGES == 1 }}
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
         with:
-          github-token: ${{secrets.GH_SERVICE_ACCOUNT_TOKEN}}
           script: |
             await github.rest.pulls.create({
               title: 'v${{ steps.set_release_name.outputs.release_version }} version bump',
