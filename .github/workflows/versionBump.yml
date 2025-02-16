@@ -82,7 +82,7 @@ jobs:
           git status
           git add -A -- :!.npmrc
           git commit -m "v${{ steps.set_release_name.outputs.release_version }} version bump"
-          git push origin topic/v${{ steps.set_release_name.outputs.release_version }}
+          git push origin chore/upgrade-to-v${{ steps.set_release_name.outputs.release_version }}
       - name: 'Create Pull Request'
         if: ${{ steps.check_for_changes.outputs.HAS_CHANGES == 1 }}
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
