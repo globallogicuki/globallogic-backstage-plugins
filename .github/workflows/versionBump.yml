@@ -1,5 +1,6 @@
 name: 'Version Bump'
 on:
+  workflow_dispatch:
   # Run Weekly on Wednesday at 10:00 UTC time
   schedule:
     - cron: '0 10 * * 3'
