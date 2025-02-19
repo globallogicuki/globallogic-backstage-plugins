@@ -1,5 +1,5 @@
 import { getVoidLogger } from '@backstage/backend-common';
-import { wrapInOpenApiTestServer } from '@backstage/backend-openapi-utils';
+import { wrapInOpenApiTestServer } from '@backstage/backend-openapi-utils/testUtils';
 import { ConfigReader } from '@backstage/config';
 import { Server } from 'http';
 import express from 'express';
