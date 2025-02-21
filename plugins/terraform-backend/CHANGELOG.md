@@ -1,5 +1,11 @@
 # @globallogicuki/backstage-plugin-terraform-backend
 
+## 0.5.2
+
+### Patch Changes
+
+- c0fddba: Upgrade dependencies
+
 ## 0.5.1
 
 ### Patch Changes
