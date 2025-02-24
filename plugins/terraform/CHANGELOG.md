@@ -1,5 +1,11 @@
 # @globallogicuki/backstage-plugin-terraform
 
+## 0.7.3
+
+### Patch Changes
+
+- 74da316: fix to release pipeline
+
 ## 0.7.2
 
 ### Patch Changes
