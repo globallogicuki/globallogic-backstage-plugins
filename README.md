@@ -1,6 +1,6 @@
 [![CI](https://github.com/globallogicuki/globallogic-backstage-plugins/actions/workflows/ci.yml/badge.svg)](https://github.com/globallogicuki/globallogic-backstage-plugins/actions/workflows/ci.yml) [![Coverage Report](https://github.com/globallogicuki/globallogic-backstage-plugins/actions/workflows/testCoverage.yml/badge.svg)](https://github.com/globallogicuki/globallogic-backstage-plugins/actions/workflows/testCoverage.yml) [![Publish](https://github.com/globallogicuki/globallogic-backstage-plugins/actions/workflows/publish.yml/badge.svg)](https://github.com/globallogicuki/globallogic-backstage-plugins/actions/workflows/publish.yml)
 
-# GlobalLogic [Backstage](https://backstage.io) Plugins
+# GlobalLogic [Backstage](https://backstage.io) Plugins 
 
 This repo contains all plugins created by [GlobalLogic](https://www.globallogic.com/).
 
