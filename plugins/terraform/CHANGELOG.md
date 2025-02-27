@@ -1,5 +1,12 @@
 # @globallogicuki/backstage-plugin-terraform
 
+## 0.7.4
+
+### Patch Changes
+
+- 5bb693e: Testing release process - No notable changes
+- eca3dd7: Testing Release Pipeline
+
 ## 0.7.3
 
 ### Patch Changes
