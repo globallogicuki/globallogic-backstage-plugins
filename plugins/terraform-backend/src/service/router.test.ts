@@ -1,13 +1,13 @@
-import { getVoidLogger } from '@backstage/backend-common';
 import { wrapInOpenApiTestServer } from '@backstage/backend-openapi-utils/testUtils';
 import { ConfigReader } from '@backstage/config';
 import { Server } from 'http';
 import express from 'express';
 import request from 'supertest';
-import { createRouter } from './router';
+import { createRouter, DEFAULT_TF_BASE_URL } from './router';
 import { mockConfig } from '../mocks/config';
 import { getLatestRunForWorkspaces, listOrgRuns } from '../lib';
 import { mockRun } from '../mocks/run';
+import { mockServices } from '@backstage/backend-test-utils';
 
 jest.mock('../lib');
 
@@ -17,7 +17,7 @@ describe('createRouter', () => {
 
   beforeAll(async () => {
     const router = await createRouter({
-      logger: getVoidLogger(),
+      logger: mockServices.logger.mock(),
       config: config,
     });
     app = wrapInOpenApiTestServer(express().use(router));
@@ -56,6 +56,7 @@ describe('createRouter', () => {
       );
 
       expect(listOrgRuns).toHaveBeenCalledWith({
+        baseUrl: DEFAULT_TF_BASE_URL,
         organization: 'testOrg',
         token: 'fakeToken',
         workspaces: ['testWorkspace1'],
@@ -70,6 +71,7 @@ describe('createRouter', () => {
       );
 
       expect(listOrgRuns).toHaveBeenCalledWith({
+        baseUrl: DEFAULT_TF_BASE_URL,
         organization: 'testOrg',
         token: 'fakeToken',
         workspaces: ['testWorkspace1', 'testWorkspace2'],
@@ -108,6 +110,7 @@ describe('createRouter', () => {
       );
 
       expect(getLatestRunForWorkspaces).toHaveBeenCalledWith(
+        DEFAULT_TF_BASE_URL,
         'fakeToken',
         'testOrg',
         ['testWorkspace1'],
@@ -120,6 +123,7 @@ describe('createRouter', () => {
       await request(app).get(TEST_URL);
 
       expect(getLatestRunForWorkspaces).toHaveBeenCalledWith(
+        DEFAULT_TF_BASE_URL,
         'fakeToken',
         'testOrg',
         ['testWorkspace1', 'testWorkspace2'],
