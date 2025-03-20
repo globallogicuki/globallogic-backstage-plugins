@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  act,
-  fireEvent,
-  screen,
-  waitFor,
-} from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { DenseTable } from './DenseTable';
 import { renderInTestApp } from '@backstage/test-utils';
 
@@ -197,7 +192,7 @@ describe('DenseTable', () => {
     );
 
     const filterInput = screen.getByPlaceholderText(/Filter/i);
-    expect(filterInput).toBeInTheDocument()
+    expect(filterInput).toBeInTheDocument();
   });
 
   it('filter on workspace column', async () => {
