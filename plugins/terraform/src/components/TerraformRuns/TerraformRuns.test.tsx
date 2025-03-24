@@ -1,7 +1,7 @@
 import React from 'react';
 import { renderInTestApp, TestApiProvider } from '@backstage/test-utils';
 import { errorApiRef } from '@backstage/core-plugin-api';
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { TerraformRuns } from './TerraformRuns';
 import { useRuns } from '../../hooks';
 
@@ -35,7 +35,7 @@ describe('TerraformRuns', () => {
   });
 
   it('renders title when single workspace', async () => {
-    render(
+    await renderInTestApp(
       <TerraformRuns {...props} workspaceNames={['fakeSingleWorkspace']} />,
     );
 
@@ -45,7 +45,7 @@ describe('TerraformRuns', () => {
   });
 
   it('renders title when multiple workspaces', async () => {
-    render(<TerraformRuns {...props} />);
+    await renderInTestApp(<TerraformRuns {...props} />);
 
     const title = await screen.findByText('Runs for 2 workspaces');
 
@@ -53,7 +53,7 @@ describe('TerraformRuns', () => {
   });
 
   it('renders description and refresh', async () => {
-    render(<TerraformRuns {...props} />);
+    await renderInTestApp(<TerraformRuns {...props} />);
 
     const description = await screen.findByText(
       /This contains some useful information/i,
@@ -65,7 +65,7 @@ describe('TerraformRuns', () => {
   });
 
   it('does not render description and refresh if hideDescription is true', async () => {
-    render(<TerraformRuns hideDescription {...props} />);
+    await renderInTestApp(<TerraformRuns hideDescription {...props} />);
 
     const description = screen.queryByText(
       /This contains some useful information/i,
@@ -77,7 +77,7 @@ describe('TerraformRuns', () => {
   });
 
   it('calls refetch when refresh is clicked', async () => {
-    render(<TerraformRuns {...props} />);
+    await renderInTestApp(<TerraformRuns {...props} />);
 
     const refresh = await screen.findByLabelText('Refresh');
     refresh.click();

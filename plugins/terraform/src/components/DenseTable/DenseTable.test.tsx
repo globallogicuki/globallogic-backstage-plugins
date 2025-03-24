@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  act,
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-} from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { DenseTable } from './DenseTable';
 import { renderInTestApp } from '@backstage/test-utils';
 
@@ -64,7 +58,7 @@ const mockData = [
 
 describe('DenseTable', () => {
   it('renders the table when data is empty', async () => {
-    render(
+    await renderInTestApp(
       <DenseTable
         isLoading={false}
         title="Runs for test workspace"
@@ -81,7 +75,7 @@ describe('DenseTable', () => {
   });
 
   it('renders the table when empty name is passed', async () => {
-    render(
+    await renderInTestApp(
       <DenseTable
         isLoading={false}
         title="Runs for test workspace"
@@ -100,7 +94,7 @@ describe('DenseTable', () => {
   });
 
   it('renders the table when data is set', async () => {
-    render(
+    await renderInTestApp(
       <DenseTable
         isLoading={false}
         title="Runs for test workspace"
@@ -123,7 +117,7 @@ describe('DenseTable', () => {
   });
 
   it('hides workspace if hasMultipleWorkspaces is false', async () => {
-    render(
+    await renderInTestApp(
       <DenseTable
         isLoading={false}
         title="Runs for test workspace"
@@ -187,8 +181,8 @@ describe('DenseTable', () => {
     });
   });
 
-  it('renders filter option', () => {
-    render(
+  it('renders filter option', async () => {
+    await renderInTestApp(
       <DenseTable
         isLoading={false}
         title="Runs for test workspace"
@@ -196,13 +190,13 @@ describe('DenseTable', () => {
         hasMultipleWorkspaces
       />,
     );
-    const filterInput = screen.getByPlaceholderText(/Search/i);
 
+    const filterInput = screen.getByPlaceholderText(/Filter/i);
     expect(filterInput).toBeInTheDocument();
   });
 
   it('filter on workspace column', async () => {
-    render(
+    await renderInTestApp(
       <DenseTable
         isLoading={false}
         title="Runs for test workspace"
@@ -210,7 +204,7 @@ describe('DenseTable', () => {
         hasMultipleWorkspaces
       />,
     );
-    const filterInput = screen.getByPlaceholderText(/Search/i);
+    const filterInput = screen.getByPlaceholderText(/Filter/i);
     const workspace1 = await screen.findByText(/workspace1/i);
     const workspace2 = await screen.findByText(/workspace2/i);
 
@@ -226,7 +220,7 @@ describe('DenseTable', () => {
   });
 
   it('filter on user column', async () => {
-    render(
+    await renderInTestApp(
       <DenseTable
         isLoading={false}
         title="Runs for test workspace"
@@ -234,7 +228,7 @@ describe('DenseTable', () => {
         hasMultipleWorkspaces
       />,
     );
-    const filterInput = screen.getByPlaceholderText(/Search/i);
+    const filterInput = screen.getByPlaceholderText(/Filter/i);
     const user = await screen.findByText(/ABC/i);
     const unknownUser = await screen.findByText(/Unknown/i);
 
@@ -250,7 +244,7 @@ describe('DenseTable', () => {
   });
 
   it('filter on message column', async () => {
-    render(
+    await renderInTestApp(
       <DenseTable
         isLoading={false}
         title="Runs for test workspace"
@@ -258,7 +252,7 @@ describe('DenseTable', () => {
         hasMultipleWorkspaces
       />,
     );
-    const filterInput = screen.getByPlaceholderText(/Search/i);
+    const filterInput = screen.getByPlaceholderText(/Filter/i);
     const message = await screen.findByText(/Triggered via CLI/i);
     const message1 = await screen.findByText(/Triggered via UI/i);
 
@@ -273,7 +267,7 @@ describe('DenseTable', () => {
   });
 
   it('filter on status column', async () => {
-    render(
+    await renderInTestApp(
       <DenseTable
         isLoading={false}
         title="Runs for test workspace"
@@ -281,7 +275,7 @@ describe('DenseTable', () => {
         hasMultipleWorkspaces
       />,
     );
-    const filterInput = screen.getByPlaceholderText(/Search/i);
+    const filterInput = screen.getByPlaceholderText(/Filter/i);
     const status = await screen.findByText(/done/i);
     const status1 = await screen.findByText(/applied/i);
 
@@ -295,8 +289,8 @@ describe('DenseTable', () => {
     });
   });
 
-  it('sort the column', () => {
-    render(
+  it('sort the column', async () => {
+    await renderInTestApp(
       <DenseTable
         isLoading={false}
         title="Runs for test workspace"
