@@ -28,7 +28,7 @@ describe('useAssessmentResults', () => {
       useAssessmentResults('org1', ['workspace1']),
     );
 
-    expect(result.current.data).toBeUndefined();
+    expect(result.current.data).toEqual([]);
     expect(result.current.isLoading).toBeFalsy();
     expect(result.current.isError).toBeFalsy();
     expect(result.current.error).toBeUndefined();
@@ -82,7 +82,7 @@ describe('useAssessmentResults', () => {
     });
 
     expect(result.current.isLoading).toBeFalsy();
-    expect(result.current.data).toBeUndefined();
+    expect(result.current.data).toEqual([]);
     expect(result.current.isError).toBeTruthy();
     expect(result.current.error).toEqual(error);
   });

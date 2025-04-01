@@ -62,6 +62,7 @@ import {
   EntityTerraformContent,
   EntityTerraformLatestRunCard,
   isTerraformAvailable,
+  EntityTerraformWorkspaceHealthAssessmentsCard,
 } from '@globallogicuki/backstage-plugin-terraform';
 
 const techdocsContent = (
@@ -144,6 +145,9 @@ const overviewContent = (
       <EntitySwitch.Case if={isTerraformAvailable}>
         <Grid item md={12} xs={12}>
           <EntityTerraformLatestRunCard />
+        </Grid>
+        <Grid item md={12} xs={12}>
+          <EntityTerraformWorkspaceHealthAssessmentsCard />
         </Grid>
       </EntitySwitch.Case>
     </EntitySwitch>

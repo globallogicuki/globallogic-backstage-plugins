@@ -8,17 +8,33 @@ jest.mock('../TerraformRuns', () => {
   return { TerraformRuns: MockTerraformRuns };
 });
 
+jest.mock('../TerraformWorkspaceHealthAssessments', () => {
+  const MockTerraformWorkspaceHealthAssessments = () => (
+    <div>Mock TerraformWorkspaceHealthAssessments</div>
+  );
+  return {
+    TerraformWorkspaceHealthAssessments:
+      MockTerraformWorkspaceHealthAssessments,
+  };
+});
+
 describe('Terraform', () => {
-  it('renders TerraformRuns when annotation is present', async () => {
+  it('renders TerraformRuns and TerraformWorkspaceHealthAssessments when annotation is present', async () => {
     render(
       <EntityProvider entity={mockEntity}>
         <Terraform />
       </EntityProvider>,
     );
 
-    const mockText = await screen.findByText('Mock TerraformRuns');
+    const mockTerraformRunsText = await screen.findByText('Mock TerraformRuns');
+    expect(mockTerraformRunsText).toBeInTheDocument();
 
-    expect(mockText).toBeInTheDocument();
+    const mockTerraformWorkspaceHealthAssessmentsText = await screen.findByText(
+      'Mock TerraformWorkspaceHealthAssessments',
+    );
+    expect(mockTerraformWorkspaceHealthAssessmentsText).toBeInTheDocument();
+
+    jest.clearAllMocks();
   });
 
   it('renders MissingAnnotationEmptyState when annotation is not present', async () => {

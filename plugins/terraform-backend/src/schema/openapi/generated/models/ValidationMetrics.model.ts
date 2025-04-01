@@ -8,9 +8,9 @@
  * @public
  */
 export interface ValidationMetrics {
-  allChecksSucceeded?: boolean;
-  checksErrored?: number;
-  checksFailed?: number;
-  checksPassed?: number;
-  checksUnknown?: number;
+  allChecksSucceeded: boolean;
+  checksErrored: number;
+  checksFailed: number;
+  checksPassed: number;
+  checksUnknown: number;
 }
