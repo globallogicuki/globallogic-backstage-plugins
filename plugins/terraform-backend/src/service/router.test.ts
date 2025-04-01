@@ -5,9 +5,10 @@ import express from 'express';
 import request from 'supertest';
 import { createRouter, DEFAULT_TF_BASE_URL } from './router';
 import { mockConfig } from '../mocks/config';
-import { getLatestRunForWorkspaces, listOrgRuns } from '../lib';
+import { getAssessmentResultsForWorkspaces, getLatestRunForWorkspaces, listOrgRuns } from '../lib';
 import { mockRun } from '../mocks/run';
 import { mockServices } from '@backstage/backend-test-utils';
+import { mockAssessmentResults, mockSingleAssessmentResult } from '../mocks/assessmentResults';
 
 jest.mock('../lib');
 
@@ -140,4 +141,56 @@ describe('createRouter', () => {
       expect(response.status).toEqual(500);
     });
   });
+
+  describe('GET /organizations/:orgName/workspaces/:workspaceNames/assessment-results', () => {
+    const TEST_URL =
+      '/organizations/testOrg/workspaces/testWorkspace1,testWorkspace2/assessment-results';
+
+    it('returns assessment results', async () => {
+      (getAssessmentResultsForWorkspaces as jest.Mock).mockResolvedValue(mockAssessmentResults);
+
+      const response = await request(app).get(TEST_URL);
+
+      expect(response.status).toEqual(200);
+      expect(response.body).toEqual(mockAssessmentResults);
+    });
+
+    it('calls getAssessmentResultsForWorkspaces correctly with single workspace', async () => {
+      (getAssessmentResultsForWorkspaces as jest.Mock).mockResolvedValue([mockSingleAssessmentResult]);
+
+      await request(app).get(
+        '/organizations/testOrg/workspaces/testWorkspace1/assessment-results',
+      );
+
+      expect(getAssessmentResultsForWorkspaces).toHaveBeenCalledWith({
+        baseUrl: DEFAULT_TF_BASE_URL,
+        token: 'fakeToken',
+        organization: 'testOrg',
+        workspaces: ['testWorkspace1']}
+      );
+    });
+
+    it('calls getAssessmentResultsForWorkspaces correctly with multiple workspaces', async () => {
+      (getAssessmentResultsForWorkspaces as jest.Mock).mockResolvedValue([mockAssessmentResults]);
+
+      await request(app).get(TEST_URL);
+
+      expect(getAssessmentResultsForWorkspaces).toHaveBeenCalledWith({
+        baseUrl: DEFAULT_TF_BASE_URL,
+        token: 'fakeToken',
+        organization: 'testOrg',
+        workspaces: ['testWorkspace1', 'testWorkspace2']},
+      );
+    });
+
+    it('returns error if getAssessmentResultsForWorkspaces throws', async () => {
+      const response = await request(app).get(TEST_URL);
+
+      (getAssessmentResultsForWorkspaces as jest.Mock).mockRejectedValue(
+        new Error('Some error.'),
+      );
+
+      expect(response.status).toEqual(500);
+    });
+  });  
 });
