@@ -1,9 +1,13 @@
-import { getLatestRunForWorkspaces, listOrgRuns } from '.';
+import { getAssessmentResultsForWorkspaces, getLatestRunForWorkspaces, listOrgRuns } from '.';
 import axios from 'axios';
-import { TerraformEntity, TerraformRun } from './types';
+import { TerraformAssessmentResult, TerraformEntity, TerraformRun, TerraformWorkspace } from './types';
 import { DEFAULT_TF_BASE_URL } from '../service/router';
 
 jest.mock('axios');
+
+const mockOrganization: string ='org-1';
+const mockWorkspace1Name: string = 'workspace-1';
+const mockWorkspace2Name: string = 'workspace-2';
 
 const mockRun: TerraformRun = {
   id: 'id-1',
@@ -40,6 +44,7 @@ const mockRun: TerraformRun = {
     message: 'hello world',
   },
 };
+
 const mockEntities: TerraformEntity[] = [
   {
     id: 'id-confirmed',
@@ -61,6 +66,81 @@ const mockEntities: TerraformEntity[] = [
     },
   },
 ];
+
+const mockWorkspaces: TerraformWorkspace[] = [
+  {
+      id: 'workspace1-id',
+      type: 'workspaces',
+      attributes: {
+          'created-at': '2024-08-09T10:02:27.019Z',
+          name: "workspace-1"
+      },
+      relationships: {
+          'current-assessment-result': {
+              data: {
+                  id: 'asmtres-xwjsUPg2Q8QDm2QF',
+                  type: 'assessment-results'
+              },
+              'links': {
+                  'related': '/api/v2/workspaces/workspace1-id/current-assessment-result'
+              }
+          },
+      },
+  },
+  {
+      id: 'workspace2-id',
+      type: 'workspaces',
+      'attributes': {
+          "created-at": '2024-08-09T10:02:27.019Z',
+          name: 'workspace-2'
+      },
+      relationships: {
+          'current-assessment-result': {
+              data: {
+                  id: 'asmtres-xwjsUPg2Q8QDm2QF',
+                  type: 'assessment-results'
+              },
+              links: {
+                  related: '/api/v2/workspaces/workspace2-id/current-assessment-result'
+              }
+          },
+      },
+  },        
+];
+
+const mockAssessmentResult1 : TerraformAssessmentResult = {
+
+  id: 'assessmentResult1',
+  type: 'assessment-results',
+  attributes: {
+      'all-checks-succeeded': false,
+      'checks-errored': 0,
+      'checks-failed': 1,
+      'checks-passed': 4,
+      'checks-unknown': 0,
+      'created-at': '2025-04-01T16:26:28.423Z',
+      'drifted': true,
+      'resources-drifted': 1,
+      'resources-undrifted': 135
+  },
+};
+
+const mockAssessmentResult2 : TerraformAssessmentResult = {
+
+  id: 'assessmentResult2',
+  type: 'assessment-results',
+  attributes: {
+    "all-checks-succeeded": true,
+    "checks-errored": 0,
+    "checks-failed": 0,
+    "checks-passed": 5,
+    "checks-unknown": 0,
+    "created-at": "2025-04-02T06:20:31.884Z",
+    "drifted": false,
+    "resources-drifted": 0,
+    "resources-undrifted": 93
+  },
+};
 
 describe('lib/index', () => {
   beforeEach(() => {
@@ -322,4 +402,154 @@ describe('lib/index', () => {
       });
     });
   });
+
+  describe('getAssessmentResultsForWorkspaces', () => {
+    const workspaces = [mockWorkspace1Name, mockWorkspace2Name];
+    const token = 'token-1';
+    const baseUrl = DEFAULT_TF_BASE_URL;
+    const organization = mockOrganization;
+
+    it('should make the HTTP GET /workspaces request correctly', async () => {
+
+      (axios.get as jest.Mock).mockResolvedValueOnce({
+        data: {
+          data: mockWorkspaces
+        },
+      });
+
+      (axios.get as jest.Mock).mockResolvedValueOnce({
+        data: {
+          data: mockAssessmentResult1
+        }
+      });
+
+      (axios.get as jest.Mock).mockResolvedValueOnce({
+        data: {
+          data: mockAssessmentResult2
+        }
+      });
+
+      await getAssessmentResultsForWorkspaces({
+        baseUrl,
+        token,
+        organization,
+        workspaces}
+      );
+
+      expect(axios.get).toHaveBeenCalledWith(
+        `${baseUrl}/api/v2/organizations/${organization}/workspaces`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+
+    });
+
+    it('should make the correct number of HTTP GET requests for health assessments', async () => {
+
+      (axios.get as jest.Mock).mockResolvedValueOnce({
+        data: {
+          data: mockWorkspaces
+        },
+      });
+
+      (axios.get as jest.Mock).mockResolvedValueOnce({
+        data: {
+          data: mockAssessmentResult1
+        }
+      });
+
+      (axios.get as jest.Mock).mockResolvedValueOnce({
+        data: {
+          data: mockAssessmentResult2
+        }
+      });
+
+      await getAssessmentResultsForWorkspaces({
+        baseUrl,
+        token,
+        organization,
+        workspaces}
+      );
+
+      expect(axios.get).toHaveBeenCalledTimes(3);
+      expect(axios.get).toHaveBeenCalledWith(
+        'https://app.terraform.io/api/v2/workspaces/workspace1-id/current-assessment-result',
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      expect(axios.get).toHaveBeenCalledWith(
+        'https://app.terraform.io/api/v2/workspaces/workspace2-id/current-assessment-result',
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+    });
+    
+    it('should return the correctly formatted data', async () => {
+    
+      (axios.get as jest.Mock).mockResolvedValueOnce({
+        data: {
+          data: mockWorkspaces
+        },
+      });
+
+      (axios.get as jest.Mock).mockResolvedValueOnce({
+        data: {
+          data: mockAssessmentResult1
+        }
+      });
+
+      (axios.get as jest.Mock).mockResolvedValueOnce({
+        data: {
+          data: mockAssessmentResult2
+        }
+      });
+
+      const result = await getAssessmentResultsForWorkspaces({
+        baseUrl,
+        token,
+        organization,
+        workspaces}
+      );
+  
+      console.log(result);
+      expect(result).toEqual([
+        {
+          'id': 'assessmentResult1',
+          'createdAt': '2025-04-01T16:26:28.423Z',
+          'workspaceId': 'workspace1-id',
+          'workspaceName': 'workspace-1',
+          'driftMetrics': {
+            'drifted': true,
+            'resourcesDrifted': 1,
+            'resourcesUndrifted': 135
+          },
+          'validationMetrics': {
+            'allChecksSucceeded': false,
+            'checksErrored': 0,
+            'checksFailed': 1,
+            'checksPassed': 4,
+            'checksUnknown': 0
+          }
+        },
+        {
+          'id': 'assessmentResult2',
+          'createdAt': '2025-04-02T06:20:31.884Z',
+          'workspaceId': 'workspace2-id',
+          'workspaceName': 'workspace-2',
+          'driftMetrics': {
+            'drifted': false,
+            'resourcesDrifted': 0,
+            'resourcesUndrifted': 93
+          },
+          'validationMetrics': {
+            'allChecksSucceeded': true,
+            'checksErrored': 0,
+            'checksFailed': 0,
+            'checksPassed': 5,
+            'checksUnknown': 0
+          }
+        }
+      ]);
+    });  
+  });
+
+
+
 });
