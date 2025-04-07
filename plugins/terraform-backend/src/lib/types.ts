@@ -38,8 +38,7 @@ export interface TerraformWorkspace extends TerraformEntityBase {
   };
   relationships?: {
     'current-assessment-result'?: Relationship;
-
-  }
+  };
 }
 
 export interface TerraformUser extends TerraformEntityBase {
@@ -64,13 +63,12 @@ export interface TerraformAssessmentResult extends TerraformEntityBase {
     'all-checks-succeeded': boolean;
     'checks-errored': number;
     'checks-failed': number;
-    'checks-passed': number;  
+    'checks-passed': number;
     'checks-unknown': number;
-    'drifted': boolean;
+    drifted: boolean;
     'resources-drifted': number;
     'resources-undrifted': number;
-  }
-
+  };
 }
 
 export type TerraformEntity =

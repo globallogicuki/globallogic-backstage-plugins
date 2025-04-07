@@ -178,41 +178,41 @@ describe('TerraformApiClient', () => {
 
     const mockAssessmentResults = [
       {
-        'id': 'asmtres-N6atvLGyj5hquU1k',
-        'createdAt': '2025-04-01T16:26:28.423Z',
-        'workspaceId': 'workspace1-id',
-        'workspaceName': 'workspace1',
-        'driftMetrics': {
-          'drifted': true,
-          'resourcesDrifted': 1,
-          'resourcesUndrifted': 135
+        id: 'asmtres-N6atvLGyj5hquU1k',
+        createdAt: '2025-04-01T16:26:28.423Z',
+        workspaceId: 'workspace1-id',
+        workspaceName: 'workspace1',
+        driftMetrics: {
+          drifted: true,
+          resourcesDrifted: 1,
+          resourcesUndrifted: 135,
         },
-        'validationMetrics': {
-          'allChecksSucceeded': false,
-          'checksErrored': 0,
-          'checksFailed': 1,
-          'checksPassed': 4,
-          'checksUnknown': 0
-        }
+        validationMetrics: {
+          allChecksSucceeded: false,
+          checksErrored: 0,
+          checksFailed: 1,
+          checksPassed: 4,
+          checksUnknown: 0,
+        },
       },
       {
-        'id': 'asmtres-epyF7fJBDnHp87Z7',
-        'createdAt': '2025-04-02T06:20:31.884Z',
-        'workspaceId': 'workspace2-id',
-        'workspaceName': 'workspace2',
-        'driftMetrics': {
-          'drifted': false,
-          'resourcesDrifted': 0,
-          'resourcesUndrifted': 93
+        id: 'asmtres-epyF7fJBDnHp87Z7',
+        createdAt: '2025-04-02T06:20:31.884Z',
+        workspaceId: 'workspace2-id',
+        workspaceName: 'workspace2',
+        driftMetrics: {
+          drifted: false,
+          resourcesDrifted: 0,
+          resourcesUndrifted: 93,
         },
-        'validationMetrics': {
-          'allChecksSucceeded': true,
-          'checksErrored': 0,
-          'checksFailed': 0,
-          'checksPassed': 5,
-          'checksUnknown': 0
-        }
-      }
+        validationMetrics: {
+          allChecksSucceeded: true,
+          checksErrored: 0,
+          checksFailed: 0,
+          checksPassed: 5,
+          checksUnknown: 0,
+        },
+      },
     ];
 
     beforeEach(() => {
@@ -233,7 +233,10 @@ describe('TerraformApiClient', () => {
     });
 
     it('calls DiscoveryApi with the correct id', async () => {
-      await client.getAssessmentResultsForWorkspaces('org1', ['workspace1', 'workspace2']);
+      await client.getAssessmentResultsForWorkspaces('org1', [
+        'workspace1',
+        'workspace2',
+      ]);
       expect(discoveryApiMock.getBaseUrl).toHaveBeenCalledWith('terraform');
     });
 
@@ -247,7 +250,10 @@ describe('TerraformApiClient', () => {
     });
 
     it('calls FetchApi with the correct args when multiple workspaces', async () => {
-      await client.getAssessmentResultsForWorkspaces('org1', ['workspace1', 'workspace2']);
+      await client.getAssessmentResultsForWorkspaces('org1', [
+        'workspace1',
+        'workspace2',
+      ]);
 
       expect(fetchApiMock.fetch).toHaveBeenCalledWith(
         'http://mock-api.com/organizations/org1/workspaces/workspace1,workspace2/assessment-results',
@@ -256,7 +262,10 @@ describe('TerraformApiClient', () => {
     });
 
     it('returns runs when successful', async () => {
-      const runs = await client.getAssessmentResultsForWorkspaces('org1', ['workspace1', 'workspace2']);
+      const runs = await client.getAssessmentResultsForWorkspaces('org1', [
+        'workspace1',
+        'workspace2',
+      ]);
 
       expect(runs).toEqual(mockAssessmentResults);
     });
@@ -264,14 +273,17 @@ describe('TerraformApiClient', () => {
     it('should throw an error when the FetchApi call is unsuccessful', async () => {
       const response = {
         ok: false,
-        json: jest
-          .fn()
-          .mockResolvedValue({ error: { message: 'Failed to fetch assessment results' } }),
+        json: jest.fn().mockResolvedValue({
+          error: { message: 'Failed to fetch assessment results' },
+        }),
       };
       (fetchApiMock.fetch as jest.Mock).mockResolvedValue(response);
 
       await expect(
-        client.getAssessmentResultsForWorkspaces('org1', ['workspace1', 'workspace2']),
+        client.getAssessmentResultsForWorkspaces('org1', [
+          'workspace1',
+          'workspace2',
+        ]),
       ).rejects.toThrow('Failed to fetch assessment results');
     });
 
@@ -283,9 +295,11 @@ describe('TerraformApiClient', () => {
       (fetchApiMock.fetch as jest.Mock).mockResolvedValue(response);
 
       await expect(
-        client.getAssessmentResultsForWorkspaces('org1', ['workspace1', 'workspace2']),
+        client.getAssessmentResultsForWorkspaces('org1', [
+          'workspace1',
+          'workspace2',
+        ]),
       ).rejects.toThrow('Error fetching assessment results!');
     });
   });
-
 });
