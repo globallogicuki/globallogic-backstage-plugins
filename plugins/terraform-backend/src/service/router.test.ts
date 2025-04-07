@@ -5,10 +5,17 @@ import express from 'express';
 import request from 'supertest';
 import { createRouter, DEFAULT_TF_BASE_URL } from './router';
 import { mockConfig } from '../mocks/config';
-import { getAssessmentResultsForWorkspaces, getLatestRunForWorkspaces, listOrgRuns } from '../lib';
+import {
+  getAssessmentResultsForWorkspaces,
+  getLatestRunForWorkspaces,
+  listOrgRuns,
+} from '../lib';
 import { mockRun } from '../mocks/run';
 import { mockServices } from '@backstage/backend-test-utils';
-import { mockAssessmentResults, mockSingleAssessmentResult } from '../mocks/assessmentResults';
+import {
+  mockAssessmentResults,
+  mockSingleAssessmentResult,
+} from '../mocks/assessmentResults';
 
 jest.mock('../lib');
 
@@ -147,7 +154,9 @@ describe('createRouter', () => {
       '/organizations/testOrg/workspaces/testWorkspace1,testWorkspace2/assessment-results';
 
     it('returns assessment results', async () => {
-      (getAssessmentResultsForWorkspaces as jest.Mock).mockResolvedValue(mockAssessmentResults);
+      (getAssessmentResultsForWorkspaces as jest.Mock).mockResolvedValue(
+        mockAssessmentResults,
+      );
 
       const response = await request(app).get(TEST_URL);
 
@@ -156,7 +165,9 @@ describe('createRouter', () => {
     });
 
     it('calls getAssessmentResultsForWorkspaces correctly with single workspace', async () => {
-      (getAssessmentResultsForWorkspaces as jest.Mock).mockResolvedValue([mockSingleAssessmentResult]);
+      (getAssessmentResultsForWorkspaces as jest.Mock).mockResolvedValue([
+        mockSingleAssessmentResult,
+      ]);
 
       await request(app).get(
         '/organizations/testOrg/workspaces/testWorkspace1/assessment-results',
@@ -166,12 +177,14 @@ describe('createRouter', () => {
         baseUrl: DEFAULT_TF_BASE_URL,
         token: 'fakeToken',
         organization: 'testOrg',
-        workspaces: ['testWorkspace1']}
-      );
+        workspaces: ['testWorkspace1'],
+      });
     });
 
     it('calls getAssessmentResultsForWorkspaces correctly with multiple workspaces', async () => {
-      (getAssessmentResultsForWorkspaces as jest.Mock).mockResolvedValue([mockAssessmentResults]);
+      (getAssessmentResultsForWorkspaces as jest.Mock).mockResolvedValue([
+        mockAssessmentResults,
+      ]);
 
       await request(app).get(TEST_URL);
 
@@ -179,8 +192,8 @@ describe('createRouter', () => {
         baseUrl: DEFAULT_TF_BASE_URL,
         token: 'fakeToken',
         organization: 'testOrg',
-        workspaces: ['testWorkspace1', 'testWorkspace2']},
-      );
+        workspaces: ['testWorkspace1', 'testWorkspace2'],
+      });
     });
 
     it('returns error if getAssessmentResultsForWorkspaces throws', async () => {
@@ -192,5 +205,5 @@ describe('createRouter', () => {
 
       expect(response.status).toEqual(500);
     });
-  });  
+  });
 });

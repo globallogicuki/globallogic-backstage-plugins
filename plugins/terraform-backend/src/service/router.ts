@@ -2,7 +2,11 @@ import { MiddlewareFactory } from '@backstage/backend-defaults/rootHttpRouter';
 import { LoggerService } from '@backstage/backend-plugin-api';
 import { Config } from '@backstage/config';
 import express from 'express';
-import { getLatestRunForWorkspaces, listOrgRuns, getAssessmentResultsForWorkspaces } from '../lib';
+import {
+  getLatestRunForWorkspaces,
+  listOrgRuns,
+  getAssessmentResultsForWorkspaces,
+} from '../lib';
 import { createOpenApiRouter } from '../schema/openapi/generated';
 import { AssessmentResult } from '../schema/openapi/generated/models';
 
@@ -57,27 +61,29 @@ export async function createRouter(
     response.json({ status: 'ok' });
   });
 
-  router.get('/organizations/:orgName/workspaces/:workspaceNames/assessment-results',
+  router.get(
+    '/organizations/:orgName/workspaces/:workspaceNames/assessment-results',
     (request, response, next) => {
       const organization = request.params.orgName;
-      const workspaces = request.params.workspaceNames.split(",");
+      const workspaces = request.params.workspaceNames.split(',');
 
-      getAssessmentResultsForWorkspaces({ token, baseUrl, organization, workspaces })
+      getAssessmentResultsForWorkspaces({
+        token,
+        baseUrl,
+        organization,
+        workspaces,
+      })
         .then(assessments => {
-
           if (assessments !== null) {
-
             response.json(assessments as AssessmentResult[]);
-          }
-          else {
+          } else {
             const emptyResults: AssessmentResult[] = [];
-            response.json( emptyResults);
+            response.json(emptyResults);
           }
-
         })
         .catch(next);
     },
-  )
+  );
 
   router.use(MiddlewareFactory.create(options).error());
   return router;

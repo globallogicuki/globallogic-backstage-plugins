@@ -83,7 +83,6 @@ type ListOrgWorkspacesArgs = {
   workspaces: string[];
 };
 
-
 export const listOrgRuns = async ({
   baseUrl,
   token,
@@ -135,58 +134,63 @@ const fetchHealthAssessmentForWorkspace = async (
   token: string,
   workspace: TerraformWorkspace,
 ) => {
+  const currentAssessmentResultLink =
+    workspace?.relationships?.['current-assessment-result']?.links?.related;
 
-const currentAssessmentResultLink =  workspace?.relationships?.['current-assessment-result']?.links?.related;
+  if (!currentAssessmentResultLink) return null;
 
-if (!currentAssessmentResultLink) return null;
-
-const assessmentResultUrl = new URL(currentAssessmentResultLink, baseUrl);
-console.debug(`Retrieving health assessment for workspace '${workspace.attributes.name}', url: ${ assessmentResultUrl.toString()}`);
-const terraformAssessmentResult = await axios.get<TerraformResponse<TerraformAssessmentResult>>(
-  assessmentResultUrl.toString(), 
-  {
+  const assessmentResultUrl = new URL(currentAssessmentResultLink, baseUrl);
+  console.debug(
+    `Retrieving health assessment for workspace '${
+      workspace.attributes.name
+    }', url: ${assessmentResultUrl.toString()}`,
+  );
+  const terraformAssessmentResult = await axios.get<
+    TerraformResponse<TerraformAssessmentResult>
+  >(assessmentResultUrl.toString(), {
     headers: { Authorization: `Bearer ${token}` },
-  },
-);
+  });
 
-return formatTerraformAssessmentResult(terraformAssessmentResult.data.data, workspace);
-
+  return formatTerraformAssessmentResult(
+    terraformAssessmentResult.data.data,
+    workspace,
+  );
 };
 
 export const getAssessmentResultsForWorkspaces = async ({
   baseUrl,
   token,
   organization,
-  workspaces}: ListOrgWorkspacesArgs
-) => {
-
+  workspaces,
+}: ListOrgWorkspacesArgs) => {
   const getWorkspacesUrl = new URL(
     `/api/v2/organizations/${organization}/workspaces`,
     baseUrl,
   );
 
-  const allWorkspacesForOrg = await axios.get<TerraformResponse<TerraformWorkspace[]>>(
-    getWorkspacesUrl.toString(), 
-    {
-      headers: { Authorization: `Bearer ${token}` },
-    },
-  );
+  const allWorkspacesForOrg = await axios.get<
+    TerraformResponse<TerraformWorkspace[]>
+  >(getWorkspacesUrl.toString(), {
+    headers: { Authorization: `Bearer ${token}` },
+  });
 
   const terraformWorkspaces: TerraformWorkspace[] = [];
   workspaces.forEach(w => {
-
     console.debug(`Looking for workspace: '${w}'`);
 
-    const found = allWorkspacesForOrg.data.data.find(f => f.attributes.name.toLowerCase() === w.toString().toLowerCase());
+    const found = allWorkspacesForOrg.data.data.find(
+      f => f.attributes.name.toLowerCase() === w.toString().toLowerCase(),
+    );
     if (found !== undefined) {
       console.debug(`Found TerraformWorkspace for '${w}'`);
       terraformWorkspaces.push(found);
     }
   });
 
-  const actions = terraformWorkspaces.map(w => fetchHealthAssessmentForWorkspace(baseUrl, token, w));
+  const actions = terraformWorkspaces.map(w =>
+    fetchHealthAssessmentForWorkspace(baseUrl, token, w),
+  );
   const results = await Promise.all(actions);
 
   return results;
-
 };

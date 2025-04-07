@@ -221,5 +221,3 @@ components:
         checksUnknown:
           type: number
           example: 0
-        
-        

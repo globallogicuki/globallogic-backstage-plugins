@@ -8,18 +8,25 @@ jest.mock('@backstage/core-plugin-api', () => ({
 }));
 
 describe('useAssessmentResults', () => {
-  const mockAssessmentResults = [{ id: 'assessmentResult1' }, { id: 'assessmentResult2' }];
+  const mockAssessmentResults = [
+    { id: 'assessmentResult1' },
+    { id: 'assessmentResult2' },
+  ];
 
   beforeEach(() => {
     (useApi as jest.Mock).mockReturnValue({
-      getAssessmentResultsForWorkspaces: jest.fn().mockResolvedValue(mockAssessmentResults),
+      getAssessmentResultsForWorkspaces: jest
+        .fn()
+        .mockResolvedValue(mockAssessmentResults),
     });
   });
 
   it('initial state is correct', () => {
     expect.assertions(5);
 
-    const { result } = renderHook(() => useAssessmentResults('org1', ['workspace1']));
+    const { result } = renderHook(() =>
+      useAssessmentResults('org1', ['workspace1']),
+    );
 
     expect(result.current.data).toBeUndefined();
     expect(result.current.isLoading).toBeFalsy();
@@ -30,7 +37,9 @@ describe('useAssessmentResults', () => {
 
   it('sets correct state when refetch is called', async () => {
     expect.assertions(1);
-    const { result } = renderHook(() => useAssessmentResults('org1', ['workspace1']));
+    const { result } = renderHook(() =>
+      useAssessmentResults('org1', ['workspace1']),
+    );
 
     act(() => {
       result.current.refetch();
@@ -42,7 +51,9 @@ describe('useAssessmentResults', () => {
   it('sets correct state when refetch is successful', async () => {
     expect.assertions(4);
 
-    const { result } = renderHook(() => useAssessmentResults('org1', ['workspace1']));
+    const { result } = renderHook(() =>
+      useAssessmentResults('org1', ['workspace1']),
+    );
 
     await act(async () => {
       await result.current.refetch();
@@ -62,7 +73,9 @@ describe('useAssessmentResults', () => {
       getAssessmentResultsForWorkspaces: jest.fn().mockRejectedValue(error),
     });
 
-    const { result } = renderHook(() => useAssessmentResults('org1', ['workspace1']));
+    const { result } = renderHook(() =>
+      useAssessmentResults('org1', ['workspace1']),
+    );
 
     await act(async () => {
       await result.current.refetch();
