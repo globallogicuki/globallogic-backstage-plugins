@@ -19,7 +19,7 @@ const useAssessmentResults = (
   );
 
   return {
-    data: value,
+    data: value ?? [],
     isLoading: loading,
     isError: !!error,
     error,

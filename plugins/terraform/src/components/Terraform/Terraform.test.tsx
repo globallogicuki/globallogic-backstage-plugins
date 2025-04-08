@@ -4,22 +4,24 @@ import { EntityProvider } from '@backstage/plugin-catalog-react';
 import { Terraform } from './Terraform';
 import { mockEntity } from '../../mocks/entity';
 
-jest.mock('../TerraformRuns', () => {
-  const MockTerraformRuns = () => <div>Mock TerraformRuns</div>;
-  return { TerraformRuns: MockTerraformRuns };
+jest.mock('../TerraformContent', () => {
+  const MockTerraformContent = () => <div>Mock TerraformContent</div>;
+  return { TerraformContent: MockTerraformContent };
 });
 
 describe('Terraform', () => {
-  it('renders TerraformRuns when annotation is present', async () => {
+  it('renders TerraformContent when annotation is present', async () => {
     render(
       <EntityProvider entity={mockEntity}>
         <Terraform />
       </EntityProvider>,
     );
 
-    const mockText = await screen.findByText('Mock TerraformRuns');
+    const mockText = await screen.findByText('Mock TerraformContent');
 
     expect(mockText).toBeInTheDocument();
+
+    jest.clearAllMocks();
   });
 
   it('renders MissingAnnotationEmptyState when annotation is not present', async () => {

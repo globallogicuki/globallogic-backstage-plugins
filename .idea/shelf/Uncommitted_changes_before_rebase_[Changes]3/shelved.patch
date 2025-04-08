@@ -1,0 +1,21 @@
+Index: examples/entities.yaml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>---\n# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-system\napiVersion: backstage.io/v1alpha1\nkind: System\nmetadata:\n  name: examples\nspec:\n  owner: guests\n---\n# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-component\napiVersion: backstage.io/v1alpha1\nkind: Component\nmetadata:\n  name: example-website\n  annotations:\n    terraform/organization: orgName\n    terraform/workspaces: workspaceName1,workspaceName2,workspaceName3\nspec:\n  type: website\n  lifecycle: experimental\n  owner: guests\n  system: examples\n  providesApis: [example-grpc-api]\n---\n# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-api\napiVersion: backstage.io/v1alpha1\nkind: API\nmetadata:\n  name: example-grpc-api\nspec:\n  type: grpc\n  lifecycle: experimental\n  owner: guests\n  system: examples\n  definition: |\n    syntax = \"proto3\";\n\n    service Exampler {\n      rpc Example (ExampleMessage) returns (ExampleMessage) {};\n    }\n\n    message ExampleMessage {\n      string example = 1;\n    };\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/examples/entities.yaml b/examples/entities.yaml
+--- a/examples/entities.yaml	(revision 5a1c2165968f203c061baa5d63aa25ea7a81b212)
++++ b/examples/entities.yaml	(date 1744708515266)
+@@ -13,8 +13,8 @@
+ metadata:
+   name: example-website
+   annotations:
+-    terraform/organization: orgName
+-    terraform/workspaces: workspaceName1,workspaceName2,workspaceName3
++    terraform/organization: GLUK
++    terraform/workspaces: internal-platform-core,internal-plaform-core-apps,internal-plaform-core-infra
+ spec:
+   type: website
+   lifecycle: experimental

@@ -58,20 +58,17 @@ export const TerraformRuns = ({
           alignItems="center"
         >
           <Grid item>
-            <Typography variant="h5">Terraform</Typography>
+            <Typography variant="body2">
+              This contains some useful information for the terraform workspace
+              {hasMultipleWorkspaces ? 's' : ''} "{workspaceNames.join(', ')}
+              ".
+            </Typography>
           </Grid>
           <Grid item>
             <IconButton onClick={refetch} aria-label="Refresh">
               <RefreshIcon />
             </IconButton>
           </Grid>
-        </Grid>
-        <Grid item>
-          <Typography variant="body2">
-            This contains some useful information for the terraform workspace
-            {hasMultipleWorkspaces ? 's' : ''} "{workspaceNames.join(', ')}
-            ".
-          </Typography>
         </Grid>
       </Grid>
       <Grid item>
