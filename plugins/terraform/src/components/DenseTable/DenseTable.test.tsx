@@ -1,4 +1,3 @@
-import React from 'react';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { DenseTable } from './DenseTable';
 import { renderInTestApp } from '@backstage/test-utils';

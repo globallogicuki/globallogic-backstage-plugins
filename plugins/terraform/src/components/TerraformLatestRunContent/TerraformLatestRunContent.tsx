@@ -1,5 +1,4 @@
 import { Avatar, Chip, Grid, Typography } from '@material-ui/core';
-import React from 'react';
 import { Run } from '../../hooks/types';
 import { formatTimeToWords } from '../../utils';
 import { getColor } from '../DenseTable/utils';

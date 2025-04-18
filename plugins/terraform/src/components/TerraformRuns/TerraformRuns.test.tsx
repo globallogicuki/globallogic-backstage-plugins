@@ -1,4 +1,3 @@
-import React from 'react';
 import { renderInTestApp, TestApiProvider } from '@backstage/test-utils';
 import { errorApiRef } from '@backstage/core-plugin-api';
 import { screen } from '@testing-library/react';

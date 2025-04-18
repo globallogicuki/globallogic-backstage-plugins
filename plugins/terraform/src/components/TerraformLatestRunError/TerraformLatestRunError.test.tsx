@@ -1,6 +1,5 @@
 import { renderInTestApp } from '@backstage/test-utils';
 import { screen } from '@testing-library/react';
-import React from 'react';
 import { TerraformLatestRunError } from './TerraformLatestRunError';
 
 describe('TerraformLatestRunError', () => {

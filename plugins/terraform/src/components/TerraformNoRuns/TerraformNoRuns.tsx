@@ -1,6 +1,5 @@
 import { StatusWarning } from '@backstage/core-components';
 import { Grid, Typography } from '@material-ui/core';
-import React from 'react';
 
 export const TerraformNoRuns = () => (
   <Grid

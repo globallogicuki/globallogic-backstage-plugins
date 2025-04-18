@@ -4,6 +4,7 @@
   "exclude": ["node_modules"],
   "compilerOptions": {
     "outDir": "../../dist-types/plugins/terraform-backend",
-    "rootDir": "."
+    "rootDir": ".",
+    "jsx": "react-jsx"
   }
 }
