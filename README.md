@@ -24,7 +24,7 @@ To run the local app, run:
 
 ```sh
 yarn install
-yarn dev
+yarn start
 ```
 
 ### Environment variables

@@ -1,4 +1,3 @@
-import React from 'react';
 import { useLogs } from '../../hooks';
 import { render, screen } from '@testing-library/react';
 import { LogViewer } from './LogViewer';

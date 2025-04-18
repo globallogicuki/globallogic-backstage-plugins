@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { Grid, IconButton, Typography } from '@material-ui/core';
 import RefreshIcon from '@material-ui/icons/Refresh';
 import { ResponseErrorPanel } from '@backstage/core-components';

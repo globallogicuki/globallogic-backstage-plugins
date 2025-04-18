@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { EntityProvider } from '@backstage/plugin-catalog-react';
 import { Terraform } from './Terraform';

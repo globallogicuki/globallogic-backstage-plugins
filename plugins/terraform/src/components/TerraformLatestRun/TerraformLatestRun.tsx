@@ -1,6 +1,6 @@
 import { useEntity } from '@backstage/plugin-catalog-react';
 import { CircularProgress } from '@material-ui/core';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useLatestRun } from '../../hooks';
 import { TerraformLatestRunContent } from '../TerraformLatestRunContent';
 import { TerraformLatestRunError } from '../TerraformLatestRunError';
