@@ -3004,7 +3004,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/backend-plugin-api@npm:^1.3.0":
+"@backstage/backend-plugin-api@npm:^1.2.1, @backstage/backend-plugin-api@npm:^1.3.0":
   version: 1.3.0
   resolution: "@backstage/backend-plugin-api@npm:1.3.0"
   dependencies:
@@ -5560,9 +5560,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/test-utils@npm:^1.7.6":
-  version: 1.7.6
-  resolution: "@backstage/test-utils@npm:1.7.6"
+"@backstage/test-utils@npm:^1.7.7":
+  version: 1.7.7
+  resolution: "@backstage/test-utils@npm:1.7.7"
   dependencies:
     "@backstage/config": "npm:^1.3.2"
     "@backstage/core-app-api": "npm:^1.16.1"
@@ -6693,8 +6693,8 @@ __metadata:
     "@backstage/backend-test-utils": "npm:^1.4.0"
     "@backstage/cli": "npm:^0.32.0"
     "@backstage/config": "npm:^1.3.2"
-    "@backstage/plugin-auth-backend": "npm:^0.24.4"
-    "@backstage/plugin-auth-backend-module-guest-provider": "npm:^0.2.6"
+    "@backstage/plugin-auth-backend": "npm:^0.24.5"
+    "@backstage/plugin-auth-backend-module-guest-provider": "npm:^0.2.7"
     "@backstage/repo-tools": "npm:^0.13.1"
     "@types/express": "npm:^4.17.6"
     "@types/supertest": "npm:^6.0.2"
@@ -8294,9 +8294,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@module-federation/bridge-react-webpack-plugin@npm:0.8.11":
-  version: 0.8.11
-  resolution: "@module-federation/bridge-react-webpack-plugin@npm:0.8.11"
+"@module-federation/bridge-react-webpack-plugin@npm:0.9.1":
+  version: 0.9.1
+  resolution: "@module-federation/bridge-react-webpack-plugin@npm:0.9.1"
   dependencies:
     "@module-federation/sdk": "npm:0.9.1"
     "@types/semver": "npm:7.5.8"
