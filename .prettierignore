@@ -1,7 +1,6 @@
 dist
 dist-types
 coverage
-.devcontainer
 .vscode
 .changeset
 **/*.generated.*

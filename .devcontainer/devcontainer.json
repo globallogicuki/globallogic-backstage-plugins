@@ -1,40 +1,37 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/debian
 {
-	"name": "GL Backstage Local Dev Environment",
-	"image": "mcr.microsoft.com/devcontainers/typescript-node:20",
-	// Features to add to the dev container. More info: https://containers.dev/features.
-	"features": {
-		"ghcr.io/devcontainers/features/node:1": {},
-		"ghcr.io/nikobockerman/devcontainer-features/yarn-persistent-cache:1": {},
-		"ghcr.io/devcontainers/features/docker-in-docker:2": {},
-		"ghcr.io/devcontainers/features/github-cli:1": {}
-	},
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	"forwardPorts": [
-		3000,
-		7007
-	],
-	"postCreateCommand": "yarn install",
-	// Configure tool-specific properties.
-	"customizations": {
-		"vscode": {
-			"extensions": [
-				"dbaeumer.vscode-eslint",
-				"firsttris.vscode-jest-runner",
-				"gamunu.vscode-yarn",
-				"github.vscode-pull-request-github",
-				"github.vscode-github-actions",
-				"infeng.vscode-react-typescript",
-				"pmneo.tsimporter",
-				"redhat.vscode-yaml",
-				"yoavbls.pretty-ts-errors",
-				"yzhang.markdown-all-in-one"
-			],
-			"settings": {
-				"editor.formatOnSave": true,
-				"terminal.integrated.defaultProfile.linux": "zsh"
-			}
-		}
-	}
+  "name": "GL Backstage Local Dev Environment",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:20",
+  // Features to add to the dev container. More info: https://containers.dev/features.
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {},
+    "ghcr.io/nikobockerman/devcontainer-features/yarn-persistent-cache:1": {},
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  "forwardPorts": [3000, 7007],
+  "postCreateCommand": "yarn install",
+  // Configure tool-specific properties.
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "firsttris.vscode-jest-runner",
+        "gamunu.vscode-yarn",
+        "github.vscode-pull-request-github",
+        "github.vscode-github-actions",
+        "infeng.vscode-react-typescript",
+        "pmneo.tsimporter",
+        "redhat.vscode-yaml",
+        "yoavbls.pretty-ts-errors",
+        "yzhang.markdown-all-in-one"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "terminal.integrated.defaultProfile.linux": "zsh"
+      }
+    }
+  }
 }
