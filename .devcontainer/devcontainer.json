@@ -20,19 +20,20 @@
 	"customizations": {
 		"vscode": {
 			"extensions": [
-				"infeng.vscode-react-typescript",
-				"yoavbls.pretty-ts-errors",
-				"pmneo.tsimporter",
-				"gamunu.vscode-yarn",
-				"redhat.vscode-yaml",
 				"dbaeumer.vscode-eslint",
 				"firsttris.vscode-jest-runner",
-				"yzhang.markdown-all-in-one",
-				"github.vscode-pull-request-github"
+				"gamunu.vscode-yarn",
+				"github.vscode-pull-request-github",
+				"github.vscode-github-actions",
+				"infeng.vscode-react-typescript",
+				"pmneo.tsimporter",
+				"redhat.vscode-yaml",
+				"yoavbls.pretty-ts-errors",
+				"yzhang.markdown-all-in-one"
 			],
 			"settings": {
-				"terminal.integrated.defaultProfile.linux": "zsh",
-				"editor.formatOnSave": true
+				"editor.formatOnSave": true,
+				"terminal.integrated.defaultProfile.linux": "zsh"
 			}
 		}
 	}
