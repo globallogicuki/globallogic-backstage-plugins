@@ -42,14 +42,12 @@ describe('TerraformValidationChecks Component', () => {
     expect(warningIcon).not.toBeInTheDocument();
   });
 
-  it('renders the StackedBar component with the correct data', () => {
+  it('renders the Pie Chart component with the correct data', () => {
     render(<TerraformValidationChecks {...defaultProps} />);
-    const stackedBar = screen.getByTestId('stacked-bar-mock');
-    expect(stackedBar).toBeInTheDocument();
 
-    expect(screen.getByText('Failed: 1')).toBeInTheDocument();
-    expect(screen.getByText('Unknown: 2')).toBeInTheDocument();
-    expect(screen.getByText('Passed: 3')).toBeInTheDocument();
+    expect(screen.getByText('Failed')).toBeInTheDocument();
+    expect(screen.getByText('Unknown')).toBeInTheDocument();
+    expect(screen.getByText('Passed')).toBeInTheDocument();
   });
 
   it('renders correctly with zero checks', () => {
@@ -61,10 +59,8 @@ describe('TerraformValidationChecks Component', () => {
         checksPassed={0}
       />,
     );
-    const stackedBar = screen.getByTestId('stacked-bar-mock');
-    expect(stackedBar).toBeInTheDocument();
-    expect(screen.getByText('Failed: 0')).toBeInTheDocument();
-    expect(screen.getByText('Unknown: 0')).toBeInTheDocument();
-    expect(screen.getByText('Passed: 0')).toBeInTheDocument();
+    expect(screen.getByText('Failed')).toBeInTheDocument();
+    expect(screen.getByText('Unknown')).toBeInTheDocument();
+    expect(screen.getByText('Passed')).toBeInTheDocument();
   });
 });

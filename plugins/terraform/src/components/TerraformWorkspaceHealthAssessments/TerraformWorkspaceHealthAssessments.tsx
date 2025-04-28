@@ -9,10 +9,14 @@ import { getAnnotations } from '../../utils';
 
 export interface TerraformWorkspaceHealthAssessmentsProps {
   title?: string;
+  showDrift?: boolean;
+  showValidationChecks?: boolean;
 }
 
 export const TerraformWorkspaceHealthAssessments = ({
   title = 'Workspace Health',
+  showDrift = true,
+  showValidationChecks = true,
 }: TerraformWorkspaceHealthAssessmentsProps) => {
   const { entity } = useEntity();
 
@@ -54,7 +58,6 @@ export const TerraformWorkspaceHealthAssessments = ({
           direction="row"
           justifyContent="flex-end"
           alignItems="center"
-          style={{ marginBottom: '5px' }}
         >
           <Grid>
             <IconButton onClick={refetch} aria-label="Refresh">
@@ -70,7 +73,11 @@ export const TerraformWorkspaceHealthAssessments = ({
         >
           {data.map(assessmentResult => (
             <Grid item key={assessmentResult.id} xs={12} sm={6} md={4} lg={4}>
-              <TerraformWorkspaceHealthCard data={assessmentResult} />
+              <TerraformWorkspaceHealthCard
+                data={assessmentResult}
+                showDrift={showDrift}
+                showValidationChecks={showValidationChecks}
+              />
             </Grid>
           ))}
         </Grid>

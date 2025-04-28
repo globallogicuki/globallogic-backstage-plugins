@@ -42,8 +42,8 @@ describe('TerraformDrift Component', () => {
       <TerraformDrift drifted resourcesDrifted={20} resourcesUndrifted={80} />,
     );
 
-    const driftedText = screen.getByText('Drifted:');
-    const undriftedText = screen.getByText('Undrifted:');
+    const driftedText = screen.getByText('Drifted');
+    const undriftedText = screen.getByText('Undrifted');
 
     expect(driftedText).toBeInTheDocument();
     expect(undriftedText).toBeInTheDocument();

@@ -1,4 +1,4 @@
-import StackedBar from '../StackedBar/StackedBar';
+import { PieChart } from '@mui/x-charts';
 import { Grid, Typography } from '@material-ui/core';
 
 export interface TerraformDriftProps {
@@ -15,14 +15,14 @@ export const TerraformDrift = ({
   const barData = [
     {
       id: 'drifted',
-      name: 'Drifted',
+      label: 'Drifted',
       value: resourcesDrifted,
       color: '#EFC7CC',
       textColor: '#C00005',
     },
     {
       id: 'undrifted',
-      name: 'Undrifted',
+      label: 'Undrifted',
       value: resourcesUndrifted,
       color: '#C6E9C9',
       textColor: '#008A22',
@@ -49,13 +49,27 @@ export const TerraformDrift = ({
             </Grid>
           )}
           <Grid item>
-            <Typography variant="subtitle1">Drift</Typography>
+            <Typography variant="subtitle1">
+              <b>Drift</b>
+            </Typography>
           </Grid>
-          <Grid item style={{ width: '100%' }}>
-            <div style={{ overflow: 'hidden', borderRadius: '4px' }}>
-              <StackedBar data={barData} />
-            </div>
-          </Grid>
+        </Grid>
+        <Grid item>
+          {/* <StackedBar data={barData} /> */}
+          <PieChart
+            skipAnimation
+            height={150}
+            width={150}
+            series={[
+              {
+                arcLabel: item => `${item.value}`,
+                arcLabelMinAngle: 35,
+                arcLabelRadius: '60%',
+                innerRadius: 40,
+                data: barData,
+              },
+            ]}
+          />
         </Grid>
       </Grid>
     </Grid>

@@ -1,5 +1,5 @@
-import StackedBar from '../StackedBar/StackedBar.tsx';
 import { Grid, Typography } from '@material-ui/core';
+import { PieChart } from '@mui/x-charts';
 
 interface Props {
   allChecksSucceeded: boolean;
@@ -17,21 +17,21 @@ export const TerraformValidationChecks = ({
   const barData = [
     {
       id: 'failed',
-      name: 'Failed',
+      label: 'Failed',
       value: checksFailed,
       color: '#EFC7CC',
       textColor: '#C00005',
     },
     {
       id: 'unknown',
-      name: 'Unknown',
+      label: 'Unknown',
       value: checksUnknown,
       color: '#BFD4FF',
       textColor: '#1060FF',
     },
     {
       id: 'passed',
-      name: 'Passed',
+      label: 'Passed',
       value: checksPassed,
       color: '#C6E9C9',
       textColor: '#008A22',
@@ -58,13 +58,27 @@ export const TerraformValidationChecks = ({
             </Grid>
           )}
           <Grid item>
-            <Typography variant="subtitle1">Checks</Typography>
+            <Typography variant="subtitle1">
+              <b>Checks</b>
+            </Typography>
           </Grid>
-          <Grid item style={{ width: '100%' }}>
-            <div style={{ overflow: 'hidden', borderRadius: '4px' }}>
-              <StackedBar data={barData} />
-            </div>
-          </Grid>
+        </Grid>
+        <Grid item>
+          {/* <StackedBar data={barData} /> */}
+          <PieChart
+            skipAnimation
+            height={150}
+            width={150}
+            series={[
+              {
+                arcLabel: item => `${item.value}`,
+                arcLabelMinAngle: 35,
+                arcLabelRadius: '60%',
+                innerRadius: 40,
+                data: barData,
+              },
+            ]}
+          />
         </Grid>
       </Grid>
     </Grid>
