@@ -33,16 +33,12 @@ export const TerraformWorkspaceHealthAssessments = ({
 
   if (isLoading) {
     return (
-      <Grid container spacing={0} direction="column">
-        <InfoCard title={title}>
-          <Grid item>
-            <CircularProgress
-              aria-label="Getting health assessments"
-              aria-busy
-            />
-          </Grid>
-        </InfoCard>
-      </Grid>
+      <InfoCard title={title}>
+        <CircularProgress
+          aria-label="Getting health assessments"
+          aria-busy
+        />
+      </InfoCard>
     );
   }
 
@@ -51,38 +47,28 @@ export const TerraformWorkspaceHealthAssessments = ({
   }
 
   return (
-    <Grid container spacing={0} direction="column">
-      <InfoCard title={title}>
-        <Grid
-          container
-          direction="row"
-          justifyContent="flex-end"
-          alignItems="center"
-        >
-          <Grid>
-            <IconButton onClick={refetch} aria-label="Refresh">
-              <RefreshIcon />
-            </IconButton>
+    <InfoCard 
+      title={title}
+      action={
+        <IconButton onClick={refetch} aria-label="Refresh">
+          <RefreshIcon />
+        </IconButton>
+      }
+    >
+      <Grid
+        container
+      >
+        {data.map(assessmentResult => (
+          <Grid item key={assessmentResult.id} xs={12} sm={6} md={4} lg={4}>
+            <TerraformWorkspaceHealthCard
+              data={assessmentResult}
+              showDrift={showDrift}
+              showValidationChecks={showValidationChecks}
+            />
           </Grid>
-        </Grid>
-
-        <Grid
-          container
-          spacing={6}
-          style={{ padding: '1rem', minWidth: '70vw' }}
-        >
-          {data.map(assessmentResult => (
-            <Grid item key={assessmentResult.id} xs={12} sm={6} md={4} lg={4}>
-              <TerraformWorkspaceHealthCard
-                data={assessmentResult}
-                showDrift={showDrift}
-                showValidationChecks={showValidationChecks}
-              />
-            </Grid>
-          ))}
-        </Grid>
-      </InfoCard>
-    </Grid>
+        ))}
+      </Grid>
+    </InfoCard>
   );
 };
 

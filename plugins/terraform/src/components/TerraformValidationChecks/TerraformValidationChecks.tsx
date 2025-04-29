@@ -1,5 +1,7 @@
 import { Grid, Typography } from '@material-ui/core';
 import { PieChart } from '@mui/x-charts';
+import { InfoCard } from '@backstage/core-components';
+
 
 interface Props {
   allChecksSucceeded: boolean;
@@ -39,49 +41,26 @@ export const TerraformValidationChecks = ({
   ];
 
   return (
-    <Grid
-      container
-      spacing={2}
-      direction="column"
-      style={{
-        padding: '15px',
-        boxSizing: 'border-box',
-        boxShadow:
-          '0px 3px 1px -2px rgba(0,0,0,0.2),0px 2px 2px 0px rgba(0,0,0,0.14),0px 1px 5px 0px rgba(0,0,0,0.12)',
-      }}
+    <InfoCard
+      title={`${
+        !allChecksSucceeded ? '⚠️' : ''
+      } Checks`}
+      variant='gridItem'
     >
-      <Grid item>
-        <Grid container direction="row" spacing={1} alignItems="center">
-          {!allChecksSucceeded && (
-            <Grid item>
-              <span>⚠️</span>
-            </Grid>
-          )}
-          <Grid item>
-            <Typography variant="subtitle1">
-              <b>Checks</b>
-            </Typography>
-          </Grid>
-        </Grid>
-        <Grid item>
-          {/* <StackedBar data={barData} /> */}
-          <PieChart
-            skipAnimation
-            height={150}
-            width={150}
-            series={[
-              {
-                arcLabel: item => `${item.value}`,
-                arcLabelMinAngle: 35,
-                arcLabelRadius: '60%',
-                innerRadius: 40,
-                data: barData,
-              },
-            ]}
-          />
-        </Grid>
-      </Grid>
-    </Grid>
+      <PieChart
+        skipAnimation
+        height={100}
+        series={[
+          {
+            arcLabel: item => `${item.value}`,
+            arcLabelMinAngle: 35,
+            arcLabelRadius: '60%',
+            innerRadius: 20,
+            data: barData,
+          },
+        ]}
+      />
+    </InfoCard>
   );
 };
 
