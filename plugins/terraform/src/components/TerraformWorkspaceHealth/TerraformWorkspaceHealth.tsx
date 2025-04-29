@@ -1,7 +1,6 @@
 import { AssessmentResult } from '../../hooks/types.ts';
 import TerraformDrift from '../TerraformDrift/TerraformDrift';
 import TerraformValidationChecks from '../TerraformValidationChecks/TerraformValidationChecks';
-import { Grid, Typography } from '@material-ui/core';
 import { InfoCard } from '@backstage/core-components';
 
 

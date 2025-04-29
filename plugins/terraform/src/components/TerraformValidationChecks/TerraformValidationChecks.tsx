@@ -1,4 +1,3 @@
-import { Grid, Typography } from '@material-ui/core';
 import { PieChart } from '@mui/x-charts';
 import { InfoCard } from '@backstage/core-components';
 
