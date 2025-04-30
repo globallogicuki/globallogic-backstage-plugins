@@ -1,7 +1,7 @@
 import { PieChart } from '@mui/x-charts';
 import { InfoCard } from '@backstage/core-components';
 import WarningIcon from '@material-ui/icons/Warning';
-import { IconButton } from '@material-ui/core';
+import { IconButton, useTheme } from '@material-ui/core';
 
 interface Props {
   allChecksSucceeded: boolean;
@@ -16,27 +16,25 @@ export const TerraformValidationChecks = ({
   checksUnknown,
   checksPassed,
 }: Props) => {
+  const theme = useTheme();
   const barData = [
     {
       id: 'failed',
       label: 'Failed',
       value: checksFailed,
-      color: '#EFC7CC',
-      textColor: '#C00005',
+      color: theme.palette.error.light,
     },
     {
       id: 'unknown',
       label: 'Unknown',
       value: checksUnknown,
-      color: '#BFD4FF',
-      textColor: '#1060FF',
+      color: theme.palette.warning.light,
     },
     {
       id: 'passed',
       label: 'Passed',
       value: checksPassed,
-      color: '#C6E9C9',
-      textColor: '#008A22',
+      color: theme.palette.success.light,
     },
   ];
 

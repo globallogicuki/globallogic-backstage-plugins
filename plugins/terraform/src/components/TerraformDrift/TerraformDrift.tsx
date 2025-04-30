@@ -1,7 +1,7 @@
 import { PieChart } from '@mui/x-charts';
 import { InfoCard } from '@backstage/core-components';
 import WarningIcon from '@material-ui/icons/Warning';
-import { IconButton } from '@material-ui/core';
+import { IconButton, useTheme } from '@material-ui/core';
 
 export interface TerraformDriftProps {
   drifted: boolean;
@@ -14,19 +14,21 @@ export const TerraformDrift = ({
   resourcesDrifted,
   resourcesUndrifted,
 }: TerraformDriftProps) => {
+  const theme = useTheme();
+
   const barData = [
     {
       id: 'drifted',
       label: 'Drifted',
       value: resourcesDrifted,
-      color: '#EFC7CC',
+      color: theme.palette.error.light,
       textColor: '#C00005',
     },
     {
       id: 'undrifted',
       label: 'Undrifted',
       value: resourcesUndrifted,
-      color: '#C6E9C9',
+      color: theme.palette.success.light,
       textColor: '#008A22',
     },
   ];
