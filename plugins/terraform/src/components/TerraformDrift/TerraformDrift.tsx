@@ -33,13 +33,17 @@ export const TerraformDrift = ({
 
   return (
     <InfoCard
-      title={"Drift"}
-      variant='gridItem'
-      action={drifted ? 
-        <IconButton disabled={true}>
-          <WarningIcon />
-        </IconButton> 
-        : ''}
+      title="Drift"
+      variant="gridItem"
+      action={
+        drifted ? (
+          <IconButton disabled>
+            <WarningIcon data-testid="warning-icon" />
+          </IconButton>
+        ) : (
+          ''
+        )
+      }
     >
       <PieChart
         skipAnimation

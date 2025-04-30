@@ -31,15 +31,20 @@ describe('TerraformValidationChecks Component', () => {
   });
 
   it('displays the warning icon when allChecksSucceeded is false', () => {
-    render(<TerraformValidationChecks {...defaultProps} />);
-    const warningIcon = screen.getByText('⚠️');
+    render(
+      <TerraformValidationChecks
+        {...defaultProps}
+        allChecksSucceeded={false}
+      />,
+    );
+    const warningIcon = screen.getByTestId('warning-icon');
     expect(warningIcon).toBeInTheDocument();
   });
 
   it('does not display the warning icon when allChecksSucceeded is true', () => {
     render(<TerraformValidationChecks {...defaultProps} allChecksSucceeded />);
-    const warningIcon = screen.queryByText('⚠️');
-    expect(warningIcon).not.toBeInTheDocument();
+    const warningIcon = screen.queryByTestId('warning-icon');
+    expect(warningIcon).toBeNull();
   });
 
   it('renders the Pie Chart component with the correct data', () => {

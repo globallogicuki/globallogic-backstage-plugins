@@ -3,8 +3,6 @@ import { InfoCard } from '@backstage/core-components';
 import WarningIcon from '@material-ui/icons/Warning';
 import { IconButton } from '@material-ui/core';
 
-
-
 interface Props {
   allChecksSucceeded: boolean;
   checksFailed: number;
@@ -44,13 +42,17 @@ export const TerraformValidationChecks = ({
 
   return (
     <InfoCard
-      title={"Checks"}
-      variant='gridItem'
-      action={!allChecksSucceeded ? 
-      <IconButton disabled={true}>
-        <WarningIcon />
-      </IconButton> 
-      : ''}
+      title="Checks"
+      variant="gridItem"
+      action={
+        !allChecksSucceeded ? (
+          <IconButton disabled>
+            <WarningIcon data-testid="warning-icon" />
+          </IconButton>
+        ) : (
+          ''
+        )
+      }
     >
       <PieChart
         skipAnimation

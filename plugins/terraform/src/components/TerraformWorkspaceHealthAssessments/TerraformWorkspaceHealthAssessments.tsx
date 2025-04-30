@@ -34,10 +34,7 @@ export const TerraformWorkspaceHealthAssessments = ({
   if (isLoading) {
     return (
       <InfoCard title={title}>
-        <CircularProgress
-          aria-label="Getting health assessments"
-          aria-busy
-        />
+        <CircularProgress aria-label="Getting health assessments" aria-busy />
       </InfoCard>
     );
   }
@@ -47,7 +44,7 @@ export const TerraformWorkspaceHealthAssessments = ({
   }
 
   return (
-    <InfoCard 
+    <InfoCard
       title={title}
       action={
         <IconButton onClick={refetch} aria-label="Refresh">
@@ -55,9 +52,7 @@ export const TerraformWorkspaceHealthAssessments = ({
         </IconButton>
       }
     >
-      <Grid
-        container
-      >
+      <Grid container>
         {data.map(assessmentResult => (
           <Grid item key={assessmentResult.id} xs={12} sm={6} md={4} lg={4}>
             <TerraformWorkspaceHealthCard

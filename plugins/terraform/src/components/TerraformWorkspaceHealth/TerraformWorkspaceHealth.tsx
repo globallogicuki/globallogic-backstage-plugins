@@ -3,7 +3,6 @@ import TerraformDrift from '../TerraformDrift/TerraformDrift';
 import TerraformValidationChecks from '../TerraformValidationChecks/TerraformValidationChecks';
 import { InfoCard } from '@backstage/core-components';
 
-
 interface Props {
   data: AssessmentResult;
   showDrift?: boolean;
@@ -16,12 +15,8 @@ export const TerraformWorkspaceHealth = ({
   showValidationChecks = true,
 }: Props) => {
   return (
-    <InfoCard
-      title={data.workspaceName}
-    >
-      {showDrift && (
-        <TerraformDrift {...data.driftMetrics} />
-      )}
+    <InfoCard title={data.workspaceName}>
+      {showDrift && <TerraformDrift {...data.driftMetrics} />}
 
       {showValidationChecks && (
         <TerraformValidationChecks {...data.validationMetrics} />

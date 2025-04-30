@@ -20,7 +20,7 @@ describe('TerraformDrift Component', () => {
       <TerraformDrift drifted resourcesDrifted={10} resourcesUndrifted={90} />,
     );
 
-    const warningIcon = screen.getByText('⚠️');
+    const warningIcon = screen.getByTestId('warning-icon');
     expect(warningIcon).toBeInTheDocument();
   });
 
@@ -33,8 +33,8 @@ describe('TerraformDrift Component', () => {
       />,
     );
 
-    const warningIcon = screen.queryByText('⚠️');
-    expect(warningIcon).not.toBeInTheDocument();
+    const warningIcon = screen.queryByTestId('warning-icon');
+    expect(warningIcon).toBeNull();
   });
 
   it('renders the StackedBar component with correct data', () => {
