@@ -1,5 +1,8 @@
 import { PieChart } from '@mui/x-charts';
 import { InfoCard } from '@backstage/core-components';
+import WarningIcon from '@material-ui/icons/Warning';
+import { IconButton } from '@material-ui/core';
+
 
 
 interface Props {
@@ -41,10 +44,13 @@ export const TerraformValidationChecks = ({
 
   return (
     <InfoCard
-      title={`${
-        !allChecksSucceeded ? '⚠️' : ''
-      } Checks`}
+      title={"Checks"}
       variant='gridItem'
+      action={!allChecksSucceeded ? 
+      <IconButton disabled={true}>
+        <WarningIcon />
+      </IconButton> 
+      : ''}
     >
       <PieChart
         skipAnimation

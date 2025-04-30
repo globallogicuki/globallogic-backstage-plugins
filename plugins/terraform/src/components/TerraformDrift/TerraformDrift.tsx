@@ -1,6 +1,7 @@
 import { PieChart } from '@mui/x-charts';
 import { InfoCard } from '@backstage/core-components';
-
+import WarningIcon from '@material-ui/icons/Warning';
+import { IconButton } from '@material-ui/core';
 
 export interface TerraformDriftProps {
   drifted: boolean;
@@ -32,10 +33,13 @@ export const TerraformDrift = ({
 
   return (
     <InfoCard
-      title={`${
-        drifted ? '⚠️' : ''
-      } Drift`}
+      title={"Drift"}
       variant='gridItem'
+      action={drifted ? 
+        <IconButton disabled={true}>
+          <WarningIcon />
+        </IconButton> 
+        : ''}
     >
       <PieChart
         skipAnimation
