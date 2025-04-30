@@ -1,20 +1,5 @@
 import { render, screen } from '@testing-library/react';
 import TerraformValidationChecks from './TerraformValidationChecks'; // Adjust the import path as necessary
-import { StackedBarItem } from '../StackedBar/StackedBar';
-
-// Mock the StackedBar component
-jest.mock('../StackedBar/StackedBar.tsx', () => ({
-  __esModule: true,
-  default: ({ data }: { data: StackedBarItem[] }) => (
-    <div data-testid="stacked-bar-mock">
-      {data.map(item => (
-        <div key={item.id}>
-          {item.name}: {item.value}
-        </div>
-      ))}
-    </div>
-  ),
-}));
 
 describe('TerraformValidationChecks Component', () => {
   const defaultProps = {
