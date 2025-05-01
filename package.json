@@ -54,7 +54,6 @@
   },
   "packageManager": "yarn@4.6.0",
   "dependencies": {
-    "@changesets/cli": "^2.27.1",
-    "@mui/x-charts": "8.0.0-beta.3"
+    "@changesets/cli": "^2.27.1"
   }
 }

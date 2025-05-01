@@ -511,7 +511,6 @@ describe('lib/index', () => {
         workspaces,
       });
 
-      console.log(result);
       expect(result).toEqual([
         {
           id: 'assessmentResult1',
@@ -550,6 +549,108 @@ describe('lib/index', () => {
           },
         },
       ]);
+    });
+
+    it('should handle an error when fetching the list of workspaces', async () => {
+      const errorMessage = 'Failed to fetch workspaces';
+      (axios.get as jest.Mock).mockRejectedValueOnce(new Error(errorMessage));
+
+      await expect(
+        getAssessmentResultsForWorkspaces({
+          baseUrl,
+          token,
+          organization,
+          workspaces,
+        }),
+      ).rejects.toThrow(errorMessage);
+      expect(axios.get).toHaveBeenCalledWith(
+        `${baseUrl}/api/v2/organizations/${organization}/workspaces`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      expect(axios.get).toHaveBeenCalledTimes(1);
+    });
+
+    it('should handle the case where no matching workspaces are found', async () => {
+      (axios.get as jest.Mock).mockResolvedValueOnce({
+        data: {
+          data: [],
+        },
+      });
+
+      const result = await getAssessmentResultsForWorkspaces({
+        baseUrl,
+        token,
+        organization,
+        workspaces,
+      });
+
+      expect(result).toEqual([]);
+      expect(axios.get).toHaveBeenCalledWith(
+        `${baseUrl}/api/v2/organizations/${organization}/workspaces`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      expect(axios.get).toHaveBeenCalledTimes(1);
+    });
+
+    it('should handle an error when fetching a single workspace assessment', async () => {
+      (axios.get as jest.Mock)
+        .mockResolvedValueOnce({
+          data: {
+            data: mockWorkspaces,
+          },
+        })
+        .mockResolvedValueOnce({
+          data: {
+            data: mockAssessmentResult1,
+          },
+        })
+        .mockRejectedValueOnce(
+          new Error('Failed to fetch assessment for workspace-2'),
+        );
+
+      const result = await getAssessmentResultsForWorkspaces({
+        baseUrl,
+        token,
+        organization,
+        workspaces,
+      }).catch(() => []);
+
+      expect(result).toEqual([]);
+      expect(axios.get).toHaveBeenCalledTimes(3);
+      expect(axios.get).toHaveBeenCalledWith(
+        `${baseUrl}/api/v2/organizations/${organization}/workspaces`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      expect(axios.get).toHaveBeenCalledWith(
+        'https://app.terraform.io/api/v2/workspaces/workspace1-id/current-assessment-result',
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      expect(axios.get).toHaveBeenCalledWith(
+        'https://app.terraform.io/api/v2/workspaces/workspace2-id/current-assessment-result',
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+    });
+
+    it('should handle the case where the workspaces array is empty', async () => {
+      (axios.get as jest.Mock).mockResolvedValueOnce({
+        data: {
+          data: mockWorkspaces,
+        },
+      });
+
+      const result = await getAssessmentResultsForWorkspaces({
+        baseUrl,
+        token,
+        organization,
+        workspaces: [],
+      });
+
+      expect(result).toEqual([]);
+      expect(axios.get).toHaveBeenCalledTimes(1);
+      expect(axios.get).toHaveBeenCalledWith(
+        `${baseUrl}/api/v2/organizations/${organization}/workspaces`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
     });
   });
 });

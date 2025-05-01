@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import TerraformValidationChecks from './TerraformValidationChecks'; // Adjust the import path as necessary
+import TerraformValidationChecks from './TerraformValidationChecks';
 
 describe('TerraformValidationChecks Component', () => {
   const defaultProps = {

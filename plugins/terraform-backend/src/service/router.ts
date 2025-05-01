@@ -75,7 +75,7 @@ export async function createRouter(
       })
         .then(assessments => {
           if (assessments !== null) {
-            response.json(assessments as AssessmentResult[]);
+            response.json(assessments);
           } else {
             const emptyResults: AssessmentResult[] = [];
             response.json(emptyResults);

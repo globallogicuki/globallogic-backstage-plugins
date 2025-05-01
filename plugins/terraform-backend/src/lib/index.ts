@@ -10,6 +10,7 @@ import {
 } from './types';
 import { formatTerraformRun } from './formatTerraformRun';
 import { formatTerraformAssessmentResult } from './formatTerraformAssessmentResult';
+import { AssessmentResult } from '../schema/openapi/generated/models';
 
 const fetchRelatedEntity = async <EntityType>(
   baseUrl: string,
@@ -133,18 +134,13 @@ const fetchHealthAssessmentForWorkspace = async (
   baseUrl: string,
   token: string,
   workspace: TerraformWorkspace,
-) => {
+): Promise<AssessmentResult | null> => {
   const currentAssessmentResultLink =
     workspace?.relationships?.['current-assessment-result']?.links?.related;
 
   if (!currentAssessmentResultLink) return null;
 
   const assessmentResultUrl = new URL(currentAssessmentResultLink, baseUrl);
-  console.debug(
-    `Retrieving health assessment for workspace '${
-      workspace.attributes.name
-    }', url: ${assessmentResultUrl.toString()}`,
-  );
   const terraformAssessmentResult = await axios.get<
     TerraformResponse<TerraformAssessmentResult>
   >(assessmentResultUrl.toString(), {
@@ -162,7 +158,7 @@ export const getAssessmentResultsForWorkspaces = async ({
   token,
   organization,
   workspaces,
-}: ListOrgWorkspacesArgs) => {
+}: ListOrgWorkspacesArgs): Promise<AssessmentResult[]> => {
   const getWorkspacesUrl = new URL(
     `/api/v2/organizations/${organization}/workspaces`,
     baseUrl,
@@ -176,13 +172,10 @@ export const getAssessmentResultsForWorkspaces = async ({
 
   const terraformWorkspaces: TerraformWorkspace[] = [];
   workspaces.forEach(w => {
-    console.debug(`Looking for workspace: '${w}'`);
-
     const found = allWorkspacesForOrg.data.data.find(
       f => f.attributes.name.toLowerCase() === w.toString().toLowerCase(),
     );
     if (found !== undefined) {
-      console.debug(`Found TerraformWorkspace for '${w}'`);
       terraformWorkspaces.push(found);
     }
   });
@@ -191,6 +184,8 @@ export const getAssessmentResultsForWorkspaces = async ({
     fetchHealthAssessmentForWorkspace(baseUrl, token, w),
   );
   const results = await Promise.all(actions);
-
-  return results;
+  const validResults = results.filter(
+    (result): result is AssessmentResult => result !== null,
+  );
+  return validResults;
 };
