@@ -2,6 +2,7 @@ import { PieChart } from '@mui/x-charts';
 import { InfoCard } from '@backstage/core-components';
 import WarningIcon from '@material-ui/icons/Warning';
 import { IconButton, useTheme } from '@material-ui/core';
+import CheckCircle from '@material-ui/icons/CheckCircle';
 
 export interface TerraformDriftProps {
   drifted: boolean;
@@ -43,7 +44,9 @@ export const TerraformDrift = ({
             <WarningIcon data-testid="warning-icon" />
           </IconButton>
         ) : (
-          ''
+          <IconButton disabled>
+            <CheckCircle data-testid="success-icon" />
+          </IconButton>
         )
       }
     >

@@ -15,7 +15,7 @@ describe('TerraformValidationChecks Component', () => {
     expect(titleElement).toBeInTheDocument();
   });
 
-  it('displays the warning icon when allChecksSucceeded is false', () => {
+  it('displays the warning icon and not the success icon when allChecksSucceeded is false', () => {
     render(
       <TerraformValidationChecks
         {...defaultProps}
@@ -24,10 +24,17 @@ describe('TerraformValidationChecks Component', () => {
     );
     const warningIcon = screen.getByTestId('warning-icon');
     expect(warningIcon).toBeInTheDocument();
+
+    const successIcon = screen.queryByTestId('success-icon');
+    expect(successIcon).toBeNull();
   });
 
-  it('does not display the warning icon when allChecksSucceeded is true', () => {
+  it('displays the success icon and not the warning icon when allChecksSucceeded is true', () => {
     render(<TerraformValidationChecks {...defaultProps} allChecksSucceeded />);
+
+    const successIcon = screen.getByTestId('success-icon');
+    expect(successIcon).toBeInTheDocument();
+
     const warningIcon = screen.queryByTestId('warning-icon');
     expect(warningIcon).toBeNull();
   });

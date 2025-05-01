@@ -15,16 +15,19 @@ describe('TerraformDrift Component', () => {
     expect(titleElement).toBeInTheDocument();
   });
 
-  it('displays the warning icon when drifted is true', () => {
+  it('displays the warning icon and not the success icon when drifted is true', () => {
     render(
       <TerraformDrift drifted resourcesDrifted={10} resourcesUndrifted={90} />,
     );
 
     const warningIcon = screen.getByTestId('warning-icon');
     expect(warningIcon).toBeInTheDocument();
+
+    const successIcon = screen.queryByTestId('success-icon');
+    expect(successIcon).toBeNull();
   });
 
-  it('does not display the warning icon when drifted is false', () => {
+  it('displays the success icon and not the warning icon when drifted is false', () => {
     render(
       <TerraformDrift
         drifted={false}
@@ -32,6 +35,9 @@ describe('TerraformDrift Component', () => {
         resourcesUndrifted={90}
       />,
     );
+
+    const successIcon = screen.getByTestId('success-icon');
+    expect(successIcon).toBeInTheDocument();
 
     const warningIcon = screen.queryByTestId('warning-icon');
     expect(warningIcon).toBeNull();
