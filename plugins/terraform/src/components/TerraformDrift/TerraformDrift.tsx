@@ -37,6 +37,7 @@ export const TerraformDrift = ({
   return (
     <InfoCard
       title="Drift"
+      titleTypographyProps={{ variant: 'subtitle1' }}
       variant="gridItem"
       action={
         drifted ? (

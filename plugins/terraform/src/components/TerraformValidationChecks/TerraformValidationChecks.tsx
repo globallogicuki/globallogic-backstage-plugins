@@ -42,6 +42,7 @@ export const TerraformValidationChecks = ({
   return (
     <InfoCard
       title="Checks"
+      titleTypographyProps={{ variant: 'subtitle1' }}
       variant="gridItem"
       action={
         !allChecksSucceeded ? (

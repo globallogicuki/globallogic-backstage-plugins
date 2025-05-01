@@ -15,7 +15,10 @@ export const TerraformWorkspaceHealth = ({
   showValidationChecks = true,
 }: Props) => {
   return (
-    <InfoCard title={data.workspaceName}>
+    <InfoCard
+      title={data.workspaceName}
+      titleTypographyProps={{ variant: 'h6' }}
+    >
       {showDrift && <TerraformDrift {...data.driftMetrics} />}
 
       {showValidationChecks && (

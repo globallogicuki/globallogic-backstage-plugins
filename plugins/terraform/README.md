@@ -52,7 +52,7 @@ This is an additional component that can be referenced with `<EntityTerraformLat
 
 ## Terraform Workspace Health card
 
-![Workspace Health card - Light mode](./docs/terraform-plugin-workspace-health-light.png)
+![Workspace Health card - Light mode](./docs/terraform-plugin-workspace-health.png)
 
 This is an additional component that can be referenced with `<EntityTerraformWorkspaceHealthAssessmentsCard>` and imported and added to the `EntityPage.tsx` file for routing from the plugin root.
 

@@ -32,7 +32,7 @@ export const Terraform = ({ isCard = false }: Props) => {
             />
           </Grid>
           <Grid item>
-            <TerraformWorkspaceHealthAssessments showValidationChecks={false} />
+            <TerraformWorkspaceHealthAssessments />
           </Grid>
         </Grid>
       </div>
