@@ -59,3 +59,16 @@ export const EntityTerraformLatestRunCard = terraformPlugin.provide(
     },
   }),
 );
+
+export const EntityTerraformWorkspaceHealthAssessmentsCard =
+  terraformPlugin.provide(
+    createComponentExtension({
+      name: 'EntityTerraformWorkspaceHealthAssessmentsCard',
+      component: {
+        lazy: () =>
+          import('./components/TerraformWorkspaceHealthAssessments').then(
+            m => m.TerraformWorkspaceHealthAssessments,
+          ),
+      },
+    }),
+  );

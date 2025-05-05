@@ -65,6 +65,30 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/latestRun'
+  '/organizations/{orgName}/workspaces/{workspaceNames}/assessment-results':
+    get:
+      description: Returns data about the latest assessment results for one or more workspace
+      operationId: getWorkspaceAssessmentResults
+      parameters:
+        - name: orgName
+          in: path
+          description: Name of organization
+          required: true
+          schema:
+            type: string
+        - name: workspaceNames
+          in: path
+          description: Names of workspace to return the assessments for, comma-separated list
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/assessmentResults'
 components:
   schemas:
     health:
@@ -144,3 +168,56 @@ components:
           properties:
             name:
               type: string
+    assessmentResults:
+      title: Collection of Terraform Workspace Assessment Results
+      type: array
+      items:
+        $ref: '#/components/schemas/assessmentResult'
+    assessmentResult:
+      title: Terraform Workspace Assessment Result
+      type: object
+      properties:
+        id:
+          type: string
+        createdAt:
+          type: string
+        workspaceId:
+          type: string
+        workspaceName:
+          type: string
+        driftMetrics:
+          $ref: '#/components/schemas/driftMetrics'
+        validationMetrics:
+          $ref: '#/components/schemas/validationMetrics'
+    driftMetrics:
+      title: Workspace Drift Metrics
+      type: object
+      properties:
+        drifted:
+          type: boolean
+          example: false
+        resourcesDrifted:
+          type: number
+          example: 0
+        resourcesUndrifted:
+          type: number
+          example: 163
+    validationMetrics:
+      title: Workspace Validation Metrics
+      type: object
+      properties:
+        allChecksSucceeded:
+          type: boolean
+          example: false
+        checksErrored:
+          type: number
+          example: 0
+        checksFailed:
+          type: number
+          example: 2
+        checksPassed:
+          type: number
+          example: 4
+        checksUnknown:
+          type: number
+          example: 0

@@ -3,11 +3,15 @@ import {
   FetchApi,
   createApiRef,
 } from '@backstage/core-plugin-api';
-import { Run } from './hooks/types';
+import { AssessmentResult, Run } from './hooks/types';
 
 export interface TerraformApi {
   getRuns(organization: string, workspaceNames: string[]): Promise<Run[]>;
   getLatestRun(organization: string, workspaceNames: string[]): Promise<Run>;
+  getAssessmentResultsForWorkspaces(
+    organization: string,
+    workspaceNames: string[],
+  ): Promise<AssessmentResult[]>;
 }
 
 export const terraformApiRef = createApiRef<TerraformApi>({
@@ -64,6 +68,31 @@ export class TerraformApiClient implements TerraformApi {
     }
 
     return (await response.json()) as Run;
+  }
+
+  public async getAssessmentResultsForWorkspaces(
+    organization: string,
+    workspaceNames: string[],
+  ) {
+    const apiOrigin = await this.getApiOrigin();
+
+    const response = await this.fetchApi.fetch(
+      `${apiOrigin}/organizations/${organization}/workspaces/${workspaceNames.join(
+        ',',
+      )}/assessment-results`,
+      {
+        credentials: 'include',
+      },
+    );
+
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(
+        data.error?.message ?? 'Error fetching assessment results!',
+      );
+    }
+
+    return (await response.json()) as AssessmentResult[];
   }
 
   async getApiOrigin(): Promise<string> {

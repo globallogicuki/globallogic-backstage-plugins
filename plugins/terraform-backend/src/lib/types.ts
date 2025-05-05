@@ -29,11 +29,15 @@ export interface TerraformRun extends TerraformEntityBase {
 }
 
 export interface TerraformWorkspace extends TerraformEntityBase {
+  id: string;
   type: 'workspaces';
   attributes: {
     name: string;
-    description: string;
+    description?: string;
     'created-at': string;
+  };
+  relationships?: {
+    'current-assessment-result'?: Relationship;
   };
 }
 
@@ -49,6 +53,21 @@ export interface TerraformPlan extends TerraformEntityBase {
   type: 'plans';
   attributes: {
     'log-read-url'?: string;
+  };
+}
+
+export interface TerraformAssessmentResult extends TerraformEntityBase {
+  type: 'assessment-results';
+  attributes: {
+    'created-at': string;
+    'all-checks-succeeded': boolean;
+    'checks-errored': number;
+    'checks-failed': number;
+    'checks-passed': number;
+    'checks-unknown': number;
+    drifted: boolean;
+    'resources-drifted': number;
+    'resources-undrifted': number;
   };
 }
 

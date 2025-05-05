@@ -1,5 +1,6 @@
 import axios from 'axios';
 import {
+  TerraformAssessmentResult,
   TerraformEntity,
   TerraformPlan,
   TerraformResponse,
@@ -8,6 +9,8 @@ import {
   TerraformWorkspace,
 } from './types';
 import { formatTerraformRun } from './formatTerraformRun';
+import { formatTerraformAssessmentResult } from './formatTerraformAssessmentResult';
+import { AssessmentResult } from '../schema/openapi/generated/models';
 
 const fetchRelatedEntity = async <EntityType>(
   baseUrl: string,
@@ -73,6 +76,14 @@ type ListOrgRunsArgs = {
   workspaces: string[];
   latestOnly?: boolean;
 };
+
+type ListOrgWorkspacesArgs = {
+  baseUrl: string;
+  token: string;
+  organization: string;
+  workspaces: string[];
+};
+
 export const listOrgRuns = async ({
   baseUrl,
   token,
@@ -117,4 +128,64 @@ export const getLatestRunForWorkspaces = async (
   });
 
   return latestRun[0];
+};
+
+const fetchHealthAssessmentForWorkspace = async (
+  baseUrl: string,
+  token: string,
+  workspace: TerraformWorkspace,
+): Promise<AssessmentResult | null> => {
+  const currentAssessmentResultLink =
+    workspace?.relationships?.['current-assessment-result']?.links?.related;
+
+  if (!currentAssessmentResultLink) return null;
+
+  const assessmentResultUrl = new URL(currentAssessmentResultLink, baseUrl);
+  const terraformAssessmentResult = await axios.get<
+    TerraformResponse<TerraformAssessmentResult>
+  >(assessmentResultUrl.toString(), {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  return formatTerraformAssessmentResult(
+    terraformAssessmentResult.data.data,
+    workspace,
+  );
+};
+
+export const getAssessmentResultsForWorkspaces = async ({
+  baseUrl,
+  token,
+  organization,
+  workspaces,
+}: ListOrgWorkspacesArgs): Promise<AssessmentResult[]> => {
+  const getWorkspacesUrl = new URL(
+    `/api/v2/organizations/${organization}/workspaces`,
+    baseUrl,
+  );
+
+  const allWorkspacesForOrg = await axios.get<
+    TerraformResponse<TerraformWorkspace[]>
+  >(getWorkspacesUrl.toString(), {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  const terraformWorkspaces: TerraformWorkspace[] = [];
+  workspaces.forEach(w => {
+    const found = allWorkspacesForOrg.data.data.find(
+      f => f.attributes.name.toLowerCase() === w.toString().toLowerCase(),
+    );
+    if (found !== undefined) {
+      terraformWorkspaces.push(found);
+    }
+  });
+
+  const actions = terraformWorkspaces.map(w =>
+    fetchHealthAssessmentForWorkspace(baseUrl, token, w),
+  );
+  const results = await Promise.all(actions);
+  const validResults = results.filter(
+    (result): result is AssessmentResult => result !== null,
+  );
+  return validResults;
 };
