@@ -1,5 +1,11 @@
 # @globallogicuki/backstage-plugin-terraform
 
+## 0.8.0
+
+### Minor Changes
+
+- 8bec199: Add workspace health visualisation components
+
 ## 0.7.6
 
 ### Patch Changes
