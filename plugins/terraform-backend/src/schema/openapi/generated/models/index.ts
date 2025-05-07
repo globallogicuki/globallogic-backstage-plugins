@@ -8,4 +8,5 @@ export * from '../models/RunInner.model';
 export * from '../models/RunInnerConfirmedBy.model';
 export * from '../models/RunInnerPlan.model';
 export * from '../models/RunInnerWorkspace.model';
+export * from '../models/TerraformConfiguration.model';
 export * from '../models/ValidationMetrics.model';

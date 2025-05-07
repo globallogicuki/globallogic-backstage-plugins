@@ -3,7 +3,7 @@ import {
   FetchApi,
   createApiRef,
 } from '@backstage/core-plugin-api';
-import { AssessmentResult, Run } from './hooks/types';
+import { AssessmentResult, TerraformConfiguration, Run } from './hooks/types';
 
 export interface TerraformApi {
   getRuns(organization: string, workspaceNames: string[]): Promise<Run[]>;
@@ -12,6 +12,7 @@ export interface TerraformApi {
     organization: string,
     workspaceNames: string[],
   ): Promise<AssessmentResult[]>;
+  getTerraformConfiguration(): Promise<TerraformConfiguration>;
 }
 
 export const terraformApiRef = createApiRef<TerraformApi>({
@@ -93,6 +94,26 @@ export class TerraformApiClient implements TerraformApi {
     }
 
     return (await response.json()) as AssessmentResult[];
+  }
+
+  public async getTerraformConfiguration() {
+    const apiOrigin = await this.getApiOrigin();
+
+    const response = await this.fetchApi.fetch(
+      `${apiOrigin}/terraform-config`,
+      {
+        credentials: 'include',
+      },
+    );
+
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(
+        data.error?.message ?? 'Error fetching Terraform configuration!',
+      );
+    }
+
+    return (await response.json()) as TerraformConfiguration;
   }
 
   async getApiOrigin(): Promise<string> {

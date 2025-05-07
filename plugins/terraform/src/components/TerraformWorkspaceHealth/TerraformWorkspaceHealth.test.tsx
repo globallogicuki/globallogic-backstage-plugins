@@ -1,6 +1,16 @@
 import { render, screen } from '@testing-library/react';
 import TerraformWorkspaceHealth from './TerraformWorkspaceHealth';
 import { AssessmentResult } from '../../hooks/types.ts';
+import {
+  createDriftUrl,
+  createValidationChecksUrl,
+} from '../../utils/index.ts';
+
+// Mock the utils functions to control generated urls
+jest.mock('../../utils', () => ({
+  createDriftUrl: jest.fn(() => 'mock-drift-url'),
+  createValidationChecksUrl: jest.fn(() => 'mock-validation-url'),
+}));
 
 // Mock child components
 jest.mock('../TerraformDrift/TerraformDrift.tsx', () => ({
@@ -39,18 +49,31 @@ describe('TerraformWorkspaceHealth Component', () => {
     },
   };
 
+  const organizationName = 'organizationName';
+  const mockTerraformBaseUrl = 'https://tf.example.com';
+
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it('renders the workspace name', () => {
-    render(<TerraformWorkspaceHealth data={mockAssessmentResult} />);
+    render(
+      <TerraformWorkspaceHealth
+        data={mockAssessmentResult}
+        organizationName={organizationName}
+      />,
+    );
     const workspaceNameElement = screen.getByText('test-workspace');
     expect(workspaceNameElement).toBeInTheDocument();
   });
 
   it('renders the TerraformDriftCard and TerraformValidationChecksCard by default', () => {
-    render(<TerraformWorkspaceHealth data={mockAssessmentResult} />);
+    render(
+      <TerraformWorkspaceHealth
+        data={mockAssessmentResult}
+        organizationName={organizationName}
+      />,
+    );
     const driftCard = screen.getByTestId('drift-card-mock');
     const validationCard = screen.getByTestId('validation-card-mock');
     expect(driftCard).toBeInTheDocument();
@@ -62,6 +85,7 @@ describe('TerraformWorkspaceHealth Component', () => {
       <TerraformWorkspaceHealth
         data={mockAssessmentResult}
         showDrift={false}
+        organizationName={organizationName}
       />,
     );
     const driftCard = screen.queryByTestId('drift-card-mock');
@@ -75,6 +99,7 @@ describe('TerraformWorkspaceHealth Component', () => {
       <TerraformWorkspaceHealth
         data={mockAssessmentResult}
         showValidationChecks={false}
+        organizationName={organizationName}
       />,
     );
     const driftCard = screen.getByTestId('drift-card-mock');
@@ -89,11 +114,44 @@ describe('TerraformWorkspaceHealth Component', () => {
         data={mockAssessmentResult}
         showDrift={false}
         showValidationChecks={false}
+        organizationName={organizationName}
       />,
     );
     const driftCard = screen.queryByTestId('drift-card-mock');
     const validationCard = screen.queryByTestId('validation-card-mock');
     expect(driftCard).not.toBeInTheDocument();
     expect(validationCard).not.toBeInTheDocument();
+  });
+
+  it('calls createDriftUrl with the correct parameters', () => {
+    render(
+      <TerraformWorkspaceHealth
+        data={mockAssessmentResult}
+        organizationName={organizationName}
+        terraformBaseUrl={mockTerraformBaseUrl}
+      />,
+    );
+    expect(createDriftUrl).toHaveBeenCalledWith(
+      mockTerraformBaseUrl,
+      organizationName,
+      mockAssessmentResult.workspaceName,
+    );
+    expect(createDriftUrl).toHaveBeenCalledTimes(1); // It's called once for the terraformDriftUrl prop
+  });
+
+  it('calls createValidationChecksUrl with the correct parameters', () => {
+    render(
+      <TerraformWorkspaceHealth
+        data={mockAssessmentResult}
+        organizationName={organizationName}
+        terraformBaseUrl={mockTerraformBaseUrl}
+      />,
+    );
+    expect(createValidationChecksUrl).toHaveBeenCalledWith(
+      mockTerraformBaseUrl,
+      organizationName,
+      mockAssessmentResult.workspaceName,
+    );
+    expect(createValidationChecksUrl).toHaveBeenCalledTimes(1); // It's called once for the terraformValidationChecksUrl prop
   });
 });

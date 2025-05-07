@@ -7,10 +7,6 @@
 /**
  * @public
  */
-export interface ValidationMetrics {
-  allChecksSucceeded?: boolean;
-  checksErrored?: number;
-  checksFailed?: number;
-  checksPassed?: number;
-  checksUnknown?: number;
+export interface TerraformConfiguration {
+  baseUrl: string;
 }

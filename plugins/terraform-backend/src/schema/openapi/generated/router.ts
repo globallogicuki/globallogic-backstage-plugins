@@ -157,6 +157,25 @@ export const spec = {
         },
       },
     },
+    '/terraform-config': {
+      get: {
+        description:
+          'Returns the Terraform configuration data being used by the plugin.',
+        operationId: 'getTerraformConfiguration',
+        responses: {
+          '200': {
+            description: 'successful operation',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/terraformConfiguration',
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   },
   components: {
     schemas: {
@@ -345,6 +364,17 @@ export const spec = {
           checksUnknown: {
             type: 'number',
             example: 0,
+          },
+        },
+      },
+      terraformConfiguration: {
+        title: 'Terraform Configuration',
+        type: 'object',
+        required: ['baseUrl'],
+        properties: {
+          baseUrl: {
+            type: 'string',
+            example: 'https://app.terraform.io',
           },
         },
       },

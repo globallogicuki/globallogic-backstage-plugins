@@ -85,6 +85,10 @@ export async function createRouter(
     },
   );
 
+  router.get('/terraform-config', (_, response) => {
+    response.json({ baseUrl: baseUrl });
+  });
+
   router.use(MiddlewareFactory.create(options).error());
   return router;
 }

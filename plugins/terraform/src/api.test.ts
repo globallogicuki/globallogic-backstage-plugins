@@ -261,7 +261,7 @@ describe('TerraformApiClient', () => {
       );
     });
 
-    it('returns runs when successful', async () => {
+    it('returns assessment results when successful', async () => {
       const runs = await client.getAssessmentResultsForWorkspaces('org1', [
         'workspace1',
         'workspace2',
@@ -300,6 +300,79 @@ describe('TerraformApiClient', () => {
           'workspace2',
         ]),
       ).rejects.toThrow('Error fetching assessment results!');
+    });
+  });
+
+  describe('TerraformConfig', () => {
+    let discoveryApiMock: DiscoveryApi;
+    let fetchApiMock: FetchApi;
+    let client: TerraformApiClient;
+
+    const mockTerraformConfig = {
+      baseUrl: 'https://app.terraform.io',
+    };
+
+    beforeEach(() => {
+      discoveryApiMock = {
+        getBaseUrl: jest.fn().mockResolvedValue('http://mock-api.com'),
+      };
+      fetchApiMock = {
+        fetch: jest.fn().mockResolvedValue({
+          ok: true,
+          json: jest.fn().mockResolvedValue(mockTerraformConfig),
+        }),
+      };
+
+      client = new TerraformApiClient({
+        discoveryApi: discoveryApiMock,
+        fetchApi: fetchApiMock,
+      });
+    });
+
+    it('calls DiscoveryApi with the correct id', async () => {
+      await client.getTerraformConfiguration();
+      expect(discoveryApiMock.getBaseUrl).toHaveBeenCalledWith('terraform');
+    });
+
+    it('calls FetchApi correctly', async () => {
+      await client.getTerraformConfiguration();
+
+      expect(fetchApiMock.fetch).toHaveBeenCalledWith(
+        'http://mock-api.com/terraform-config',
+        { credentials: 'include' },
+      );
+    });
+
+    it('returns config when successful', async () => {
+      const runs = await client.getTerraformConfiguration();
+
+      expect(runs).toEqual(mockTerraformConfig);
+    });
+
+    it('should throw an error when the FetchApi call is unsuccessful', async () => {
+      const response = {
+        ok: false,
+        json: jest.fn().mockResolvedValue({
+          error: { message: 'Failed to fetch Terraform Config' },
+        }),
+      };
+      (fetchApiMock.fetch as jest.Mock).mockResolvedValue(response);
+
+      await expect(client.getTerraformConfiguration()).rejects.toThrow(
+        'Failed to fetch Terraform Config',
+      );
+    });
+
+    it('should throw an error when the FetchApi call is unsuccessful and no error message is present', async () => {
+      const response = {
+        ok: false,
+        json: jest.fn().mockResolvedValue({ error: undefined }),
+      };
+      (fetchApiMock.fetch as jest.Mock).mockResolvedValue(response);
+
+      await expect(client.getTerraformConfiguration()).rejects.toThrow(
+        'Error fetching Terraform configuration!',
+      );
     });
   });
 });

@@ -3,9 +3,13 @@ import useAssessmentResults from '../../hooks/useAssessmentResults';
 import { TerraformWorkspaceHealthAssessments } from './TerraformWorkspaceHealthAssessments';
 import { mockEntity } from '../../mocks/entity';
 import { EntityProvider } from '@backstage/plugin-catalog-react';
+import useTerraformConfig from '../../hooks/useTerraformConfig';
 
 // Mock the useAssessmentResults hook
 jest.mock('../../hooks/useAssessmentResults');
+
+// Mock the useTerraformConfig hook
+jest.mock('../../hooks/useTerraformConfig');
 
 // Mock the TerraformWorkspaceHealthCard component
 jest.mock('../TerraformWorkspaceHealth/TerraformWorkspaceHealth', () => {
@@ -20,15 +24,27 @@ jest.mock('../TerraformWorkspaceHealth/TerraformWorkspaceHealth', () => {
 
 describe('TerraformWorkspaceHealthAssessments', () => {
   const refetchMock = jest.fn(() => {});
+  const pluginRefetchMock = jest.fn(() => {});
 
   beforeEach(() => {
-    // Reset the mock before each test
+    // Reset the mocks before each test
     (useAssessmentResults as jest.Mock).mockReset();
+    (useTerraformConfig as jest.Mock).mockReset();
+
+    (useTerraformConfig as jest.Mock).mockReturnValue({
+      pluginData: { baseUrl: 'https://example.com/terraform' },
+      pluginRefetch: pluginRefetchMock,
+      isLoading: false,
+      isError: false,
+      error: undefined,
+    });
   });
 
   afterEach(() => {
     (useAssessmentResults as jest.Mock).mockRestore();
+    (useTerraformConfig as jest.Mock).mockRestore();
     refetchMock.mockReset();
+    pluginRefetchMock.mockReset();
   });
 
   it('renders loading indicator when isLoading is true', () => {
