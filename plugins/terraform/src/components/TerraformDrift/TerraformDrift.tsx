@@ -8,12 +8,14 @@ export interface TerraformDriftProps {
   drifted: boolean;
   resourcesDrifted: number;
   resourcesUndrifted: number;
+  terraformDriftUrl: string;
 }
 
 export const TerraformDrift = ({
   drifted,
   resourcesDrifted,
   resourcesUndrifted,
+  terraformDriftUrl,
 }: TerraformDriftProps) => {
   const theme = useTheme();
 
@@ -50,15 +52,19 @@ export const TerraformDrift = ({
           </IconButton>
         )
       }
+      deepLink={{
+        title: 'View in Terraform',
+        link: terraformDriftUrl,
+      }}
     >
       <PieChart
         skipAnimation
-        height={100}
+        height={110}
         series={[
           {
             arcLabel: item => `${item.value}`,
             arcLabelMinAngle: 35,
-            arcLabelRadius: '60%',
+            arcLabelRadius: '70%',
             innerRadius: 20,
             data: barData,
           },
