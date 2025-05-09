@@ -6,6 +6,7 @@ import TerraformWorkspaceHealthCard from '../TerraformWorkspaceHealth/TerraformW
 import RefreshIcon from '@material-ui/icons/Refresh';
 import { useEntity } from '@backstage/plugin-catalog-react';
 import { getAnnotations } from '../../utils';
+import useTerraformConfig from '../../hooks/useTerraformConfig';
 
 export interface TerraformWorkspaceHealthAssessmentsProps {
   title?: string;
@@ -27,9 +28,12 @@ export const TerraformWorkspaceHealthAssessments = ({
     workspaces!,
   );
 
+  const { pluginData, pluginRefetch } = useTerraformConfig();
+
   useEffect(() => {
     refetch();
-  }, [refetch]);
+    pluginRefetch();
+  }, [refetch, pluginRefetch]);
 
   if (isLoading) {
     return (
@@ -59,6 +63,8 @@ export const TerraformWorkspaceHealthAssessments = ({
               data={assessmentResult}
               showDrift={showDrift}
               showValidationChecks={showValidationChecks}
+              terraformBaseUrl={pluginData?.baseUrl}
+              organizationName={organization!}
             />
           </Grid>
         ))}

@@ -9,6 +9,15 @@ import {
   TERRAFORM_WORKSPACE_ORGANIZATION,
 } from '../annotations';
 
+const createTerraformHealthUrl = (
+  baseUrl: string | undefined,
+  organizationName: string,
+  workspaceName: string,
+  endpoint: 'drift' | 'continuous-validation',
+): string => {
+  return `${baseUrl}/app/${organizationName}/workspaces/${workspaceName}/health/${endpoint}`;
+};
+
 export function formatTimeToWords(
   isoTime: string,
   opts?: { strict?: boolean },
@@ -29,4 +38,30 @@ export const getAnnotations = (
   const workspaces =
     entity.metadata.annotations?.[TERRAFORM_WORKSPACE_ANNOTATION]?.split(',');
   return { organization, workspaces };
+};
+
+export const createDriftUrl = (
+  baseUrl: string | undefined,
+  organizationName: string,
+  workspaceName: string,
+): string => {
+  return createTerraformHealthUrl(
+    baseUrl,
+    organizationName,
+    workspaceName,
+    'drift',
+  );
+};
+
+export const createValidationChecksUrl = (
+  baseUrl: string | undefined,
+  organizationName: string,
+  workspaceName: string,
+): string => {
+  return createTerraformHealthUrl(
+    baseUrl,
+    organizationName,
+    workspaceName,
+    'continuous-validation',
+  );
 };

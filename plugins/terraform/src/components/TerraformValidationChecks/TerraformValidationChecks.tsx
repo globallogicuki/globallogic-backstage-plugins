@@ -9,6 +9,7 @@ interface Props {
   checksFailed: number;
   checksUnknown: number;
   checksPassed: number;
+  terraformValidationChecksUrl: string;
 }
 
 export const TerraformValidationChecks = ({
@@ -16,6 +17,7 @@ export const TerraformValidationChecks = ({
   checksFailed,
   checksUnknown,
   checksPassed,
+  terraformValidationChecksUrl = '',
 }: Props) => {
   const theme = useTheme();
   const barData = [
@@ -55,6 +57,10 @@ export const TerraformValidationChecks = ({
           </IconButton>
         )
       }
+      deepLink={{
+        title: 'View in Terraform',
+        link: terraformValidationChecksUrl,
+      }}
     >
       <PieChart
         skipAnimation
@@ -63,7 +69,7 @@ export const TerraformValidationChecks = ({
           {
             arcLabel: item => `${item.value}`,
             arcLabelMinAngle: 35,
-            arcLabelRadius: '60%',
+            arcLabelRadius: '70%',
             innerRadius: 20,
             data: barData,
           },

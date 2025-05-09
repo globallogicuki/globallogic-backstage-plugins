@@ -206,4 +206,13 @@ describe('createRouter', () => {
       expect(response.status).toEqual(500);
     });
   });
+
+  describe('GET /terraform-config', () => {
+    it('returns ok', async () => {
+      const response = await request(app).get('/terraform-config');
+
+      expect(response.status).toEqual(200);
+      expect(response.body).toEqual({ baseUrl: DEFAULT_TF_BASE_URL });
+    });
+  });
 });

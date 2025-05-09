@@ -8,6 +8,7 @@ import { AssessmentResult } from '../models/AssessmentResult.model';
 import { Health } from '../models/Health.model';
 import { LatestRun } from '../models/LatestRun.model';
 import { RunInner } from '../models/RunInner.model';
+import { TerraformConfiguration } from '../models/TerraformConfiguration.model';
 
 /**
  * @public
@@ -32,6 +33,12 @@ export type GetRuns = {
 /**
  * @public
  */
+export type GetTerraformConfiguration = {
+  response: TerraformConfiguration;
+};
+/**
+ * @public
+ */
 export type GetWorkspaceAssessmentResults = {
   path: {
     orgName: string;
@@ -50,6 +57,8 @@ export type EndpointMap = {
   '#get|/organizations/{orgName}/workspaces/{workspaceNames}/latestRun': GetLatestRun;
 
   '#get|/organizations/{orgName}/workspaces/{workspaceNames}/runs': GetRuns;
+
+  '#get|/terraform-config': GetTerraformConfiguration;
 
   '#get|/organizations/{orgName}/workspaces/{workspaceNames}/assessment-results': GetWorkspaceAssessmentResults;
 

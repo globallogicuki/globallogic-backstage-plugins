@@ -37,3 +37,7 @@ export interface ValidationMetrics {
   checksPassed: number;
   checksUnknown: number;
 }
+
+export interface TerraformConfiguration {
+  baseUrl: string;
+}
