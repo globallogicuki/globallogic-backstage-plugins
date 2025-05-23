@@ -3,8 +3,8 @@ import useAssessmentResults from '../../hooks/useAssessmentResults';
 import { TerraformWorkspaceHealthAssessments } from './TerraformWorkspaceHealthAssessments';
 import { mockEntity } from '../../mocks/entity';
 import { EntityProvider } from '@backstage/plugin-catalog-react';
-import { TestApiProvider } from '@backstage/test-utils';
-import { configApiRef, ConfigApi } from '@backstage/core-plugin-api';
+import { TestApiProvider, mockApis } from '@backstage/test-utils';
+import { configApiRef } from '@backstage/core-plugin-api';
 
 // Mock the useAssessmentResults hook
 jest.mock('../../hooks/useAssessmentResults');
@@ -20,36 +20,18 @@ jest.mock('../TerraformWorkspaceHealth/TerraformWorkspaceHealth', () => {
   };
 });
 
-// Mock the ConfigApi
-const mockConfigApi: ConfigApi = {
-  getOptionalString: jest.fn((key: string) => {
-    if (key === 'integrations.terraform.baseUrl') {
-      return 'https://mock.terraform.io';
-    }
-    return undefined;
-  }),
-  getOptionalConfig: jest.fn((key: string) => {
-    if (key === 'integrations') {
-      return {
-        getOptionalConfig: jest.fn((subKey: string) => {
-          if (subKey === 'terraform') {
-            return {
-              getOptionalString: jest.fn((baseUrlKey: string) => {
-                if (baseUrlKey === 'baseUrl')
-                  return 'https://mock.terraform.io';
-                return undefined;
-              }),
-              has: jest.fn(() => true),
-            };
-          }
-          return undefined;
-        }),
-        has: jest.fn(() => true),
-      } as unknown as ConfigApi;
-    }
-    return undefined;
-  }),
-} as unknown as ConfigApi;
+const mockConfigData = {
+  data: {
+    integrations: {
+      terraform: {
+        baseUrl: 'https://mock.terraform.io',
+        token: 'mock-token-secret',
+      },
+    },
+  },
+};
+
+const mockConfigApi = mockApis.config(mockConfigData);
 
 describe('TerraformWorkspaceHealthAssessments', () => {
   const refetchMock = jest.fn(() => {});
