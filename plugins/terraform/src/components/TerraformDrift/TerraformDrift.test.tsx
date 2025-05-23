@@ -1,5 +1,7 @@
 import { render, screen } from '@testing-library/react';
-import TerraformDrift from './TerraformDrift'; // Adjust the import path as necessary
+import TerraformDrift from './TerraformDrift';
+
+const driftUrl = 'https://app.terraform.io/app/';
 
 describe('TerraformDrift Component', () => {
   it('renders the component with provided data and displays the Drift title', () => {
@@ -8,6 +10,7 @@ describe('TerraformDrift Component', () => {
         drifted={false}
         resourcesDrifted={10}
         resourcesUndrifted={90}
+        terraformDriftUrl={driftUrl}
       />,
     );
 
@@ -17,7 +20,12 @@ describe('TerraformDrift Component', () => {
 
   it('displays the warning icon and not the success icon when drifted is true', () => {
     render(
-      <TerraformDrift drifted resourcesDrifted={10} resourcesUndrifted={90} />,
+      <TerraformDrift
+        drifted
+        resourcesDrifted={10}
+        resourcesUndrifted={90}
+        terraformDriftUrl={driftUrl}
+      />,
     );
 
     const warningIcon = screen.getByTestId('warning-icon');
@@ -33,6 +41,7 @@ describe('TerraformDrift Component', () => {
         drifted={false}
         resourcesDrifted={10}
         resourcesUndrifted={90}
+        terraformDriftUrl={driftUrl}
       />,
     );
 
@@ -43,9 +52,14 @@ describe('TerraformDrift Component', () => {
     expect(warningIcon).toBeNull();
   });
 
-  it('renders the StackedBar component with correct data', () => {
+  it('renders the PieChart component with correct data', () => {
     render(
-      <TerraformDrift drifted resourcesDrifted={20} resourcesUndrifted={80} />,
+      <TerraformDrift
+        drifted
+        resourcesDrifted={20}
+        resourcesUndrifted={80}
+        terraformDriftUrl={driftUrl}
+      />,
     );
 
     const driftedText = screen.getByText('Drifted');
@@ -53,5 +67,23 @@ describe('TerraformDrift Component', () => {
 
     expect(driftedText).toBeInTheDocument();
     expect(undriftedText).toBeInTheDocument();
+  });
+
+  it('renders the view details link in the actions slot', () => {
+    render(
+      <TerraformDrift
+        drifted={false}
+        resourcesDrifted={0}
+        resourcesUndrifted={80}
+        terraformDriftUrl={driftUrl}
+      />,
+    );
+
+    const viewDetailsLink = screen.getByRole('link', {
+      name: /View in Terraform/i,
+    });
+    expect(viewDetailsLink).toBeInTheDocument();
+    expect(viewDetailsLink).toHaveAttribute('href', driftUrl);
+    expect(viewDetailsLink).toHaveAttribute('target', '_blank');
   });
 });

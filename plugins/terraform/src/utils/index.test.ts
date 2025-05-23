@@ -1,4 +1,9 @@
-import { formatTimeToWords, getAnnotations } from './index';
+import {
+  createDriftUrl,
+  createValidationChecksUrl,
+  formatTimeToWords,
+  getAnnotations,
+} from './index';
 import { Entity } from '@backstage/catalog-model';
 import { mockEntity } from '../mocks/entity';
 
@@ -55,6 +60,58 @@ describe('utils', () => {
       const { organization, workspaces } = getAnnotations(emptyEntity);
       expect(organization).toBeUndefined();
       expect(workspaces).toBeUndefined();
+    });
+  });
+
+  describe('Terraform URL Creation Functions', () => {
+    const baseUrl = 'https://terraform.example.com';
+    const organizationName = 'test-org';
+    const workspaceName = 'test-workspace';
+
+    describe('createDriftUrl', () => {
+      it('should create the correct drift URL with a defined baseUrl', () => {
+        const expectedUrl = `${baseUrl}/app/${organizationName}/workspaces/${workspaceName}/health/drift`;
+        expect(createDriftUrl(baseUrl, organizationName, workspaceName)).toBe(
+          expectedUrl,
+        );
+      });
+
+      it('should create the correct drift URL with an undefined baseUrl', () => {
+        const expectedUrl = `undefined/app/${organizationName}/workspaces/${workspaceName}/health/drift`;
+        expect(createDriftUrl(undefined, organizationName, workspaceName)).toBe(
+          expectedUrl,
+        );
+      });
+
+      it('should create the correct drift URL with an empty baseUrl', () => {
+        const expectedUrl = `/app/${organizationName}/workspaces/${workspaceName}/health/drift`;
+        expect(createDriftUrl('', organizationName, workspaceName)).toBe(
+          expectedUrl,
+        );
+      });
+    });
+
+    describe('createValidationChecksUrl', () => {
+      it('should create the correct validation checks URL with a defined baseUrl', () => {
+        const expectedUrl = `${baseUrl}/app/${organizationName}/workspaces/${workspaceName}/health/continuous-validation`;
+        expect(
+          createValidationChecksUrl(baseUrl, organizationName, workspaceName),
+        ).toBe(expectedUrl);
+      });
+
+      it('should create the correct validation checks URL with an undefined baseUrl', () => {
+        const expectedUrl = `undefined/app/${organizationName}/workspaces/${workspaceName}/health/continuous-validation`;
+        expect(
+          createValidationChecksUrl(undefined, organizationName, workspaceName),
+        ).toBe(expectedUrl);
+      });
+
+      it('should create the correct validation checks URL with an empty baseUrl', () => {
+        const expectedUrl = `/app/${organizationName}/workspaces/${workspaceName}/health/continuous-validation`;
+        expect(
+          createValidationChecksUrl('', organizationName, workspaceName),
+        ).toBe(expectedUrl);
+      });
     });
   });
 });

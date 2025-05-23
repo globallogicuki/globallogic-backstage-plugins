@@ -3,6 +3,7 @@ import {
   EntityTerraformCard,
   EntityTerraformContent,
   EntityTerraformLatestRunCard,
+  EntityTerraformWorkspaceHealthAssessmentsCard,
 } from './plugin';
 
 describe('terraform', () => {
@@ -20,5 +21,9 @@ describe('terraform', () => {
 
   it('should export latest run', () => {
     expect(EntityTerraformLatestRunCard).toBeDefined();
+  });
+
+  it('should export workspace health assessments', () => {
+    expect(EntityTerraformWorkspaceHealthAssessmentsCard).toBeDefined();
   });
 });
