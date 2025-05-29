@@ -1,5 +1,5 @@
 import { PieChart } from '@mui/x-charts';
-import { InfoCard } from '@backstage/core-components';
+import { Content, InfoCard } from '@backstage/core-components';
 import WarningIcon from '@material-ui/icons/Warning';
 import { IconButton, useTheme } from '@material-ui/core';
 import CheckCircle from '@material-ui/icons/CheckCircle';
@@ -41,19 +41,21 @@ export const TerraformValidationChecks = ({
     },
   ];
 
+  const checksExist = checksFailed > 0 || checksUnknown > 0 || checksPassed > 0;
+
   return (
     <InfoCard
       title="Checks"
       titleTypographyProps={{ variant: 'subtitle1' }}
       variant="gridItem"
       action={
-        !allChecksSucceeded ? (
+        checksExist && allChecksSucceeded ? (
           <IconButton disabled>
-            <WarningIcon data-testid="warning-icon" />
+            <CheckCircle data-testid="success-icon" />
           </IconButton>
         ) : (
           <IconButton disabled>
-            <CheckCircle data-testid="success-icon" />
+            <WarningIcon data-testid="warning-icon" />
           </IconButton>
         )
       }
@@ -62,19 +64,27 @@ export const TerraformValidationChecks = ({
         link: terraformValidationChecksUrl,
       }}
     >
-      <PieChart
-        skipAnimation
-        height={100}
-        series={[
-          {
-            arcLabel: item => `${item.value}`,
-            arcLabelMinAngle: 35,
-            arcLabelRadius: '70%',
-            innerRadius: 20,
-            data: barData,
-          },
-        ]}
-      />
+      {checksExist && (
+        <PieChart
+          skipAnimation
+          height={100}
+          series={[
+            {
+              arcLabel: item => `${item.value}`,
+              arcLabelMinAngle: 35,
+              arcLabelRadius: '70%',
+              innerRadius: 20,
+              data: barData,
+            },
+          ]}
+        />
+      )}
+
+      {!checksExist && (
+        <div style={{ height: 100 }}>
+          <Content noPadding>No checks found.</Content>
+        </div>
+      )}
     </InfoCard>
   );
 };

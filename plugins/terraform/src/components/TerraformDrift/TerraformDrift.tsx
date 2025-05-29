@@ -1,5 +1,5 @@
 import { PieChart } from '@mui/x-charts';
-import { InfoCard } from '@backstage/core-components';
+import { Content, InfoCard } from '@backstage/core-components';
 import WarningIcon from '@material-ui/icons/Warning';
 import { IconButton, useTheme } from '@material-ui/core';
 import CheckCircle from '@material-ui/icons/CheckCircle';
@@ -36,19 +36,21 @@ export const TerraformDrift = ({
     },
   ];
 
+  const driftMetricsFound = resourcesDrifted > 0 || resourcesUndrifted > 0;
+
   return (
     <InfoCard
       title="Drift"
       titleTypographyProps={{ variant: 'subtitle1' }}
       variant="gridItem"
       action={
-        drifted ? (
+        driftMetricsFound && !drifted ? (
           <IconButton disabled>
-            <WarningIcon data-testid="warning-icon" />
+            <CheckCircle data-testid="success-icon" />
           </IconButton>
         ) : (
           <IconButton disabled>
-            <CheckCircle data-testid="success-icon" />
+            <WarningIcon data-testid="warning-icon" />
           </IconButton>
         )
       }
@@ -57,19 +59,27 @@ export const TerraformDrift = ({
         link: terraformDriftUrl,
       }}
     >
-      <PieChart
-        skipAnimation
-        height={110}
-        series={[
-          {
-            arcLabel: item => `${item.value}`,
-            arcLabelMinAngle: 35,
-            arcLabelRadius: '70%',
-            innerRadius: 20,
-            data: barData,
-          },
-        ]}
-      />
+      {driftMetricsFound && (
+        <PieChart
+          skipAnimation
+          height={100}
+          series={[
+            {
+              arcLabel: item => `${item.value}`,
+              arcLabelMinAngle: 35,
+              arcLabelRadius: '70%',
+              innerRadius: 20,
+              data: barData,
+            },
+          ]}
+        />
+      )}
+
+      {!driftMetricsFound && (
+        <div style={{ height: 100 }}>
+          <Content noPadding>No drift metrics found.</Content>
+        </div>
+      )}
     </InfoCard>
   );
 };
