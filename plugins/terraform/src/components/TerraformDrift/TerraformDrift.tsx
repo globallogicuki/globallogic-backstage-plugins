@@ -1,8 +1,9 @@
 import { PieChart } from '@mui/x-charts';
-import { Content, InfoCard } from '@backstage/core-components';
+import { InfoCard } from '@backstage/core-components';
 import WarningIcon from '@material-ui/icons/Warning';
 import { IconButton, useTheme } from '@material-ui/core';
 import CheckCircle from '@material-ui/icons/CheckCircle';
+import { TerraformNoMetrics } from '../TerraformNoMetrics';
 
 export interface TerraformDriftProps {
   drifted: boolean;
@@ -36,7 +37,7 @@ export const TerraformDrift = ({
     },
   ];
 
-  const driftMetricsFound = resourcesDrifted > 0 || resourcesUndrifted > 0;
+  const metricsExist = resourcesDrifted > 0 || resourcesUndrifted > 0;
 
   return (
     <InfoCard
@@ -44,7 +45,7 @@ export const TerraformDrift = ({
       titleTypographyProps={{ variant: 'subtitle1' }}
       variant="gridItem"
       action={
-        driftMetricsFound && !drifted ? (
+        metricsExist && !drifted ? (
           <IconButton disabled>
             <CheckCircle data-testid="success-icon" />
           </IconButton>
@@ -59,7 +60,7 @@ export const TerraformDrift = ({
         link: terraformDriftUrl,
       }}
     >
-      {driftMetricsFound && (
+      {metricsExist && (
         <PieChart
           skipAnimation
           height={100}
@@ -75,10 +76,8 @@ export const TerraformDrift = ({
         />
       )}
 
-      {!driftMetricsFound && (
-        <div style={{ height: 100 }}>
-          <Content noPadding>No drift metrics found.</Content>
-        </div>
+      {!metricsExist && (
+        <TerraformNoMetrics message="No drift metrics found." />
       )}
     </InfoCard>
   );

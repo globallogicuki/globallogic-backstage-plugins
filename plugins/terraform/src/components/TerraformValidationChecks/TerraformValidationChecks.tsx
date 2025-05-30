@@ -1,8 +1,9 @@
 import { PieChart } from '@mui/x-charts';
-import { Content, InfoCard } from '@backstage/core-components';
+import { InfoCard } from '@backstage/core-components';
 import WarningIcon from '@material-ui/icons/Warning';
 import { IconButton, useTheme } from '@material-ui/core';
 import CheckCircle from '@material-ui/icons/CheckCircle';
+import { TerraformNoMetrics } from '../TerraformNoMetrics';
 
 interface Props {
   allChecksSucceeded: boolean;
@@ -41,7 +42,8 @@ export const TerraformValidationChecks = ({
     },
   ];
 
-  const checksExist = checksFailed > 0 || checksUnknown > 0 || checksPassed > 0;
+  const metricsExist =
+    checksFailed > 0 || checksUnknown > 0 || checksPassed > 0;
 
   return (
     <InfoCard
@@ -49,7 +51,7 @@ export const TerraformValidationChecks = ({
       titleTypographyProps={{ variant: 'subtitle1' }}
       variant="gridItem"
       action={
-        checksExist && allChecksSucceeded ? (
+        metricsExist && allChecksSucceeded ? (
           <IconButton disabled>
             <CheckCircle data-testid="success-icon" />
           </IconButton>
@@ -64,7 +66,7 @@ export const TerraformValidationChecks = ({
         link: terraformValidationChecksUrl,
       }}
     >
-      {checksExist && (
+      {metricsExist && (
         <PieChart
           skipAnimation
           height={100}
@@ -80,11 +82,7 @@ export const TerraformValidationChecks = ({
         />
       )}
 
-      {!checksExist && (
-        <div style={{ height: 100 }}>
-          <Content noPadding>No checks found.</Content>
-        </div>
-      )}
+      {!metricsExist && <TerraformNoMetrics message="No checks found." />}
     </InfoCard>
   );
 };
