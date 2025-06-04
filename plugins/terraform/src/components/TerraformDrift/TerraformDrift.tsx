@@ -3,17 +3,20 @@ import { InfoCard } from '@backstage/core-components';
 import WarningIcon from '@material-ui/icons/Warning';
 import { IconButton, useTheme } from '@material-ui/core';
 import CheckCircle from '@material-ui/icons/CheckCircle';
+import { TerraformNoMetrics } from '../TerraformNoMetrics';
 
 export interface TerraformDriftProps {
   drifted: boolean;
   resourcesDrifted: number;
   resourcesUndrifted: number;
+  terraformDriftUrl: string;
 }
 
 export const TerraformDrift = ({
   drifted,
   resourcesDrifted,
   resourcesUndrifted,
+  terraformDriftUrl,
 }: TerraformDriftProps) => {
   const theme = useTheme();
 
@@ -34,36 +37,48 @@ export const TerraformDrift = ({
     },
   ];
 
+  const metricsExist = resourcesDrifted > 0 || resourcesUndrifted > 0;
+
   return (
     <InfoCard
       title="Drift"
       titleTypographyProps={{ variant: 'subtitle1' }}
       variant="gridItem"
       action={
-        drifted ? (
-          <IconButton disabled>
-            <WarningIcon data-testid="warning-icon" />
-          </IconButton>
-        ) : (
+        metricsExist && !drifted ? (
           <IconButton disabled>
             <CheckCircle data-testid="success-icon" />
           </IconButton>
+        ) : (
+          <IconButton disabled>
+            <WarningIcon data-testid="warning-icon" />
+          </IconButton>
         )
       }
+      deepLink={{
+        title: 'View in Terraform',
+        link: terraformDriftUrl,
+      }}
     >
-      <PieChart
-        skipAnimation
-        height={100}
-        series={[
-          {
-            arcLabel: item => `${item.value}`,
-            arcLabelMinAngle: 35,
-            arcLabelRadius: '60%',
-            innerRadius: 20,
-            data: barData,
-          },
-        ]}
-      />
+      {metricsExist && (
+        <PieChart
+          skipAnimation
+          height={100}
+          series={[
+            {
+              arcLabel: item => `${item.value}`,
+              arcLabelMinAngle: 35,
+              arcLabelRadius: '70%',
+              innerRadius: 20,
+              data: barData,
+            },
+          ]}
+        />
+      )}
+
+      {!metricsExist && (
+        <TerraformNoMetrics message="No drift metrics found." />
+      )}
     </InfoCard>
   );
 };

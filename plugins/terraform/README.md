@@ -68,6 +68,8 @@ The Drift card is visible within the Workspace Health component by default, but 
 
     <TerraformWorkspaceHealthAssessments showDrift={false}>
 
+The Drift card further incorporates a navigational element, providing a direct link to the dedicated Drift view for the Workspace within your Terraform deployment if a more granular breakdown is required.
+
 ### Terraform Validation Checks
 
 ![Workspace Health card - Validation Checks Only](./docs/terraform-plugin-workspace-health-checks-only.png)
@@ -75,3 +77,5 @@ The Drift card is visible within the Workspace Health component by default, but 
 The Validation Checks card is also visible within the Workspace Health component by default, but can be optionally hidden using the `showValidationChecks` property on the `<TerraformWorkspaceHealthAssessments>` tag, eg:
 
     <TerraformWorkspaceHealthAssessments showValidationChecks={false}>
+
+The Validation Checks card also incorporates a direct link to the Continuous Validation view for the Workspace within your Terraform deployment if a more detailed breakdown is needed.

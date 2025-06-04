@@ -261,7 +261,7 @@ describe('TerraformApiClient', () => {
       );
     });
 
-    it('returns runs when successful', async () => {
+    it('returns assessment results when successful', async () => {
       const runs = await client.getAssessmentResultsForWorkspaces('org1', [
         'workspace1',
         'workspace2',
