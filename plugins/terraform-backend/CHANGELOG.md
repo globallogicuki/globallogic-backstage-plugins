@@ -1,5 +1,11 @@
 # @globallogicuki/backstage-plugin-terraform-backend
 
+## 0.8.0
+
+### Minor Changes
+
+- 94b5f9b: Update health cards to include hyperlink to Terraform
+
 ## 0.7.0
 
 ### Minor Changes
