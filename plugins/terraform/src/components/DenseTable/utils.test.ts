@@ -1,5 +1,5 @@
 import { getColor } from './utils';
-import { Theme } from '@material-ui/core/styles/createTheme'; // Import createTheme
+import { Theme } from '@material-ui/core/styles/createTheme';
 
 describe('getColor', () => {
   const mockTheme = {
@@ -19,7 +19,7 @@ describe('getColor', () => {
         selected: '#f5f5f5',
       },
     },
-  } as Theme; // Type cast to Theme
+  } as Theme;
 
   describe('when the status is "applied"', () => {
     it('should return the success light color', () => {
