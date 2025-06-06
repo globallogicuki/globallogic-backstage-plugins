@@ -15,7 +15,12 @@ import {
 } from '@material-ui/core';
 import NotesIcon from '@material-ui/icons/Notes';
 import CloseIcon from '@material-ui/icons/Close';
-import { makeStyles, createStyles, Theme } from '@material-ui/core/styles';
+import {
+  makeStyles,
+  createStyles,
+  Theme,
+  useTheme,
+} from '@material-ui/core/styles';
 import { LogViewer } from '../LogViewer';
 import { formatTimeToWords } from '../../utils';
 import { getColor } from './utils';
@@ -44,6 +49,7 @@ export const DenseTable = ({
   hasMultipleWorkspaces,
 }: DenseTableProps) => {
   const classes = useStyles();
+  const theme = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const [dialogContent, setDialogContent] = useState<string | null | undefined>(
     null,
@@ -113,7 +119,7 @@ export const DenseTable = ({
         return (
           <Chip
             label={row.status}
-            style={{ backgroundColor: getColor(row.status) }}
+            style={{ backgroundColor: getColor(row.status, theme) }}
             size="small"
             variant="default"
           />

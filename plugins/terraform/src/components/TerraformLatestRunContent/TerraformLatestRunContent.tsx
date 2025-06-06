@@ -1,10 +1,11 @@
-import { Avatar, Chip, Grid, Typography } from '@material-ui/core';
+import { Avatar, Chip, Grid, Typography, useTheme } from '@material-ui/core';
 import { Run } from '../../hooks/types';
 import { formatTimeToWords } from '../../utils';
 import { getColor } from '../DenseTable/utils';
 
 export const TerraformLatestRunContent = ({ run }: { run: Run }) => {
   const userName = run.confirmedBy?.name ?? 'Unknown';
+  const theme = useTheme();
 
   return (
     <>
@@ -21,7 +22,7 @@ export const TerraformLatestRunContent = ({ run }: { run: Run }) => {
         <Grid item>
           <Chip
             label={run.status}
-            style={{ backgroundColor: getColor(run.status) }}
+            style={{ backgroundColor: getColor(run.status, theme) }}
             size="small"
             variant="default"
           />
