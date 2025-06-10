@@ -1,5 +1,11 @@
 # @globallogicuki/backstage-plugin-terraform
 
+## 0.10.0
+
+### Minor Changes
+
+- 7a9e416: Use Backstage theme to style Chip components
+
 ## 0.9.0
 
 ### Minor Changes
