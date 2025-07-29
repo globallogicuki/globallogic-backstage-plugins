@@ -1,5 +1,11 @@
 # @globallogicuki/backstage-plugin-terraform-backend
 
+## 0.9.0
+
+### Minor Changes
+
+- e634afd: Update dependencies from backstage 1.41.1
+
 ## 0.8.1
 
 ### Patch Changes
