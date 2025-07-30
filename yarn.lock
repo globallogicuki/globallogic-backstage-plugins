@@ -5415,7 +5415,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/ui@npm:^0.6.0":
+"@backstage/ui@npm:^0.6.1":
   version: 0.6.1
   resolution: "@backstage/ui@npm:0.6.1"
   dependencies:
@@ -16549,7 +16549,7 @@ __metadata:
     "@backstage/plugin-user-settings": "npm:^0.8.24"
     "@backstage/test-utils": "npm:^1.7.10"
     "@backstage/theme": "npm:^0.6.7"
-    "@backstage/ui": "npm:^0.6.0"
+    "@backstage/ui": "npm:^0.6.1"
     "@globallogicuki/backstage-plugin-terraform": "npm:^0.11.0"
     "@material-ui/core": "npm:^4.12.2"
     "@material-ui/icons": "npm:^4.9.1"
