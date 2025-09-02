@@ -6578,7 +6578,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@globallogicuki/backstage-plugin-terraform@npm:^0.11.0, @globallogicuki/backstage-plugin-terraform@workspace:plugins/terraform":
+"@globallogicuki/backstage-plugin-terraform@npm:^0.11.1, @globallogicuki/backstage-plugin-terraform@workspace:plugins/terraform":
   version: 0.0.0-use.local
   resolution: "@globallogicuki/backstage-plugin-terraform@workspace:plugins/terraform"
   dependencies:
@@ -16550,7 +16550,7 @@ __metadata:
     "@backstage/test-utils": "npm:^1.7.10"
     "@backstage/theme": "npm:^0.6.7"
     "@backstage/ui": "npm:^0.6.1"
-    "@globallogicuki/backstage-plugin-terraform": "npm:^0.11.0"
+    "@globallogicuki/backstage-plugin-terraform": "npm:^0.11.1"
     "@material-ui/core": "npm:^4.12.2"
     "@material-ui/icons": "npm:^4.9.1"
     "@playwright/test": "npm:^1.32.3"
