@@ -55,4 +55,8 @@ backend.add(import('@backstage/plugin-kubernetes-backend'));
 // terraform plugin
 backend.add(import('@globallogicuki/backstage-plugin-terraform-backend'));
 
+// notifications and signals plugins
+backend.add(import('@backstage/plugin-notifications-backend'));
+backend.add(import('@backstage/plugin-signals-backend'));
+
 backend.start();
