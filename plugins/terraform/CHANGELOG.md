@@ -1,5 +1,11 @@
 # @globallogicuki/backstage-plugin-terraform
 
+## 0.11.1
+
+### Patch Changes
+
+- 8ab8e3b: ui package dependency version bump
+
 ## 0.11.0
 
 ### Minor Changes
