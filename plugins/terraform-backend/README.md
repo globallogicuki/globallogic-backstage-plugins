@@ -17,6 +17,7 @@ integrations:
   terraform:
     token: tokenGoesHere
     baseUrl: https://tfe.enterprise.com/api/v2 # Optional, for self-hosted TFE
+    pageSize: 20 # Optional, override default TF API page size
 ```
 
 ### New Backstage backend system

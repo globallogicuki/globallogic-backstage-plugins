@@ -168,12 +168,33 @@ describe('lib/index', () => {
     const token = 'token-1';
     const baseUrl = DEFAULT_TF_BASE_URL;
     const organization = 'org-1';
+    const pageSize = 7;
 
     it('should make the HTTP GET request correctly', async () => {
-      await listOrgRuns({ token, baseUrl, organization, workspaces });
+      await listOrgRuns({
+        token,
+        baseUrl,
+        organization,
+        workspaces,
+        pageSize,
+      });
 
       expect(axios.get).toHaveBeenCalledWith(
-        `${baseUrl}/api/v2/organizations/${organization}/runs?filter[workspace_names]=workspace-1,workspace-2`,
+        `${baseUrl}/api/v2/organizations/${organization}/runs?filter[workspace_names]=workspace-1,workspace-2&page[number]=1&page[size]=${pageSize}`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+    });
+
+    it('should make the HTTP GET request correctly with default pageSize', async () => {
+      await listOrgRuns({
+        token,
+        baseUrl,
+        organization,
+        workspaces,
+      });
+
+      expect(axios.get).toHaveBeenCalledWith(
+        `${baseUrl}/api/v2/organizations/${organization}/runs?filter[workspace_names]=workspace-1,workspace-2&page[number]=1&page[size]=20`,
         { headers: { Authorization: `Bearer ${token}` } },
       );
     });

@@ -74,14 +74,7 @@ type ListOrgRunsArgs = {
   token: string;
   organization: string;
   workspaces: string[];
-  latestOnly?: boolean;
-};
-
-type ListOrgWorkspacesArgs = {
-  baseUrl: string;
-  token: string;
-  organization: string;
-  workspaces: string[];
+  pageSize?: number;
 };
 
 export const listOrgRuns = async ({
@@ -89,12 +82,12 @@ export const listOrgRuns = async ({
   token,
   organization,
   workspaces,
-  latestOnly,
+  pageSize = 20,
 }: ListOrgRunsArgs) => {
   const url = new URL(
     `/api/v2/organizations/${organization}/runs?filter[workspace_names]=${workspaces.join(
       ',',
-    )}${latestOnly ? '&page[number]=1&page[size]=1' : ''}`,
+    )}${`&page[number]=1&page[size]=${pageSize}`}`,
     baseUrl,
   );
 
@@ -124,7 +117,7 @@ export const getLatestRunForWorkspaces = async (
     token,
     organization,
     workspaces,
-    latestOnly: true,
+    pageSize: 1,
   });
 
   return latestRun[0];
@@ -153,6 +146,13 @@ const fetchHealthAssessmentForWorkspace = async (
   );
 };
 
+type ListOrgWorkspacesArgs = {
+  baseUrl: string;
+  token: string;
+  organization: string;
+  workspaces: string[];
+};
+
 export const getAssessmentResultsForWorkspaces = async ({
   baseUrl,
   token,
@@ -172,11 +172,11 @@ export const getAssessmentResultsForWorkspaces = async ({
 
   const terraformWorkspaces: TerraformWorkspace[] = [];
   workspaces.forEach(w => {
-    const found = allWorkspacesForOrg.data.data.find(
+    const matchingWorkspace = allWorkspacesForOrg.data.data.find(
       f => f.attributes.name.toLowerCase() === w.toString().toLowerCase(),
     );
-    if (found !== undefined) {
-      terraformWorkspaces.push(found);
+    if (matchingWorkspace) {
+      terraformWorkspaces.push(matchingWorkspace);
     }
   });
 
