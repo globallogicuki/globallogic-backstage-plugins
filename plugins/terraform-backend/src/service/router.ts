@@ -29,6 +29,7 @@ export async function createRouter(
   const baseUrl =
     config.getOptionalString('integrations.terraform.baseUrl') ??
     DEFAULT_TF_BASE_URL;
+  const pageSize = config.getOptionalNumber('integrations.terraform.pageSize');
 
   router.get(
     '/organizations/:orgName/workspaces/:workspaceNames/latestRun',
@@ -48,7 +49,7 @@ export async function createRouter(
       const organization = request.params.orgName;
       const workspaces = request.params.workspaceNames.split(',');
 
-      listOrgRuns({ token, baseUrl, organization, workspaces })
+      listOrgRuns({ token, baseUrl, organization, workspaces, pageSize })
         .then(runs => {
           response.json(runs);
         })
