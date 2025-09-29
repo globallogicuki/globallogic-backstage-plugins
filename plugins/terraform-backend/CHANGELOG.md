@@ -1,5 +1,13 @@
 # @globallogicuki/backstage-plugin-terraform-backend
 
+## 0.10.0
+
+### Minor Changes
+
+- 86a091f: Allows overriding the page size in the API call to Terraform.
+
+  This can be set in `app-config.yaml`.
+
 ## 0.9.2
 
 ### Patch Changes
