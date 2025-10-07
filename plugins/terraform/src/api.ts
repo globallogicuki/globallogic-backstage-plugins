@@ -1,8 +1,11 @@
 import {
-  DiscoveryApi,
-  FetchApi,
   createApiRef,
-} from '@backstage/core-plugin-api';
+  ApiBlueprint,
+  DiscoveryApi,
+  discoveryApiRef,
+  FetchApi,
+  fetchApiRef,
+} from '@backstage/frontend-plugin-api';
 import { AssessmentResult, Run } from './hooks/types';
 
 export interface TerraformApi {
@@ -16,6 +19,16 @@ export interface TerraformApi {
 
 export const terraformApiRef = createApiRef<TerraformApi>({
   id: 'plugin.terraform.service',
+});
+
+export const terraformApi = ApiBlueprint.make({
+  params: defineParams =>
+    defineParams({
+      api: terraformApiRef,
+      deps: { discoveryApi: discoveryApiRef, fetchApi: fetchApiRef },
+      factory: ({ discoveryApi, fetchApi }) =>
+        new TerraformApiClient({ discoveryApi, fetchApi }),
+    }),
 });
 
 export class TerraformApiClient implements TerraformApi {
