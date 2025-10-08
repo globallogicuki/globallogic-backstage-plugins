@@ -6,6 +6,3 @@ export {
   EntityTerraformWorkspaceHealthAssessmentsCard,
 } from './plugin';
 export { isTerraformAvailable } from './annotations';
-
-import terraformPluginAlpha from './alpha';
-export { terraformPluginAlpha as default };

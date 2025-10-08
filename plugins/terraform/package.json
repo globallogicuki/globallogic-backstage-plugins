@@ -25,7 +25,22 @@
       "@globallogicuki/backstage-plugin-terraform"
     ]
   },
+  "exports": {
+    ".": "./src/index.ts",
+    "./alpha": "./src/alpha.ts",
+    "./package.json": "./package.json"
+  },
   "sideEffects": false,
+  "typesVersions": {
+    "*": {
+      "alpha": [
+        "src/alpha.ts"
+      ],
+      "package.json": [
+        "package.json"
+      ]
+    }
+  },
   "scripts": {
     "start": "backstage-cli package start",
     "build": "backstage-cli package build",
@@ -37,8 +52,10 @@
   },
   "dependencies": {
     "@backstage/catalog-model": "^1.7.5",
+    "@backstage/core-compat-api": "^0.5.2",
     "@backstage/core-components": "^0.17.5",
     "@backstage/core-plugin-api": "^1.10.9",
+    "@backstage/frontend-plugin-api": "^0.12.0",
     "@backstage/plugin-catalog-react": "^1.20.1",
     "@backstage/theme": "^0.6.8",
     "@material-ui/core": "^4.12.2",
