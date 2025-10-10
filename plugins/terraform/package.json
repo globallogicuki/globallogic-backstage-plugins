@@ -22,7 +22,8 @@
     "role": "frontend-plugin",
     "pluginId": "terraform",
     "pluginPackages": [
-      "@globallogicuki/backstage-plugin-terraform"
+      "@globallogicuki/backstage-plugin-terraform",
+      "@globallogicuki/backstage-plugin-terraform-backend"
     ]
   },
   "exports": {
