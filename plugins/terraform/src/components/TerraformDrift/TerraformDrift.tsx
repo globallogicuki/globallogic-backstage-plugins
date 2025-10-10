@@ -82,5 +82,3 @@ export const TerraformDrift = ({
     </InfoCard>
   );
 };
-
-export default TerraformDrift;

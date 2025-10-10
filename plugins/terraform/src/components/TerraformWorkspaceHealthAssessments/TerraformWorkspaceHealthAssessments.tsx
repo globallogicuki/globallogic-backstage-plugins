@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import useAssessmentResults from '../../hooks/useAssessmentResults';
 import { InfoCard, ResponseErrorPanel } from '@backstage/core-components';
 import { CircularProgress, Grid, IconButton } from '@material-ui/core';
-import TerraformWorkspaceHealthCard from '../TerraformWorkspaceHealth/TerraformWorkspaceHealth';
+import { TerraformWorkspaceHealth } from '../TerraformWorkspaceHealth';
 import RefreshIcon from '@material-ui/icons/Refresh';
 import { useEntity } from '@backstage/plugin-catalog-react';
 import { getAnnotations } from '../../utils';
@@ -64,7 +64,7 @@ export const TerraformWorkspaceHealthAssessments = ({
       <Grid container>
         {data.map(assessmentResult => (
           <Grid item key={assessmentResult.id} xs={12} sm={6} md={4} lg={4}>
-            <TerraformWorkspaceHealthCard
+            <TerraformWorkspaceHealth
               data={assessmentResult}
               showDrift={showDrift}
               showValidationChecks={showValidationChecks}
@@ -77,5 +77,3 @@ export const TerraformWorkspaceHealthAssessments = ({
     </InfoCard>
   );
 };
-
-export default TerraformWorkspaceHealthAssessments;

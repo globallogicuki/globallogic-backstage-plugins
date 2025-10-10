@@ -3,8 +3,8 @@ import {
   createDriftUrl,
   createValidationChecksUrl,
 } from '../../utils/index.ts';
-import TerraformDrift from '../TerraformDrift/TerraformDrift';
-import TerraformValidationChecks from '../TerraformValidationChecks/TerraformValidationChecks';
+import { TerraformDrift } from '../TerraformDrift';
+import { TerraformValidationChecks } from '../TerraformValidationChecks';
 import { InfoCard } from '@backstage/core-components';
 
 interface Props {
@@ -51,5 +51,3 @@ export const TerraformWorkspaceHealth = ({
     </InfoCard>
   );
 };
-
-export default TerraformWorkspaceHealth;

@@ -86,5 +86,3 @@ export const TerraformValidationChecks = ({
     </InfoCard>
   );
 };
-
-export default TerraformValidationChecks;
