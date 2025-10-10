@@ -1,28 +1,25 @@
-import { render, screen } from '@testing-library/react';
-import TerraformWorkspaceHealth from './TerraformWorkspaceHealth';
+import { screen } from '@testing-library/react';
+import { renderInTestApp } from '@backstage/frontend-test-utils';
 import { AssessmentResult } from '../../hooks/types.ts';
 import {
   createDriftUrl,
   createValidationChecksUrl,
 } from '../../utils/index.ts';
+import { TerraformWorkspaceHealth } from './TerraformWorkspaceHealth';
 
-// Mock the utils functions to control generated urls
 jest.mock('../../utils', () => ({
   createDriftUrl: jest.fn(() => 'mock-drift-url'),
   createValidationChecksUrl: jest.fn(() => 'mock-validation-url'),
 }));
 
-// Mock child components
-jest.mock('../TerraformDrift/TerraformDrift.tsx', () => ({
-  __esModule: true,
-  default: jest.fn(() => (
+jest.mock('../TerraformDrift', () => ({
+  TerraformDrift: jest.fn(() => (
     <div data-testid="drift-card-mock">TerraformDriftCard Mock</div>
   )),
 }));
 
-jest.mock('../TerraformValidationChecks/TerraformValidationChecks.tsx', () => ({
-  __esModule: true,
-  default: jest.fn(() => (
+jest.mock('../TerraformValidationChecks', () => ({
+  TerraformValidationChecks: jest.fn(() => (
     <div data-testid="validation-card-mock">
       TerraformValidationChecksCard Mock
     </div>
@@ -57,7 +54,7 @@ describe('TerraformWorkspaceHealth Component', () => {
   });
 
   it('renders the workspace name', () => {
-    render(
+    renderInTestApp(
       <TerraformWorkspaceHealth
         data={mockAssessmentResult}
         organizationName={organizationName}
@@ -68,7 +65,7 @@ describe('TerraformWorkspaceHealth Component', () => {
   });
 
   it('renders the TerraformDriftCard and TerraformValidationChecksCard by default', () => {
-    render(
+    renderInTestApp(
       <TerraformWorkspaceHealth
         data={mockAssessmentResult}
         organizationName={organizationName}
@@ -81,7 +78,7 @@ describe('TerraformWorkspaceHealth Component', () => {
   });
 
   it('does not render TerraformDriftCard when showDrift is false', () => {
-    render(
+    renderInTestApp(
       <TerraformWorkspaceHealth
         data={mockAssessmentResult}
         showDrift={false}
@@ -95,7 +92,7 @@ describe('TerraformWorkspaceHealth Component', () => {
   });
 
   it('does not render TerraformValidationChecksCard when showValidationChecks is false', () => {
-    render(
+    renderInTestApp(
       <TerraformWorkspaceHealth
         data={mockAssessmentResult}
         showValidationChecks={false}
@@ -109,7 +106,7 @@ describe('TerraformWorkspaceHealth Component', () => {
   });
 
   it('renders neither card when both showDrift and showValidationChecks are false', () => {
-    render(
+    renderInTestApp(
       <TerraformWorkspaceHealth
         data={mockAssessmentResult}
         showDrift={false}
@@ -124,7 +121,7 @@ describe('TerraformWorkspaceHealth Component', () => {
   });
 
   it('calls createDriftUrl with the correct parameters', () => {
-    render(
+    renderInTestApp(
       <TerraformWorkspaceHealth
         data={mockAssessmentResult}
         organizationName={organizationName}
@@ -140,7 +137,7 @@ describe('TerraformWorkspaceHealth Component', () => {
   });
 
   it('calls createValidationChecksUrl with the correct parameters', () => {
-    render(
+    renderInTestApp(
       <TerraformWorkspaceHealth
         data={mockAssessmentResult}
         organizationName={organizationName}
