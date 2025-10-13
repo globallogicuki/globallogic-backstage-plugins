@@ -2,9 +2,13 @@ import { screen } from '@testing-library/react';
 import { renderInTestApp } from '@backstage/frontend-test-utils';
 import { TerraformDrift } from './TerraformDrift';
 
-jest.mock('@mui/x-charts', () => ({
-  PieChart: () => <div data-testid="pie-chart" />,
-}));
+jest.mock('@mui/x-charts', () => {
+  const actual = jest.requireActual('@mui/x-charts');
+  return {
+    ...actual,
+    PieChart: () => <div data-testid="pie-chart" />,
+  };
+});
 
 const driftUrl = 'https://app.terraform.io/app/';
 
