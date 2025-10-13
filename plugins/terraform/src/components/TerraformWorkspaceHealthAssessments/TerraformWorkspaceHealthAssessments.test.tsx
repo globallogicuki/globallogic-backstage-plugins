@@ -1,43 +1,24 @@
-import { render, screen } from '@testing-library/react';
-import useAssessmentResults from '../../hooks/useAssessmentResults';
-import { TerraformWorkspaceHealthAssessments } from './TerraformWorkspaceHealthAssessments';
-import { mockEntity } from '../../mocks/entity';
+import { screen } from '@testing-library/react';
 import { EntityProvider } from '@backstage/plugin-catalog-react';
-import { TestApiProvider, mockApis } from '@backstage/test-utils';
-import { configApiRef } from '@backstage/core-plugin-api';
+import { renderInTestApp } from '@backstage/frontend-test-utils';
+import useAssessmentResults from '../../hooks/useAssessmentResults';
+import { mockEntity } from '../../mocks/entity';
+import { TerraformWorkspaceHealthAssessments } from './TerraformWorkspaceHealthAssessments';
 
-// Mock the useAssessmentResults hook
 jest.mock('../../hooks/useAssessmentResults');
 
-// Mock the TerraformWorkspaceHealthCard component
-jest.mock('../TerraformWorkspaceHealth/TerraformWorkspaceHealth', () => {
-  return function MockTerraformWorkspaceHealthCard({ data }: { data: any }) {
-    return (
-      <div data-testid={`health-card-${data.id}`}>
-        Health Card for {data.workspaceName}
-      </div>
-    );
-  };
-});
-
-const mockConfigData = {
-  data: {
-    integrations: {
-      terraform: {
-        baseUrl: 'https://mock.terraform.io',
-        token: 'mock-token-secret',
-      },
-    },
-  },
-};
-
-const mockConfigApi = mockApis.config(mockConfigData);
+jest.mock('../TerraformWorkspaceHealth', () => ({
+  TerraformWorkspaceHealth: ({ data }: any) => (
+    <div data-testid={`health-card-${data.id}`}>
+      Health Card for {data.workspaceName}
+    </div>
+  ),
+}));
 
 describe('TerraformWorkspaceHealthAssessments', () => {
   const refetchMock = jest.fn(() => {});
 
   beforeEach(() => {
-    // Reset the mocks before each test
     (useAssessmentResults as jest.Mock).mockReset();
   });
 
@@ -54,12 +35,10 @@ describe('TerraformWorkspaceHealthAssessments', () => {
       refetch: refetchMock,
     });
 
-    render(
-      <TestApiProvider apis={[[configApiRef, mockConfigApi]]}>
-        <EntityProvider entity={mockEntity}>
-          <TerraformWorkspaceHealthAssessments />
-        </EntityProvider>
-      </TestApiProvider>,
+    renderInTestApp(
+      <EntityProvider entity={mockEntity}>
+        <TerraformWorkspaceHealthAssessments />
+      </EntityProvider>,
     );
 
     expect(
@@ -79,12 +58,10 @@ describe('TerraformWorkspaceHealthAssessments', () => {
       refetch: refetchMock,
     });
 
-    render(
-      <TestApiProvider apis={[[configApiRef, mockConfigApi]]}>
-        <EntityProvider entity={mockEntity}>
-          <TerraformWorkspaceHealthAssessments />
-        </EntityProvider>
-      </TestApiProvider>,
+    renderInTestApp(
+      <EntityProvider entity={mockEntity}>
+        <TerraformWorkspaceHealthAssessments />
+      </EntityProvider>,
     );
 
     expect(screen.getByText('Workspace Health')).toBeInTheDocument();
@@ -113,12 +90,10 @@ describe('TerraformWorkspaceHealthAssessments', () => {
       refetch: refetchMock,
     });
 
-    render(
-      <TestApiProvider apis={[[configApiRef, mockConfigApi]]}>
-        <EntityProvider entity={mockEntity}>
-          <TerraformWorkspaceHealthAssessments title={overriddenTitle} />
-        </EntityProvider>
-      </TestApiProvider>,
+    renderInTestApp(
+      <EntityProvider entity={mockEntity}>
+        <TerraformWorkspaceHealthAssessments title={overriddenTitle} />
+      </EntityProvider>,
     );
 
     expect(screen.getByText(overriddenTitle)).toBeInTheDocument();
@@ -132,12 +107,10 @@ describe('TerraformWorkspaceHealthAssessments', () => {
       refetch: refetchMock,
     });
 
-    render(
-      <TestApiProvider apis={[[configApiRef, mockConfigApi]]}>
-        <EntityProvider entity={mockEntity}>
-          <TerraformWorkspaceHealthAssessments />
-        </EntityProvider>
-      </TestApiProvider>,
+    renderInTestApp(
+      <EntityProvider entity={mockEntity}>
+        <TerraformWorkspaceHealthAssessments />
+      </EntityProvider>,
     );
 
     expect(screen.queryByTestId('health-card-1')).toBeNull();
@@ -151,12 +124,10 @@ describe('TerraformWorkspaceHealthAssessments', () => {
       isLoading: false,
       refetch: refetchMock,
     });
-    render(
-      <TestApiProvider apis={[[configApiRef, mockConfigApi]]}>
-        <EntityProvider entity={mockEntity}>
-          <TerraformWorkspaceHealthAssessments />
-        </EntityProvider>
-      </TestApiProvider>,
+    renderInTestApp(
+      <EntityProvider entity={mockEntity}>
+        <TerraformWorkspaceHealthAssessments />
+      </EntityProvider>,
     );
 
     expect(refetchMock).toHaveBeenCalledTimes(1);
@@ -179,12 +150,10 @@ describe('TerraformWorkspaceHealthAssessments', () => {
       isLoading: false,
       refetch: refetchMock,
     });
-    render(
-      <TestApiProvider apis={[[configApiRef, mockConfigApi]]}>
-        <EntityProvider entity={mockEntity}>
-          <TerraformWorkspaceHealthAssessments />
-        </EntityProvider>
-      </TestApiProvider>,
+    renderInTestApp(
+      <EntityProvider entity={mockEntity}>
+        <TerraformWorkspaceHealthAssessments />
+      </EntityProvider>,
     );
   });
 
@@ -196,12 +165,10 @@ describe('TerraformWorkspaceHealthAssessments', () => {
       refetch: refetchMock,
     });
 
-    render(
-      <TestApiProvider apis={[[configApiRef, mockConfigApi]]}>
-        <EntityProvider entity={mockEntity}>
-          <TerraformWorkspaceHealthAssessments />
-        </EntityProvider>
-      </TestApiProvider>,
+    renderInTestApp(
+      <EntityProvider entity={mockEntity}>
+        <TerraformWorkspaceHealthAssessments />
+      </EntityProvider>,
     );
 
     const refresh = await screen.findByLabelText('Refresh');

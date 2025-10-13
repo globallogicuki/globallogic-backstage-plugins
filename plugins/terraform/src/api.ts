@@ -1,8 +1,8 @@
 import {
+  createApiRef,
   DiscoveryApi,
   FetchApi,
-  createApiRef,
-} from '@backstage/core-plugin-api';
+} from '@backstage/frontend-plugin-api';
 import { AssessmentResult, Run } from './hooks/types';
 
 export interface TerraformApi {

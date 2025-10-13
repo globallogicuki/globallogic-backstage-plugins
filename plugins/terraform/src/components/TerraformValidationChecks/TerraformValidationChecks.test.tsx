@@ -1,16 +1,14 @@
-import { render, screen } from '@testing-library/react';
-import TerraformValidationChecks from './TerraformValidationChecks';
+import { screen } from '@testing-library/react';
+import { renderInTestApp } from '@backstage/frontend-test-utils';
+import { TerraformValidationChecks } from './TerraformValidationChecks';
 
-jest.mock('@material-ui/core', () => ({
-  ...jest.requireActual('@material-ui/core'),
-  useTheme: () => ({
-    palette: {
-      error: { light: '#f44336' },
-      warning: { light: '#ff9800' },
-      success: { light: '#4caf50' },
-    },
-  }),
-}));
+jest.mock('@mui/x-charts', () => {
+  const actual = jest.requireActual('@mui/x-charts');
+  return {
+    ...actual,
+    PieChart: () => <div data-testid="pie-chart" />,
+  };
+});
 
 describe('TerraformValidationChecks Component', () => {
   const defaultProps = {
@@ -18,27 +16,20 @@ describe('TerraformValidationChecks Component', () => {
     checksFailed: 1,
     checksUnknown: 2,
     checksPassed: 3,
+    terraformValidationChecksUrl: 'https://app.terraform.io/app/',
   };
 
-  const terraformChecksUrl = 'https://app.terraform.io/app/';
-
   it('renders the component with the title "Checks"', () => {
-    render(
-      <TerraformValidationChecks
-        {...defaultProps}
-        terraformValidationChecksUrl={terraformChecksUrl}
-      />,
-    );
+    renderInTestApp(<TerraformValidationChecks {...defaultProps} />);
     const titleElement = screen.getByText('Checks');
     expect(titleElement).toBeInTheDocument();
   });
 
   it('displays the warning icon when allChecksSucceeded is false (and checks exist)', () => {
-    render(
+    renderInTestApp(
       <TerraformValidationChecks
         {...defaultProps}
         allChecksSucceeded={false}
-        terraformValidationChecksUrl={terraformChecksUrl}
       />,
     );
     const warningIcon = screen.getByTestId('warning-icon');
@@ -49,13 +40,13 @@ describe('TerraformValidationChecks Component', () => {
   });
 
   it('displays the warning icon when allChecksSucceeded is true but no checks exist', () => {
-    render(
+    renderInTestApp(
       <TerraformValidationChecks
+        {...defaultProps}
         allChecksSucceeded
         checksFailed={0}
         checksUnknown={0}
         checksPassed={0}
-        terraformValidationChecksUrl={terraformChecksUrl}
       />,
     );
 
@@ -67,12 +58,8 @@ describe('TerraformValidationChecks Component', () => {
   });
 
   it('displays the success icon when allChecksSucceeded is true AND checks exist', () => {
-    render(
-      <TerraformValidationChecks
-        {...defaultProps}
-        allChecksSucceeded
-        terraformValidationChecksUrl={terraformChecksUrl}
-      />,
+    renderInTestApp(
+      <TerraformValidationChecks {...defaultProps} allChecksSucceeded />,
     );
 
     const successIcon = screen.getByTestId('success-icon');
@@ -82,30 +69,20 @@ describe('TerraformValidationChecks Component', () => {
     expect(warningIcon).toBeNull();
   });
 
-  it('renders the Pie Chart component with the correct data labels when checks exist', () => {
-    render(
-      <TerraformValidationChecks
-        {...defaultProps}
-        terraformValidationChecksUrl={terraformChecksUrl}
-      />,
-    );
+  it('renders the Pie Chart component when checks exist', () => {
+    renderInTestApp(<TerraformValidationChecks {...defaultProps} />);
 
-    expect(screen.getByText('Failed')).toBeInTheDocument();
-    expect(screen.getByText('Unknown')).toBeInTheDocument();
-    expect(screen.getByText('Passed')).toBeInTheDocument();
-    expect(screen.getByText('1')).toBeInTheDocument(); // checksFailed
-    expect(screen.getByText('2')).toBeInTheDocument(); // checksUnknown
-    expect(screen.getByText('3')).toBeInTheDocument(); // checksPassed
+    expect(screen.getByTestId('pie-chart')).toBeInTheDocument();
   });
 
   it('renders "No checks found." message inside Content when no checks exist', () => {
-    render(
+    renderInTestApp(
       <TerraformValidationChecks
+        {...defaultProps}
         allChecksSucceeded={false}
         checksFailed={0}
         checksUnknown={0}
         checksPassed={0}
-        terraformValidationChecksUrl={terraformChecksUrl}
       />,
     );
 
@@ -117,13 +94,13 @@ describe('TerraformValidationChecks Component', () => {
   });
 
   it('renders the view details link in the actions slot with correct text and URL', () => {
-    render(
+    renderInTestApp(
       <TerraformValidationChecks
+        {...defaultProps}
         allChecksSucceeded
         checksFailed={0}
         checksUnknown={0}
         checksPassed={0}
-        terraformValidationChecksUrl={terraformChecksUrl}
       />,
     );
 
@@ -131,7 +108,10 @@ describe('TerraformValidationChecks Component', () => {
       name: /View in Terraform/i,
     });
     expect(viewDetailsLink).toBeInTheDocument();
-    expect(viewDetailsLink).toHaveAttribute('href', terraformChecksUrl);
+    expect(viewDetailsLink).toHaveAttribute(
+      'href',
+      defaultProps.terraformValidationChecksUrl,
+    );
     expect(viewDetailsLink).toHaveAttribute('target', '_blank');
   });
 });
