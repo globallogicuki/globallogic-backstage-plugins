@@ -8,7 +8,6 @@ import {
   getAssessmentResultsForWorkspaces,
 } from '../lib';
 import { createOpenApiRouter } from '../schema/openapi/generated';
-import { AssessmentResult } from '../schema/openapi/generated/models';
 
 export const DEFAULT_TF_BASE_URL = 'https://app.terraform.io';
 
@@ -75,12 +74,7 @@ export async function createRouter(
         workspaces,
       })
         .then(assessments => {
-          if (assessments !== null) {
-            response.json(assessments);
-          } else {
-            const emptyResults: AssessmentResult[] = [];
-            response.json(emptyResults);
-          }
+          response.json(assessments);
         })
         .catch(next);
     },

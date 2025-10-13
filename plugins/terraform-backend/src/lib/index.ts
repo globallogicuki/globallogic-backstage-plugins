@@ -180,12 +180,11 @@ export const getAssessmentResultsForWorkspaces = async ({
     }
   });
 
-  const actions = terraformWorkspaces.map(w =>
-    fetchHealthAssessmentForWorkspace(baseUrl, token, w),
+  const results = await Promise.all(
+    terraformWorkspaces.map(w =>
+      fetchHealthAssessmentForWorkspace(baseUrl, token, w),
+    ),
   );
-  const results = await Promise.all(actions);
-  const validResults = results.filter(
-    (result): result is AssessmentResult => result !== null,
-  );
-  return validResults;
+
+  return results.filter((r): r is AssessmentResult => !!r);
 };
