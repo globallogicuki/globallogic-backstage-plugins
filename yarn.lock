@@ -5472,7 +5472,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@globallogicuki/backstage-plugin-terraform-backend@npm:^0.10.1, @globallogicuki/backstage-plugin-terraform-backend@workspace:plugins/terraform-backend":
+"@globallogicuki/backstage-plugin-terraform-backend@npm:^0.10.0, @globallogicuki/backstage-plugin-terraform-backend@workspace:plugins/terraform-backend":
   version: 0.0.0-use.local
   resolution: "@globallogicuki/backstage-plugin-terraform-backend@workspace:plugins/terraform-backend"
   dependencies:
