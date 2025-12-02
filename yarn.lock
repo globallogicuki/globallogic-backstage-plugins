@@ -5508,6 +5508,7 @@ __metadata:
     "@backstage/core-components": "npm:^0.18.3"
     "@backstage/core-plugin-api": "npm:^1.12.0"
     "@backstage/dev-utils": "npm:^1.1.17"
+    "@backstage/frontend-test-utils": "npm:^0.4.1"
     "@backstage/plugin-catalog-react": "npm:^1.21.3"
     "@backstage/test-utils": "npm:^1.7.13"
     "@backstage/theme": "npm:^0.7.0"

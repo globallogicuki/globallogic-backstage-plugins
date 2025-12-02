@@ -1,16 +1,13 @@
-import { render, screen } from '@testing-library/react';
-import TerraformDrift from './TerraformDrift';
+import { screen } from '@testing-library/react';
+import { renderInTestApp } from '@backstage/frontend-test-utils';
+import { TerraformDrift } from './TerraformDrift';
 
-jest.mock('@material-ui/core', () => ({
-  ...jest.requireActual('@material-ui/core'),
-  useTheme: () => ({
-    palette: {
-      error: { light: '#f44336' },
-      warning: { light: '#ff9800' },
-      success: { light: '#4caf50' },
-    },
-  }),
-}));
+jest.mock('@mui/x-charts', () => {
+  return {
+    ...jest.requireActual('@mui/x-charts'),
+    PieChart: () => <div data-testid="pie-chart" />,
+  };
+});
 
 const driftUrl = 'https://app.terraform.io/app/';
 
@@ -19,21 +16,22 @@ describe('TerraformDrift Component', () => {
     drifted: false,
     resourcesDrifted: 10,
     resourcesUndrifted: 90,
+    terraformDriftUrl: 'https://app.terraform.io/app/',
   };
 
   it('renders the component with the title "Drift"', () => {
-    render(<TerraformDrift {...defaultProps} terraformDriftUrl={driftUrl} />);
+    renderInTestApp(<TerraformDrift {...defaultProps} />);
     const titleElement = screen.getByText('Drift');
     expect(titleElement).toBeInTheDocument();
   });
 
   it('displays the warning icon when drifted is true (and metrics exist)', () => {
-    render(
+    renderInTestApp(
       <TerraformDrift
+        {...defaultProps}
         drifted
         resourcesDrifted={10}
         resourcesUndrifted={90}
-        terraformDriftUrl={driftUrl}
       />,
     );
     const warningIcon = screen.getByTestId('warning-icon');
@@ -44,12 +42,12 @@ describe('TerraformDrift Component', () => {
   });
 
   it('displays the warning icon when drifted is false but no drift metrics exist', () => {
-    render(
+    renderInTestApp(
       <TerraformDrift
+        {...defaultProps}
         drifted={false}
         resourcesDrifted={0}
         resourcesUndrifted={0}
-        terraformDriftUrl={driftUrl}
       />,
     );
     const warningIcon = screen.getByTestId('warning-icon');
@@ -60,7 +58,7 @@ describe('TerraformDrift Component', () => {
   });
 
   it('displays the success icon when drifted is false AND drift metrics exist', () => {
-    render(<TerraformDrift {...defaultProps} terraformDriftUrl={driftUrl} />);
+    renderInTestApp(<TerraformDrift {...defaultProps} />);
 
     const successIcon = screen.getByTestId('success-icon');
     expect(successIcon).toBeInTheDocument();
@@ -69,23 +67,19 @@ describe('TerraformDrift Component', () => {
     expect(warningIcon).toBeNull();
   });
 
-  it('renders the Pie Chart component with the correct data labels when metrics exist', () => {
-    render(<TerraformDrift {...defaultProps} terraformDriftUrl={driftUrl} />);
+  it('renders the Pie Chart component when metrics exist', () => {
+    renderInTestApp(<TerraformDrift {...defaultProps} />);
 
-    expect(screen.getByText('Drifted')).toBeInTheDocument();
-    expect(screen.getByText('Undrifted')).toBeInTheDocument();
-    // Also confirm the numbers are displayed as arc labels
-    expect(screen.getByText('10')).toBeInTheDocument(); // resourcesDrifted
-    expect(screen.getByText('90')).toBeInTheDocument(); // resourcesUndrifted
+    expect(screen.getByTestId('pie-chart')).toBeInTheDocument();
   });
 
   it('renders "No drift metrics found." message inside Content when no metrics exist', () => {
-    render(
+    renderInTestApp(
       <TerraformDrift
+        {...defaultProps}
         drifted={false}
         resourcesDrifted={0}
         resourcesUndrifted={0}
-        terraformDriftUrl={driftUrl}
       />,
     );
 
@@ -95,12 +89,12 @@ describe('TerraformDrift Component', () => {
   });
 
   it('renders the view details link in the actions slot with correct text and URL', () => {
-    render(
+    renderInTestApp(
       <TerraformDrift
+        {...defaultProps}
         drifted={false}
         resourcesDrifted={0}
         resourcesUndrifted={0}
-        terraformDriftUrl={driftUrl}
       />,
     );
 

@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
+import { renderInTestApp } from '@backstage/test-utils';
 import { EntityProvider } from '@backstage/plugin-catalog-react';
 import { Terraform } from './Terraform';
 import { mockEntity } from '../../mocks/entity';
@@ -20,7 +21,7 @@ jest.mock('../TerraformWorkspaceHealthAssessments', () => {
 
 describe('Terraform', () => {
   it('renders TerraformRuns and TerraformWorkspaceHealthAssessments when annotation is present', async () => {
-    render(
+    renderInTestApp(
       <EntityProvider entity={mockEntity}>
         <Terraform />
       </EntityProvider>,
@@ -42,7 +43,7 @@ describe('Terraform', () => {
     const missingAnnotation = JSON.parse(JSON.stringify(mockEntity));
     missingAnnotation.metadata.annotations = {};
 
-    render(
+    renderInTestApp(
       <EntityProvider entity={missingAnnotation}>
         <Terraform />
       </EntityProvider>,
