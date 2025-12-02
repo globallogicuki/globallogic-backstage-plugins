@@ -1,5 +1,11 @@
 # @globallogicuki/backstage-plugin-terraform-backend
 
+## 0.10.1
+
+### Patch Changes
+
+- c17dfd1: Remove unused `@backstage/backend-common` package from depdendencies.
+
 ## 0.10.0
 
 ### Minor Changes
