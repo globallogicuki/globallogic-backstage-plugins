@@ -1,5 +1,5 @@
 import { screen } from '@testing-library/react';
-import { renderInTestApp } from '@backstage/test-utils';
+import { renderInTestApp } from '@backstage/frontend-test-utils';
 import { EntityProvider } from '@backstage/plugin-catalog-react';
 import { Terraform } from './Terraform';
 import { mockEntity } from '../../mocks/entity';

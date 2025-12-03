@@ -1,4 +1,7 @@
-import { renderInTestApp, TestApiProvider } from '@backstage/test-utils';
+import {
+  renderInTestApp,
+  TestApiProvider,
+} from '@backstage/frontend-test-utils';
 import { errorApiRef } from '@backstage/core-plugin-api';
 import { render, screen } from '@testing-library/react';
 import { TerraformLatestRun } from './TerraformLatestRun';

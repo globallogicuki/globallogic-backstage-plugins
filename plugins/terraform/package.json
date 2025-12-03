@@ -22,10 +22,26 @@
     "role": "frontend-plugin",
     "pluginId": "terraform",
     "pluginPackages": [
-      "@globallogicuki/backstage-plugin-terraform"
+      "@globallogicuki/backstage-plugin-terraform",
+      "@globallogicuki/backstage-plugin-terraform-backend"
     ]
   },
+  "exports": {
+    ".": "./src/index.ts",
+    "./alpha": "./src/alpha.ts",
+    "./package.json": "./package.json"
+  },
   "sideEffects": false,
+  "typesVersions": {
+    "*": {
+      "alpha": [
+        "src/alpha.ts"
+      ],
+      "package.json": [
+        "package.json"
+      ]
+    }
+  },
   "scripts": {
     "start": "backstage-cli package start",
     "build": "backstage-cli package build",
@@ -37,8 +53,10 @@
   },
   "dependencies": {
     "@backstage/catalog-model": "^1.7.6",
+    "@backstage/core-compat-api": "^0.5.4",
     "@backstage/core-components": "^0.18.3",
     "@backstage/core-plugin-api": "^1.12.0",
+    "@backstage/frontend-plugin-api": "^0.13.1",
     "@backstage/plugin-catalog-react": "^1.21.3",
     "@backstage/theme": "^0.7.0",
     "@material-ui/core": "^4.12.2",
