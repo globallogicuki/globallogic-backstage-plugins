@@ -3,10 +3,10 @@ import {
   createPlugin,
   createRoutableExtension,
   createComponentExtension,
-  createApiFactory,
   discoveryApiRef,
   fetchApiRef,
 } from '@backstage/core-plugin-api';
+import { createApiFactory } from '@backstage/frontend-plugin-api';
 import { rootRouteRef } from './routes';
 import { TerraformApiClient, terraformApiRef } from './api';
 
