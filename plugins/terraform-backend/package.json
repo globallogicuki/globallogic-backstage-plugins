@@ -20,7 +20,7 @@
   },
   "backstage": {
     "role": "backend-plugin",
-    "pluginId": "terraform-backend",
+    "pluginId": "terraform",
     "pluginPackages": [
       "@globallogicuki/backstage-plugin-terraform",
       "@globallogicuki/backstage-plugin-terraform-backend"
