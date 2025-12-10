@@ -13,8 +13,8 @@ kind: Component
 metadata:
   name: example-website
   annotations:
-    terraform/organization: orgName
-    terraform/workspaces: workspaceName1,workspaceName2,workspaceName3
+    terraform/organization: GLUK
+    terraform/workspaces: agora-apps
 spec:
   type: website
   lifecycle: experimental
