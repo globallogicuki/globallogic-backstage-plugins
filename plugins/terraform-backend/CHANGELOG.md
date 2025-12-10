@@ -1,5 +1,11 @@
 # @globallogicuki/backstage-plugin-terraform-backend
 
+## 0.10.4
+
+### Patch Changes
+
+- f547bf4: update pluginId for Portal
+
 ## 0.10.3
 
 ### Patch Changes
