@@ -15,12 +15,27 @@ metadata:
   annotations:
     terraform/organization: orgName
     terraform/workspaces: workspaceName1,workspaceName2,workspaceName3
+    unleash.io/project-id: test
 spec:
   type: website
   lifecycle: experimental
   owner: guests
   system: examples
   providesApis: [example-grpc-api]
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: example-service
+  annotations:
+    terraform/organization: orgName
+    terraform/workspaces: workspaceName1,workspaceName2,workspaceName3
+    unleash.io/project-id: pocproject
+spec:
+  type: service
+  lifecycle: experimental
+  owner: artist-relations-team
+  system: example-service
 ---
 # https://backstage.io/docs/features/software-catalog/descriptor-format#kind-api
 apiVersion: backstage.io/v1alpha1

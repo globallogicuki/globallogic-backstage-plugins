@@ -1,0 +1,1 @@
+export { FlagDetailsModal } from './FlagDetailsModal';

@@ -1,0 +1,36 @@
+{
+  "name": "@internal/backstage-plugin-unleash-common",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "private": true,
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "publishConfig": {
+    "access": "public",
+    "main": "dist/index.esm.js",
+    "types": "dist/index.d.ts"
+  },
+  "backstage": {
+    "role": "common-library"
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build": "backstage-cli package build",
+    "lint": "backstage-cli package lint",
+    "test": "backstage-cli package test",
+    "clean": "backstage-cli package clean",
+    "prepack": "backstage-cli package prepack",
+    "postpack": "backstage-cli package postpack"
+  },
+  "dependencies": {
+    "@backstage/catalog-model": "^1.7.6",
+    "@backstage/plugin-catalog-common": "^1.1.7",
+    "@backstage/plugin-permission-common": "^0.9.3"
+  },
+  "devDependencies": {
+    "@backstage/cli": "^0.34.5"
+  },
+  "files": [
+    "dist"
+  ]
+}

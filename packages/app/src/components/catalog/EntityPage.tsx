@@ -65,6 +65,12 @@ import {
   EntityTerraformWorkspaceHealthAssessmentsCard,
 } from '@globallogicuki/backstage-plugin-terraform';
 
+import {
+  EntityUnleashCard,
+  EntityUnleashContent,
+  isUnleashAvailable,
+} from '@internal/backstage-plugin-unleash';
+
 const techdocsContent = (
   <EntityTechdocsContent>
     <TechDocsAddons>
@@ -151,6 +157,13 @@ const overviewContent = (
         </Grid>
       </EntitySwitch.Case>
     </EntitySwitch>
+    <EntitySwitch>
+      <EntitySwitch.Case if={isUnleashAvailable}>
+        <Grid item md={6} xs={12}>
+          <EntityUnleashCard />
+        </Grid>
+      </EntitySwitch.Case>
+    </EntitySwitch>
     <Grid item md={4} xs={12}>
       <EntityLinksCard />
     </Grid>
@@ -180,6 +193,14 @@ const serviceEntityPage = (
 
     <EntityLayout.Route path="/terraform" title="Terraform">
       <EntityTerraformContent />
+    </EntityLayout.Route>
+
+    <EntityLayout.Route
+      path="/feature-flags"
+      title="Feature Flags"
+      if={isUnleashAvailable}
+    >
+      <EntityUnleashContent />
     </EntityLayout.Route>
 
     <EntityLayout.Route path="/api" title="API">
@@ -230,6 +251,14 @@ const websiteEntityPage = (
 
     <EntityLayout.Route path="/terraform" title="Terraform">
       <EntityTerraformContent />
+    </EntityLayout.Route>
+
+    <EntityLayout.Route
+      path="/feature-flags"
+      title="Feature Flags"
+      if={isUnleashAvailable}
+    >
+      <EntityUnleashContent />
     </EntityLayout.Route>
 
     <EntityLayout.Route path="/dependencies" title="Dependencies">

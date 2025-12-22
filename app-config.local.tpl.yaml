@@ -3,3 +3,15 @@
 integrations:
   terraform:
     token: TOKEN_HERE
+
+  unleash:
+    url: UNLEASH_URL
+    apiToken: UNLEASH_API_TOKEN
+    numEnvs: 4
+    # List of environments where flags and strategies can be edited
+    # If not specified or empty, all environments are readonly
+    editableEnvs:
+      - development
+      - staging
+      # - production
+    enablePermissions: false

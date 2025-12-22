@@ -33,10 +33,8 @@ backend.add(import('@backstage/plugin-catalog-backend-module-logs'));
 
 // permission plugin
 backend.add(import('@backstage/plugin-permission-backend'));
-// See https://backstage.io/docs/permissions/getting-started for how to create your own permission policy
-backend.add(
-  import('@backstage/plugin-permission-backend-module-allow-all-policy'),
-);
+// Custom permission policy for Unleash and other plugins
+backend.add(import('./modules/permission'));
 
 // search plugin
 backend.add(import('@backstage/plugin-search-backend'));
@@ -59,4 +57,5 @@ backend.add(import('@globallogicuki/backstage-plugin-terraform-backend'));
 backend.add(import('@backstage/plugin-notifications-backend'));
 backend.add(import('@backstage/plugin-signals-backend'));
 
+backend.add(import('@internal/backstage-plugin-unleash-backend'));
 backend.start();
