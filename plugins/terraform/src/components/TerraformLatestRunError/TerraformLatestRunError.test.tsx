@@ -1,4 +1,4 @@
-import { renderInTestApp } from '@backstage/test-utils';
+import { renderInTestApp } from '@backstage/frontend-test-utils';
 import { screen } from '@testing-library/react';
 import { TerraformLatestRunError } from './TerraformLatestRunError';
 

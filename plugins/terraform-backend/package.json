@@ -1,6 +1,6 @@
 {
   "name": "@globallogicuki/backstage-plugin-terraform-backend",
-  "version": "0.10.0",
+  "version": "0.10.4",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "license": "Apache-2.0",
@@ -20,8 +20,9 @@
   },
   "backstage": {
     "role": "backend-plugin",
-    "pluginId": "terraform-backend",
+    "pluginId": "terraform",
     "pluginPackages": [
+      "@globallogicuki/backstage-plugin-terraform",
       "@globallogicuki/backstage-plugin-terraform-backend"
     ]
   },
@@ -36,12 +37,11 @@
     "generate-openapi-schema": "backstage-repo-tools package schema openapi generate --server"
   },
   "dependencies": {
-    "@backstage/backend-common": "^0.25.0",
-    "@backstage/backend-defaults": "^0.12.0",
-    "@backstage/backend-openapi-utils": "^0.6.0",
-    "@backstage/backend-plugin-api": "^1.4.2",
-    "@backstage/config": "^1.3.3",
-    "@backstage/repo-tools": "^0.15.1",
+    "@backstage/backend-defaults": "^0.13.1",
+    "@backstage/backend-openapi-utils": "^0.6.3",
+    "@backstage/backend-plugin-api": "^1.5.0",
+    "@backstage/config": "^1.3.6",
+    "@backstage/repo-tools": "^0.16.0",
     "axios": "^1.6.7",
     "express": "^4.17.1",
     "express-promise-router": "^4.1.0",
@@ -50,10 +50,10 @@
     "yn": "^4.0.0"
   },
   "devDependencies": {
-    "@backstage/backend-test-utils": "^1.8.0",
-    "@backstage/cli": "^0.34.1",
-    "@backstage/plugin-auth-backend": "^0.25.3",
-    "@backstage/plugin-auth-backend-module-guest-provider": "^0.2.11",
+    "@backstage/backend-test-utils": "^1.10.0",
+    "@backstage/cli": "^0.34.5",
+    "@backstage/plugin-auth-backend": "^0.25.6",
+    "@backstage/plugin-auth-backend-module-guest-provider": "^0.2.14",
     "@types/express": "^4.17.6",
     "@types/supertest": "^6.0.2",
     "msw": "^1.0.0",

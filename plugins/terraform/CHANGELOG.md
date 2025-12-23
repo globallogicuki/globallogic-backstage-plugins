@@ -1,5 +1,17 @@
 # @globallogicuki/backstage-plugin-terraform
 
+## 0.11.5
+
+### Patch Changes
+
+- 5ba2de6: Support new frontend system
+
+## 0.11.4
+
+### Patch Changes
+
+- 86dfcba: Upgrade dependencies
+
 ## 0.11.3
 
 ### Patch Changes

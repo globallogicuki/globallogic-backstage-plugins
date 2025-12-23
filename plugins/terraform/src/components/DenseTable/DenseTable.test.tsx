@@ -1,10 +1,8 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { DenseTable } from './DenseTable';
-import { renderInTestApp } from '@backstage/test-utils';
+import { renderInTestApp } from '@backstage/frontend-test-utils';
 
 jest.mock('@backstage/core-components', () => {
-  const originalModule = jest.requireActual('@backstage/core-components');
-
   const MockOverflowTooltip = ({ text }: { text: string }) => (
     <p>{`Mock OverflowTooltip: ${text}`}</p>
   );
@@ -14,12 +12,10 @@ jest.mock('@backstage/core-components', () => {
   );
 
   return {
+    ...jest.requireActual('@backstage/core-components'),
     __esModule: true,
     OverflowTooltip: MockOverflowTooltip,
-    Table: originalModule.Table,
-    TableColumn: originalModule.TableColumn,
     LogViewer: MockLogViewer,
-    Progress: originalModule.Progress,
   };
 });
 

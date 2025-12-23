@@ -1,5 +1,29 @@
 # @globallogicuki/backstage-plugin-terraform-backend
 
+## 0.10.4
+
+### Patch Changes
+
+- f547bf4: update pluginId for Portal
+
+## 0.10.3
+
+### Patch Changes
+
+- 5ba2de6: Support new frontend system
+
+## 0.10.2
+
+### Patch Changes
+
+- 86dfcba: Upgrade dependencies
+
+## 0.10.1
+
+### Patch Changes
+
+- c17dfd1: Remove unused `@backstage/backend-common` package from depdendencies.
+
 ## 0.10.0
 
 ### Minor Changes
