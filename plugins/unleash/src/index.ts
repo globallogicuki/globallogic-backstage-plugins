@@ -21,4 +21,4 @@ export {
   UNLEASH_PROJECT_ANNOTATION,
   UNLEASH_ENVIRONMENT_ANNOTATION,
   UNLEASH_FILTER_TAGS_ANNOTATION,
-} from '@internal/backstage-plugin-unleash-common';
+} from '@globallogicuki/backstage-plugin-unleash-common';

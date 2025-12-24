@@ -1,4 +1,4 @@
-import { FeatureFlag } from '@internal/backstage-plugin-unleash-common';
+import { FeatureFlag } from '@globallogicuki/backstage-plugin-unleash-common';
 
 export const mockFeatureFlag: FeatureFlag = {
   name: 'test-flag',

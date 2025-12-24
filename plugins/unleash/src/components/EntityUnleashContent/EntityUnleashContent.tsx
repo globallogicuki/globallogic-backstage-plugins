@@ -34,7 +34,7 @@ import { FlagDetailsModal } from '../FlagDetailsModal';
 import {
   getUnleashProjectId,
   UNLEASH_PROJECT_ANNOTATION,
-} from '@internal/backstage-plugin-unleash-common';
+} from '@globallogicuki/backstage-plugin-unleash-common';
 import { FlagToggle } from '../FlagToggle';
 
 const useStyles = makeStyles(theme => ({

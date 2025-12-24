@@ -5,7 +5,7 @@ import { unleashApiRef } from '../../api';
 import type {
   ProjectSummary,
   EnvironmentSummary,
-} from '@internal/backstage-plugin-unleash-common';
+} from '@globallogicuki/backstage-plugin-unleash-common';
 
 describe('UnleashPage', () => {
   const mockProjects: ProjectSummary[] = [

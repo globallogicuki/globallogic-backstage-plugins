@@ -7,7 +7,7 @@ import type {
   Strategy,
   ProjectSummary,
   EnvironmentSummary,
-} from '@internal/backstage-plugin-unleash-common';
+} from '@globallogicuki/backstage-plugin-unleash-common';
 
 describe('UnleashApiClient', () => {
   let mockDiscoveryApi: jest.Mocked<DiscoveryApi>;

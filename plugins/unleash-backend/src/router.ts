@@ -12,7 +12,7 @@ import {
   unleashFlagReadPermission,
   unleashFlagTogglePermission,
   unleashVariantManagePermission,
-} from '@internal/backstage-plugin-unleash-common';
+} from '@globallogicuki/backstage-plugin-unleash-common';
 import express from 'express';
 import Router from 'express-promise-router';
 import {

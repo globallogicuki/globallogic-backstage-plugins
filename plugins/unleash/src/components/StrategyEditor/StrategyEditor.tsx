@@ -24,7 +24,7 @@ import type {
   Strategy,
   Variant,
   Constraint,
-} from '@internal/backstage-plugin-unleash-common';
+} from '@globallogicuki/backstage-plugin-unleash-common';
 
 const useStyles = makeStyles(theme => ({
   section: {

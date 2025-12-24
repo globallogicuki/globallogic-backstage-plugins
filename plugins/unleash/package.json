@@ -1,8 +1,7 @@
 {
-  "name": "@internal/backstage-plugin-unleash",
+  "name": "@globallogicuki/backstage-plugin-unleash",
   "version": "0.1.0",
   "license": "Apache-2.0",
-  "private": true,
   "main": "src/index.ts",
   "types": "src/index.ts",
   "publishConfig": {
@@ -14,6 +13,15 @@
     ".": "./src/index.ts",
     "./alpha": "./src/alpha.tsx",
     "./package.json": "./package.json"
+  },
+  "homepage": "https://github.com/globallogicuki/globallogic-backstage-plugins/tree/main/plugins/unleash",
+  "bugs": {
+    "url": "https://github.com/globallogicuki/globallogic-backstage-plugins/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "github:globallogicuki/globallogic-backstage-plugins",
+    "directory": "plugins/unleash"
   },
   "backstage": {
     "role": "frontend-plugin",
@@ -37,7 +45,7 @@
     "@backstage/frontend-plugin-api": "^0.13.1",
     "@backstage/plugin-catalog-react": "^1.21.3",
     "@backstage/theme": "^0.7.0",
-    "@internal/backstage-plugin-unleash-common": "workspace:^",
+    "@globallogicuki/backstage-plugin-unleash-common": "workspace:^",
     "@material-ui/core": "^4.12.2",
     "@material-ui/icons": "^4.9.1",
     "@material-ui/lab": "^4.0.0-alpha.61",

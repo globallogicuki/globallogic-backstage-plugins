@@ -2,7 +2,7 @@ import { screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderInTestApp } from '@backstage/test-utils';
 import { StrategyEditor } from './StrategyEditor';
-import type { Strategy } from '@internal/backstage-plugin-unleash-common';
+import type { Strategy } from '@globallogicuki/backstage-plugin-unleash-common';
 
 describe('StrategyEditor', () => {
   const mockOnChange = jest.fn();

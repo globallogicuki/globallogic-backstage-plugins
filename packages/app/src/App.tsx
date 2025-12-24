@@ -37,7 +37,7 @@ import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
 import { NotificationsPage } from '@backstage/plugin-notifications';
 import { SignalsDisplay } from '@backstage/plugin-signals';
-import { UnleashPage } from '@internal/backstage-plugin-unleash';
+import { UnleashPage } from '@globallogicuki/backstage-plugin-unleash';
 
 const app = createApp({
   apis,

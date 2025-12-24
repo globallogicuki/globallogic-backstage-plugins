@@ -45,7 +45,7 @@
     "@backstage/plugin-signals-backend": "^0.3.7",
     "@backstage/plugin-techdocs-backend": "^2.0.5",
     "@globallogicuki/backstage-plugin-terraform-backend": "^0.10.0",
-    "@internal/backstage-plugin-unleash-backend": "workspace:^",
+    "@globallogicuki/backstage-plugin-unleash-backend": "workspace:^",
     "app": "link:../app",
     "better-sqlite3": "^9.0.0",
     "node-gyp": "^10.0.0",

@@ -1,8 +1,7 @@
 {
-  "name": "@internal/backstage-plugin-unleash-backend",
+  "name": "@globallogicuki/backstage-plugin-unleash-backend",
   "version": "0.1.0",
   "license": "Apache-2.0",
-  "private": true,
   "main": "src/index.ts",
   "types": "src/index.ts",
   "publishConfig": {
@@ -10,6 +9,16 @@
     "main": "dist/index.cjs.js",
     "types": "dist/index.d.ts"
   },
+  "homepage": "https://github.com/globallogicuki/globallogic-backstage-plugins/tree/main/plugins/unleash-backend",
+  "bugs": {
+    "url": "https://github.com/globallogicuki/globallogic-backstage-plugins/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "github:globallogicuki/globallogic-backstage-plugins",
+    "directory": "plugins/unleash-backend"
+  },
+  "configSchema": "config.d.ts",
   "backstage": {
     "role": "backend-plugin",
     "pluginId": "unleash"
@@ -31,7 +40,7 @@
     "@backstage/errors": "^1.2.7",
     "@backstage/plugin-catalog-node": "^1.20.0",
     "@backstage/plugin-permission-common": "^0.9.3",
-    "@internal/backstage-plugin-unleash-common": "workspace:^",
+    "@globallogicuki/backstage-plugin-unleash-common": "workspace:^",
     "express": "^4.17.1",
     "express-promise-router": "^4.1.0",
     "node-fetch": "^2.6.7",
@@ -45,6 +54,7 @@
     "supertest": "^6.2.4"
   },
   "files": [
-    "dist"
+    "dist",
+    "config.d.ts"
   ]
 }

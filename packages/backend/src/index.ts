@@ -57,5 +57,5 @@ backend.add(import('@globallogicuki/backstage-plugin-terraform-backend'));
 backend.add(import('@backstage/plugin-notifications-backend'));
 backend.add(import('@backstage/plugin-signals-backend'));
 
-backend.add(import('@internal/backstage-plugin-unleash-backend'));
+backend.add(import('@globallogicuki/backstage-plugin-unleash-backend'));
 backend.start();

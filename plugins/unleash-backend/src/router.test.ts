@@ -20,7 +20,7 @@ import { stringifyEntityRef } from '@backstage/catalog-model';
 import {
   unleashFlagTogglePermission,
   unleashVariantManagePermission,
-} from '@internal/backstage-plugin-unleash-common';
+} from '@globallogicuki/backstage-plugin-unleash-common';
 import { CatalogService } from '@backstage/plugin-catalog-node';
 
 // Mock the library functions

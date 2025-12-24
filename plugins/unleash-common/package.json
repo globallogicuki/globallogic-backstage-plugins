@@ -1,14 +1,22 @@
 {
-  "name": "@internal/backstage-plugin-unleash-common",
+  "name": "@globallogicuki/backstage-plugin-unleash-common",
   "version": "0.1.0",
   "license": "Apache-2.0",
-  "private": true,
   "main": "src/index.ts",
   "types": "src/index.ts",
   "publishConfig": {
     "access": "public",
     "main": "dist/index.esm.js",
     "types": "dist/index.d.ts"
+  },
+  "homepage": "https://github.com/globallogicuki/globallogic-backstage-plugins/tree/main/plugins/unleash-common",
+  "bugs": {
+    "url": "https://github.com/globallogicuki/globallogic-backstage-plugins/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "github:globallogicuki/globallogic-backstage-plugins",
+    "directory": "plugins/unleash-common"
   },
   "backstage": {
     "role": "common-library"

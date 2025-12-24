@@ -1,0 +1,17 @@
+# @globallogicuki/backstage-plugin-unleash-backend
+
+## 0.1.0
+
+### Minor Changes
+
+- Initial release of the Unleash backend plugin for Backstage
+
+### Features
+
+- Backend API endpoints for Unleash integration
+- Proxy for Unleash API requests with configurable base URL
+- Permission-based access control for feature flag operations
+- Support for reading, updating, and toggling feature flags
+- Strategy management and variant configuration
+- Integration with Backstage catalog for entity-based permissions
+- Comprehensive test coverage

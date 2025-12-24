@@ -69,7 +69,7 @@ import {
   EntityUnleashCard,
   EntityUnleashContent,
   isUnleashAvailable,
-} from '@internal/backstage-plugin-unleash';
+} from '@globallogicuki/backstage-plugin-unleash';
 
 const techdocsContent = (
   <EntityTechdocsContent>

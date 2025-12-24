@@ -25,7 +25,7 @@ import { unleashApiRef } from '../../api';
 import {
   getUnleashProjectId,
   UNLEASH_PROJECT_ANNOTATION,
-} from '@internal/backstage-plugin-unleash-common';
+} from '@globallogicuki/backstage-plugin-unleash-common';
 import { MissingAnnotationEmptyState } from '@backstage/plugin-catalog-react';
 import { FlagDetailsModal } from '../FlagDetailsModal';
 

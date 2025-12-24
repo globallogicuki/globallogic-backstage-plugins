@@ -15,9 +15,9 @@ A Backstage plugin that integrates with [Unleash](https://www.getunleash.io/) fe
 
 The plugin is already installed in this Backstage instance. It consists of three packages:
 
-- `@internal/backstage-plugin-unleash` - Frontend plugin
-- `@internal/backstage-plugin-unleash-backend` - Backend plugin
-- `@internal/backstage-plugin-unleash-common` - Shared types and utilities
+- `@globallogicuki/backstage-plugin-unleash` - Frontend plugin
+- `@globallogicuki/backstage-plugin-unleash-backend` - Backend plugin
+- `@globallogicuki/backstage-plugin-unleash-common` - Shared types and utilities
 
 ## Configuration
 
@@ -117,7 +117,7 @@ By default, all authenticated users can read flags. To restrict toggle actions, 
 ### Frontend API
 
 ```typescript
-import { unleashApiRef } from '@internal/backstage-plugin-unleash';
+import { unleashApiRef } from '@globallogicuki/backstage-plugin-unleash';
 
 // Use in components
 const unleashApi = useApi(unleashApiRef);
@@ -135,7 +135,7 @@ await unleashApi.toggleFlag('my-project-id', 'my-flag', 'production', true);
 import {
   isUnleashAvailable,
   getUnleashProjectId,
-} from '@internal/backstage-plugin-unleash';
+} from '@globallogicuki/backstage-plugin-unleash';
 
 // Check if entity has Unleash integration
 if (isUnleashAvailable(entity)) {

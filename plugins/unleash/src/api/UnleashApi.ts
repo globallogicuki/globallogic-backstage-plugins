@@ -9,7 +9,7 @@ import type {
   Strategy,
   ProjectSummary,
   EnvironmentSummary,
-} from '@internal/backstage-plugin-unleash-common';
+} from '@globallogicuki/backstage-plugin-unleash-common';
 
 export interface UnleashConfig {
   editableEnvs: string[];

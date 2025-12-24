@@ -28,7 +28,7 @@ import { Progress } from '@backstage/core-components';
 import { useApi, alertApiRef } from '@backstage/core-plugin-api';
 import { unleashApiRef } from '../../api';
 import { StrategyEditor } from '../StrategyEditor';
-import type { Strategy } from '@internal/backstage-plugin-unleash-common';
+import type { Strategy } from '@globallogicuki/backstage-plugin-unleash-common';
 
 const useStyles = makeStyles(theme => ({
   section: {
