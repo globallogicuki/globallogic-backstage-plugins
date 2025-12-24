@@ -176,13 +176,12 @@ describe('unleash API client', () => {
         text: jest.fn().mockResolvedValue('Access denied'),
       } as any);
 
-      try {
-        await unleashFetch(options, '/api/admin/forbidden');
-        fail('Should have thrown an error');
-      } catch (error: any) {
-        expect(error.message).toBe('Unleash API error: Forbidden');
-        expect(error.statusCode).toBe(403);
-      }
+      await expect(
+        unleashFetch(options, '/api/admin/forbidden'),
+      ).rejects.toMatchObject({
+        message: 'Unleash API error: Forbidden',
+        statusCode: 403,
+      });
     });
 
     it('throws error on 500 response', async () => {
@@ -193,12 +192,11 @@ describe('unleash API client', () => {
         text: jest.fn().mockResolvedValue('Server error'),
       } as any);
 
-      try {
-        await unleashFetch(options, '/api/admin/error');
-        fail('Should have thrown an error');
-      } catch (error: any) {
-        expect(error.statusCode).toBe(500);
-      }
+      await expect(
+        unleashFetch(options, '/api/admin/error'),
+      ).rejects.toMatchObject({
+        statusCode: 500,
+      });
     });
 
     it('logs debug message for each request', async () => {
