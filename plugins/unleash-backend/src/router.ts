@@ -76,14 +76,22 @@ export async function createRouter(
   ): Promise<{ result: AuthorizeResult }> => {
     // Skip permission checks if disabled
     if (!enablePermissions) {
-      logger.debug(`[checkPermission] Permissions disabled, allowing ${permission.name}`);
+      logger.debug(
+        `[checkPermission] Permissions disabled, allowing ${permission.name}`,
+      );
       return { result: AuthorizeResult.ALLOW };
     }
 
     const { projectId } = req.params;
-    logger.warn(`[checkPermission] Starting: ${permission.name} for project ${projectId}`);
+    logger.warn(
+      `[checkPermission] Starting: ${permission.name} for project ${projectId}`,
+    );
     const credentials = await httpAuth.credentials(req, { allow: ['user'] });
-    logger.warn(`[checkPermission] User: ${credentials.principal.userEntityRef || 'unknown'}`);
+    logger.warn(
+      `[checkPermission] User: ${
+        credentials.principal.userEntityRef || 'unknown'
+      }`,
+    );
 
     const { items } = await catalog.getEntities(
       {
@@ -104,7 +112,11 @@ export async function createRouter(
     }
 
     logger.debug(
-      `Found ${items.length} component(s) linked to project '${projectId}': ${items.map(e => stringifyEntityRef(e)).join(', ')}`,
+      `Found ${
+        items.length
+      } component(s) linked to project '${projectId}': ${items
+        .map(e => stringifyEntityRef(e))
+        .join(', ')}`,
     );
 
     // Check for permission against all found entities.
@@ -112,12 +124,15 @@ export async function createRouter(
       permission,
       resourceRef: stringifyEntityRef(entity),
     }));
-    logger.warn(`[checkPermission] Authorizing against ${items.length} entities`);
-    const decisions = await permissions.authorize(
-      authRequests,
-      { credentials },
+    logger.warn(
+      `[checkPermission] Authorizing against ${items.length} entities`,
     );
-    logger.warn(`[checkPermission] Decisions: ${decisions.map(d => d.result).join(', ')}`);
+    const decisions = await permissions.authorize(authRequests, {
+      credentials,
+    });
+    logger.warn(
+      `[checkPermission] Decisions: ${decisions.map(d => d.result).join(', ')}`,
+    );
 
     // If any of the checks result in ALLOW, then grant access.
     if (decisions.some(d => d.result === AuthorizeResult.ALLOW)) {
@@ -195,7 +210,9 @@ export async function createRouter(
     '/projects/:projectId/features/:featureName/environments/:environment/:action',
     async (req, res) => {
       const { projectId, featureName, environment, action } = req.params;
-      logger.warn(`[TOGGLE] Endpoint hit: ${featureName} -> ${action} in ${environment}`);
+      logger.warn(
+        `[TOGGLE] Endpoint hit: ${featureName} -> ${action} in ${environment}`,
+      );
 
       if (action !== 'on' && action !== 'off') {
         throw new InputError('Action must be "on" or "off"');
@@ -243,7 +260,8 @@ export async function createRouter(
         // Return proper status code based on error type
         if (statusCode === 403 || message.includes('Forbidden')) {
           return res.status(403).json({
-            error: 'Permission denied. You may not have access to modify this flag in Unleash.',
+            error:
+              'Permission denied. You may not have access to modify this flag in Unleash.',
           });
         }
 
@@ -298,7 +316,8 @@ export async function createRouter(
 
         if (statusCode === 403 || message.includes('Forbidden')) {
           return res.status(403).json({
-            error: 'Permission denied. You may not have access to modify variants in Unleash.',
+            error:
+              'Permission denied. You may not have access to modify variants in Unleash.',
           });
         }
 
@@ -373,7 +392,8 @@ export async function createRouter(
 
         if (statusCode === 403 || message.includes('Forbidden')) {
           return res.status(403).json({
-            error: 'Permission denied. You may not have access to modify strategies in Unleash.',
+            error:
+              'Permission denied. You may not have access to modify strategies in Unleash.',
           });
         }
 

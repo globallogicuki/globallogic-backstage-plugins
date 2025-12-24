@@ -159,9 +159,9 @@ describe('unleash API client', () => {
         text: jest.fn().mockResolvedValue('Invalid input'),
       } as any);
 
-      await expect(
-        unleashFetch(options, '/api/admin/bad'),
-      ).rejects.toThrow('Unleash API error: Bad Request');
+      await expect(unleashFetch(options, '/api/admin/bad')).rejects.toThrow(
+        'Unleash API error: Bad Request',
+      );
 
       expect(mockLogger.error).toHaveBeenCalledWith(
         expect.stringContaining('400 Bad Request'),
@@ -239,11 +239,7 @@ describe('unleash API client', () => {
         text: jest.fn().mockResolvedValue(JSON.stringify(mockFlag)),
       } as any);
 
-      const result = await getFeatureFlag(
-        options,
-        'my-project',
-        'my-flag',
-      );
+      const result = await getFeatureFlag(options, 'my-project', 'my-flag');
 
       expect(mockFetch).toHaveBeenCalledWith(
         'https://unleash.example.com/api/admin/projects/my-project/features/my-flag',
@@ -347,11 +343,7 @@ describe('unleash API client', () => {
         text: jest.fn().mockResolvedValue(JSON.stringify(mockMetrics)),
       } as any);
 
-      const result = await getFeatureMetrics(
-        options,
-        'my-project',
-        'my-flag',
-      );
+      const result = await getFeatureMetrics(options, 'my-project', 'my-flag');
 
       expect(mockFetch).toHaveBeenCalledWith(
         'https://unleash.example.com/api/admin/projects/my-project/features/my-flag/metrics',

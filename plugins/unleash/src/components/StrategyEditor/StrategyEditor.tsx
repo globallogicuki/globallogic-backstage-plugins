@@ -20,7 +20,11 @@ import {
 } from '@material-ui/core';
 import DeleteIcon from '@material-ui/icons/Delete';
 import AddIcon from '@material-ui/icons/Add';
-import type { Strategy, Variant, Constraint } from '@internal/backstage-plugin-unleash-common';
+import type {
+  Strategy,
+  Variant,
+  Constraint,
+} from '@internal/backstage-plugin-unleash-common';
 
 const useStyles = makeStyles(theme => ({
   section: {
@@ -60,7 +64,7 @@ export const StrategyEditor = ({ strategy, onChange }: StrategyEditorProps) => {
     if (fixedVariants.length === 0) {
       // All variable - split evenly
       const evenWeight = Math.floor(total / variants.length);
-      const remainder = total - (evenWeight * variants.length);
+      const remainder = total - evenWeight * variants.length;
 
       return variants.map((v, i) => ({
         ...v,
@@ -77,17 +81,21 @@ export const StrategyEditor = ({ strategy, onChange }: StrategyEditorProps) => {
       return variants;
     }
 
-    const evenVariableWeight = Math.floor(remainingWeight / variableVariants.length);
-    const variableRemainder = remainingWeight - (evenVariableWeight * variableVariants.length);
+    const evenVariableWeight = Math.floor(
+      remainingWeight / variableVariants.length,
+    );
+    const variableRemainder =
+      remainingWeight - evenVariableWeight * variableVariants.length;
 
     let variableIndex = 0;
     return variants.map(v => {
       if (v.weightType === 'fix') {
         return v;
       }
-      const weight = variableIndex === 0
-        ? evenVariableWeight + variableRemainder
-        : evenVariableWeight;
+      const weight =
+        variableIndex === 0
+          ? evenVariableWeight + variableRemainder
+          : evenVariableWeight;
       variableIndex++;
       return { ...v, weight };
     });
@@ -114,7 +122,11 @@ export const StrategyEditor = ({ strategy, onChange }: StrategyEditorProps) => {
     onChange(updated);
   };
 
-  const handleVariantChange = (index: number, field: keyof Variant, value: any) => {
+  const handleVariantChange = (
+    index: number,
+    field: keyof Variant,
+    value: any,
+  ) => {
     const newVariants = [...(localStrategy.variants || [])];
     newVariants[index] = { ...newVariants[index], [field]: value };
 
@@ -122,7 +134,10 @@ export const StrategyEditor = ({ strategy, onChange }: StrategyEditorProps) => {
     updateStrategy({ variants: recalculated });
   };
 
-  const handleVariantWeightTypeChange = (index: number, weightType: 'fix' | 'variable') => {
+  const handleVariantWeightTypeChange = (
+    index: number,
+    weightType: 'fix' | 'variable',
+  ) => {
     const newVariants = [...(localStrategy.variants || [])];
     newVariants[index] = { ...newVariants[index], weightType };
 
@@ -145,7 +160,9 @@ export const StrategyEditor = ({ strategy, onChange }: StrategyEditorProps) => {
   };
 
   const removeVariant = (index: number) => {
-    const newVariants = (localStrategy.variants || []).filter((_, i) => i !== index);
+    const newVariants = (localStrategy.variants || []).filter(
+      (_, i) => i !== index,
+    );
     const recalculated = recalculateVariantWeights(newVariants);
     updateStrategy({ variants: recalculated });
   };
@@ -172,23 +189,34 @@ export const StrategyEditor = ({ strategy, onChange }: StrategyEditorProps) => {
 
   const removeConstraint = (index: number) => {
     updateStrategy({
-      constraints: (localStrategy.constraints || []).filter((_, i) => i !== index),
+      constraints: (localStrategy.constraints || []).filter(
+        (_, i) => i !== index,
+      ),
     });
   };
 
-  const totalWeight = (localStrategy.variants || []).reduce((sum, v) => sum + v.weight, 0);
-  const variableCount = (localStrategy.variants || []).filter(v => v.weightType === 'variable').length;
+  const totalWeight = (localStrategy.variants || []).reduce(
+    (sum, v) => sum + v.weight,
+    0,
+  );
+  const variableCount = (localStrategy.variants || []).filter(
+    v => v.weightType === 'variable',
+  ).length;
 
   // Determine if this strategy type is supported for editing
-  const supportedStrategies = ['flexibleRollout', 'remoteAddress', 'applicationHostname'];
+  const supportedStrategies = [
+    'flexibleRollout',
+    'remoteAddress',
+    'applicationHostname',
+  ];
   const isSupported = supportedStrategies.includes(localStrategy.name);
 
   if (!isSupported) {
     return (
       <Box p={2}>
         <Typography variant="body2" color="textSecondary">
-          Strategy type "{localStrategy.name}" is not editable in this interface.
-          Use the Unleash console to edit this strategy type.
+          Strategy type "{localStrategy.name}" is not editable in this
+          interface. Use the Unleash console to edit this strategy type.
         </Typography>
       </Box>
     );
@@ -203,9 +231,14 @@ export const StrategyEditor = ({ strategy, onChange }: StrategyEditorProps) => {
               label="Rollout %"
               type="number"
               value={localStrategy.parameters?.rollout || '100'}
-              onChange={e => updateStrategy({
-                parameters: { ...localStrategy.parameters, rollout: e.target.value },
-              })}
+              onChange={e =>
+                updateStrategy({
+                  parameters: {
+                    ...localStrategy.parameters,
+                    rollout: e.target.value,
+                  },
+                })
+              }
               InputProps={{ inputProps: { min: 0, max: 100 } }}
               style={{ width: 120 }}
             />
@@ -213,9 +246,14 @@ export const StrategyEditor = ({ strategy, onChange }: StrategyEditorProps) => {
               <InputLabel>Stickiness</InputLabel>
               <Select
                 value={localStrategy.parameters?.stickiness || 'default'}
-                onChange={e => updateStrategy({
-                  parameters: { ...localStrategy.parameters, stickiness: e.target.value as string },
-                })}
+                onChange={e =>
+                  updateStrategy({
+                    parameters: {
+                      ...localStrategy.parameters,
+                      stickiness: e.target.value as string,
+                    },
+                  })
+                }
               >
                 <MenuItem value="default">Default</MenuItem>
                 <MenuItem value="userId">User ID</MenuItem>
@@ -226,9 +264,14 @@ export const StrategyEditor = ({ strategy, onChange }: StrategyEditorProps) => {
             <TextField
               label="Group ID"
               value={localStrategy.parameters?.groupId || ''}
-              onChange={e => updateStrategy({
-                parameters: { ...localStrategy.parameters, groupId: e.target.value },
-              })}
+              onChange={e =>
+                updateStrategy({
+                  parameters: {
+                    ...localStrategy.parameters,
+                    groupId: e.target.value,
+                  },
+                })
+              }
               style={{ width: 200 }}
             />
           </>
@@ -239,9 +282,11 @@ export const StrategyEditor = ({ strategy, onChange }: StrategyEditorProps) => {
           <TextField
             label="IP Addresses (comma separated)"
             value={localStrategy.parameters?.IPs || ''}
-            onChange={e => updateStrategy({
-              parameters: { IPs: e.target.value },
-            })}
+            onChange={e =>
+              updateStrategy({
+                parameters: { IPs: e.target.value },
+              })
+            }
             placeholder="e.g., 10.1.1.17, 192.168.1.0/24"
             fullWidth
             helperText="Enter IP addresses or CIDR ranges separated by commas"
@@ -253,9 +298,11 @@ export const StrategyEditor = ({ strategy, onChange }: StrategyEditorProps) => {
           <TextField
             label="Hostnames (comma separated)"
             value={localStrategy.parameters?.hostNames || ''}
-            onChange={e => updateStrategy({
-              parameters: { hostNames: e.target.value },
-            })}
+            onChange={e =>
+              updateStrategy({
+                parameters: { hostNames: e.target.value },
+              })
+            }
             placeholder="e.g., app1.example.com, app2.example.com"
             fullWidth
             helperText="Enter hostnames separated by commas"
@@ -291,14 +338,20 @@ export const StrategyEditor = ({ strategy, onChange }: StrategyEditorProps) => {
             <TextField
               label="Context"
               value={constraint.contextName}
-              onChange={e => updateConstraint(index, { contextName: e.target.value })}
+              onChange={e =>
+                updateConstraint(index, { contextName: e.target.value })
+              }
               style={{ width: 150 }}
             />
             <FormControl style={{ width: 100 }}>
               <InputLabel>Operator</InputLabel>
               <Select
                 value={constraint.operator}
-                onChange={e => updateConstraint(index, { operator: e.target.value as string })}
+                onChange={e =>
+                  updateConstraint(index, {
+                    operator: e.target.value as string,
+                  })
+                }
               >
                 <MenuItem value="IN">IN</MenuItem>
                 <MenuItem value="NOT_IN">NOT IN</MenuItem>
@@ -313,9 +366,11 @@ export const StrategyEditor = ({ strategy, onChange }: StrategyEditorProps) => {
             <TextField
               label="Values (comma separated)"
               value={(constraint.values || []).join(', ')}
-              onChange={e => updateConstraint(index, {
-                values: e.target.value.split(',').map(v => v.trim())
-              })}
+              onChange={e =>
+                updateConstraint(index, {
+                  values: e.target.value.split(',').map(v => v.trim()),
+                })
+              }
               style={{ flexGrow: 1 }}
             />
             <IconButton size="small" onClick={() => removeConstraint(index)}>
@@ -337,117 +392,151 @@ export const StrategyEditor = ({ strategy, onChange }: StrategyEditorProps) => {
 
       {/* Variants - only for flexibleRollout */}
       {localStrategy.name === 'flexibleRollout' && (
-      <Box className={classes.section}>
-        <Box display="flex" alignItems="center" justifyContent="space-between">
-          <Typography variant="subtitle2">
-            Variants
-            {totalWeight !== 1000 && (
-              <Chip
-                size="small"
-                label={`Warning: Total ${totalWeight/10}% (should be 100%)`}
-                color="secondary"
-                className={classes.typeChip}
-              />
-            )}
-          </Typography>
-        </Box>
+        <Box className={classes.section}>
+          <Box
+            display="flex"
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <Typography variant="subtitle2">
+              Variants
+              {totalWeight !== 1000 && (
+                <Chip
+                  size="small"
+                  label={`Warning: Total ${totalWeight / 10}% (should be 100%)`}
+                  color="secondary"
+                  className={classes.typeChip}
+                />
+              )}
+            </Typography>
+          </Box>
 
-        <Table size="small" className={classes.table}>
-          <TableHead>
-            <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell>Weight</TableCell>
-              <TableCell>Type</TableCell>
-              <TableCell>Payload Type</TableCell>
-              <TableCell>Payload Value</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {(localStrategy.variants || []).map((variant, index) => (
-              <TableRow key={index}>
-                <TableCell>
-                  <TextField
-                    value={variant.name}
-                    onChange={e => handleVariantChange(index, 'name', e.target.value)}
-                    size="small"
-                  />
-                </TableCell>
-                <TableCell>
-                  <TextField
-                    type="number"
-                    value={variant.weight}
-                    onChange={e => handleVariantChange(index, 'weight', parseInt(e.target.value, 10) || 0)}
-                    size="small"
-                    className={classes.weightInput}
-                    disabled={variant.weightType === 'variable'}
-                    InputProps={{
-                      endAdornment: <span>({(variant.weight / 10).toFixed(1)}%)</span>,
-                    }}
-                  />
-                </TableCell>
-                <TableCell>
-                  <Select
-                    value={variant.weightType}
-                    onChange={e => handleVariantWeightTypeChange(index, e.target.value as 'fix' | 'variable')}
-                  >
-                    <MenuItem value="variable">Variable</MenuItem>
-                    <MenuItem
-                      value="fix"
-                      disabled={variant.weightType === 'variable' && variableCount <= 1}
-                    >
-                      Fixed
-                    </MenuItem>
-                  </Select>
-                  {variant.weightType === 'variable' && variableCount <= 1 && (
-                    <Typography variant="caption" color="textSecondary" display="block">
-                      At least 1 must be variable
-                    </Typography>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <Select
-                    value={variant.payload?.type || 'string'}
-                    onChange={e => handleVariantChange(index, 'payload', {
-                      ...variant.payload,
-                      type: e.target.value,
-                    })}
-                  >
-                    <MenuItem value="string">String</MenuItem>
-                    <MenuItem value="json">JSON</MenuItem>
-                    <MenuItem value="csv">CSV</MenuItem>
-                  </Select>
-                </TableCell>
-                <TableCell>
-                  <TextField
-                    value={variant.payload?.value || ''}
-                    onChange={e => handleVariantChange(index, 'payload', {
-                      ...variant.payload,
-                      value: e.target.value,
-                    })}
-                    size="small"
-                    fullWidth
-                  />
-                </TableCell>
-                <TableCell>
-                  <IconButton size="small" onClick={() => removeVariant(index)}>
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
+          <Table size="small" className={classes.table}>
+            <TableHead>
+              <TableRow>
+                <TableCell>Name</TableCell>
+                <TableCell>Weight</TableCell>
+                <TableCell>Type</TableCell>
+                <TableCell>Payload Type</TableCell>
+                <TableCell>Payload Value</TableCell>
+                <TableCell>Actions</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHead>
+            <TableBody>
+              {(localStrategy.variants || []).map((variant, index) => (
+                <TableRow key={index}>
+                  <TableCell>
+                    <TextField
+                      value={variant.name}
+                      onChange={e =>
+                        handleVariantChange(index, 'name', e.target.value)
+                      }
+                      size="small"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <TextField
+                      type="number"
+                      value={variant.weight}
+                      onChange={e =>
+                        handleVariantChange(
+                          index,
+                          'weight',
+                          parseInt(e.target.value, 10) || 0,
+                        )
+                      }
+                      size="small"
+                      className={classes.weightInput}
+                      disabled={variant.weightType === 'variable'}
+                      InputProps={{
+                        endAdornment: (
+                          <span>({(variant.weight / 10).toFixed(1)}%)</span>
+                        ),
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Select
+                      value={variant.weightType}
+                      onChange={e =>
+                        handleVariantWeightTypeChange(
+                          index,
+                          e.target.value as 'fix' | 'variable',
+                        )
+                      }
+                    >
+                      <MenuItem value="variable">Variable</MenuItem>
+                      <MenuItem
+                        value="fix"
+                        disabled={
+                          variant.weightType === 'variable' &&
+                          variableCount <= 1
+                        }
+                      >
+                        Fixed
+                      </MenuItem>
+                    </Select>
+                    {variant.weightType === 'variable' &&
+                      variableCount <= 1 && (
+                        <Typography
+                          variant="caption"
+                          color="textSecondary"
+                          display="block"
+                        >
+                          At least 1 must be variable
+                        </Typography>
+                      )}
+                  </TableCell>
+                  <TableCell>
+                    <Select
+                      value={variant.payload?.type || 'string'}
+                      onChange={e =>
+                        handleVariantChange(index, 'payload', {
+                          ...variant.payload,
+                          type: e.target.value,
+                        })
+                      }
+                    >
+                      <MenuItem value="string">String</MenuItem>
+                      <MenuItem value="json">JSON</MenuItem>
+                      <MenuItem value="csv">CSV</MenuItem>
+                    </Select>
+                  </TableCell>
+                  <TableCell>
+                    <TextField
+                      value={variant.payload?.value || ''}
+                      onChange={e =>
+                        handleVariantChange(index, 'payload', {
+                          ...variant.payload,
+                          value: e.target.value,
+                        })
+                      }
+                      size="small"
+                      fullWidth
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <IconButton
+                      size="small"
+                      onClick={() => removeVariant(index)}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
 
-        <Button
-          startIcon={<AddIcon />}
-          onClick={addVariant}
-          className={classes.addButton}
-          size="small"
-        >
-          Add Variant
-        </Button>
-      </Box>
+          <Button
+            startIcon={<AddIcon />}
+            onClick={addVariant}
+            className={classes.addButton}
+            size="small"
+          >
+            Add Variant
+          </Button>
+        </Box>
       )}
     </Box>
   );

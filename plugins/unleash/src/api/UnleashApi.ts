@@ -54,10 +54,7 @@ export interface UnleashApi {
   /**
    * Get metrics for a feature flag
    */
-  getMetrics(
-    projectId: string,
-    flagName: string,
-  ): Promise<FeatureFlagMetrics>;
+  getMetrics(projectId: string, flagName: string): Promise<FeatureFlagMetrics>;
 
   /**
    * Update a strategy for a feature flag in an environment
@@ -78,7 +75,10 @@ export interface UnleashApi {
   /**
    * Get all environments summary
    */
-  getEnvironments(): Promise<{ version: number; environments: EnvironmentSummary[] }>;
+  getEnvironments(): Promise<{
+    version: number;
+    environments: EnvironmentSummary[];
+  }>;
 }
 
 export const unleashApiRef = createApiRef<UnleashApi>({

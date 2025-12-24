@@ -40,7 +40,12 @@ describe('StrategyEditor', () => {
     };
 
     it('renders flexibleRollout parameters', async () => {
-      await renderInTestApp(<StrategyEditor strategy={flexibleRolloutStrategy} onChange={mockOnChange} />);
+      await renderInTestApp(
+        <StrategyEditor
+          strategy={flexibleRolloutStrategy}
+          onChange={mockOnChange}
+        />,
+      );
 
       expect(screen.getByText(/rollout %/i)).toBeInTheDocument();
       expect(screen.getByText(/stickiness/i)).toBeInTheDocument();
@@ -50,7 +55,12 @@ describe('StrategyEditor', () => {
     });
 
     it('renders variants section', async () => {
-      await renderInTestApp(<StrategyEditor strategy={flexibleRolloutStrategy} onChange={mockOnChange} />);
+      await renderInTestApp(
+        <StrategyEditor
+          strategy={flexibleRolloutStrategy}
+          onChange={mockOnChange}
+        />,
+      );
 
       expect(screen.getByText(/variants/i)).toBeInTheDocument();
       expect(screen.getByDisplayValue('Variant A')).toBeInTheDocument();
@@ -58,7 +68,12 @@ describe('StrategyEditor', () => {
     });
 
     it('updates rollout percentage', async () => {
-      await renderInTestApp(<StrategyEditor strategy={flexibleRolloutStrategy} onChange={mockOnChange} />);
+      await renderInTestApp(
+        <StrategyEditor
+          strategy={flexibleRolloutStrategy}
+          onChange={mockOnChange}
+        />,
+      );
 
       const rolloutInput = screen.getByDisplayValue('75') as HTMLInputElement;
 
@@ -76,7 +91,12 @@ describe('StrategyEditor', () => {
     });
 
     it('adds a new variant', async () => {
-      await renderInTestApp(<StrategyEditor strategy={flexibleRolloutStrategy} onChange={mockOnChange} />);
+      await renderInTestApp(
+        <StrategyEditor
+          strategy={flexibleRolloutStrategy}
+          onChange={mockOnChange}
+        />,
+      );
 
       const addButton = screen.getByRole('button', { name: /add variant/i });
       await userEvent.click(addButton);
@@ -91,13 +111,22 @@ describe('StrategyEditor', () => {
     });
 
     it('recalculates weights when variant is added', async () => {
-      await renderInTestApp(<StrategyEditor strategy={flexibleRolloutStrategy} onChange={mockOnChange} />);
+      await renderInTestApp(
+        <StrategyEditor
+          strategy={flexibleRolloutStrategy}
+          onChange={mockOnChange}
+        />,
+      );
 
       const addButton = screen.getByRole('button', { name: /add variant/i });
       await userEvent.click(addButton);
 
-      const call = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
-      const totalWeight = call.variants.reduce((sum: number, v: any) => sum + v.weight, 0);
+      const call =
+        mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
+      const totalWeight = call.variants.reduce(
+        (sum: number, v: any) => sum + v.weight,
+        0,
+      );
       expect(totalWeight).toBe(1000); // Should always total 100%
     });
 
@@ -122,20 +151,32 @@ describe('StrategyEditor', () => {
         ],
       };
 
-      await renderInTestApp(<StrategyEditor strategy={invalidWeightStrategy} onChange={mockOnChange} />);
+      await renderInTestApp(
+        <StrategyEditor
+          strategy={invalidWeightStrategy}
+          onChange={mockOnChange}
+        />,
+      );
 
       // Component should auto-recalculate weights on mount
       const call = mockOnChange.mock.calls[0]?.[0];
       expect(call).toBeDefined();
-      const totalWeight = call.variants.reduce((sum: number, v: any) => sum + v.weight, 0);
+      const totalWeight = call.variants.reduce(
+        (sum: number, v: any) => sum + v.weight,
+        0,
+      );
       expect(totalWeight).toBe(1000);
 
       // Fixed variant should keep its weight
-      const fixedVariant = call.variants.find((v: any) => v.weightType === 'fix');
+      const fixedVariant = call.variants.find(
+        (v: any) => v.weightType === 'fix',
+      );
       expect(fixedVariant.weight).toBe(300);
 
       // Variable variant should get remaining weight
-      const variableVariant = call.variants.find((v: any) => v.weightType === 'variable');
+      const variableVariant = call.variants.find(
+        (v: any) => v.weightType === 'variable',
+      );
       expect(variableVariant.weight).toBe(700);
     });
   });
@@ -151,22 +192,43 @@ describe('StrategyEditor', () => {
     };
 
     it('renders remoteAddress parameters', async () => {
-      await renderInTestApp(<StrategyEditor strategy={remoteAddressStrategy} onChange={mockOnChange} />);
+      await renderInTestApp(
+        <StrategyEditor
+          strategy={remoteAddressStrategy}
+          onChange={mockOnChange}
+        />,
+      );
 
       expect(screen.getAllByText(/ip addresses/i)[0]).toBeInTheDocument();
-      expect(screen.getByDisplayValue('10.1.1.17, 192.168.1.0/24')).toBeInTheDocument();
-      expect(screen.getByText(/enter ip addresses or cidr ranges/i)).toBeInTheDocument();
+      expect(
+        screen.getByDisplayValue('10.1.1.17, 192.168.1.0/24'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(/enter ip addresses or cidr ranges/i),
+      ).toBeInTheDocument();
     });
 
     it('does not render variants section', async () => {
-      await renderInTestApp(<StrategyEditor strategy={remoteAddressStrategy} onChange={mockOnChange} />);
+      await renderInTestApp(
+        <StrategyEditor
+          strategy={remoteAddressStrategy}
+          onChange={mockOnChange}
+        />,
+      );
 
       expect(screen.queryByText(/^variants$/i)).not.toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: /add variant/i })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: /add variant/i }),
+      ).not.toBeInTheDocument();
     });
 
     it('updates IP addresses', async () => {
-      await renderInTestApp(<StrategyEditor strategy={remoteAddressStrategy} onChange={mockOnChange} />);
+      await renderInTestApp(
+        <StrategyEditor
+          strategy={remoteAddressStrategy}
+          onChange={mockOnChange}
+        />,
+      );
 
       const ipInput = screen.getByDisplayValue('10.1.1.17, 192.168.1.0/24');
       await userEvent.clear(ipInput);
@@ -191,24 +253,47 @@ describe('StrategyEditor', () => {
     };
 
     it('renders applicationHostname parameters', async () => {
-      await renderInTestApp(<StrategyEditor strategy={applicationHostnameStrategy} onChange={mockOnChange} />);
+      await renderInTestApp(
+        <StrategyEditor
+          strategy={applicationHostnameStrategy}
+          onChange={mockOnChange}
+        />,
+      );
 
       expect(screen.getAllByText(/hostnames/i)[0]).toBeInTheDocument();
-      expect(screen.getByDisplayValue('app1.example.com, app2.example.com')).toBeInTheDocument();
-      expect(screen.getByText(/enter hostnames separated by commas/i)).toBeInTheDocument();
+      expect(
+        screen.getByDisplayValue('app1.example.com, app2.example.com'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(/enter hostnames separated by commas/i),
+      ).toBeInTheDocument();
     });
 
     it('does not render variants section', async () => {
-      await renderInTestApp(<StrategyEditor strategy={applicationHostnameStrategy} onChange={mockOnChange} />);
+      await renderInTestApp(
+        <StrategyEditor
+          strategy={applicationHostnameStrategy}
+          onChange={mockOnChange}
+        />,
+      );
 
       expect(screen.queryByText(/^variants$/i)).not.toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: /add variant/i })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: /add variant/i }),
+      ).not.toBeInTheDocument();
     });
 
     it('updates hostnames', async () => {
-      await renderInTestApp(<StrategyEditor strategy={applicationHostnameStrategy} onChange={mockOnChange} />);
+      await renderInTestApp(
+        <StrategyEditor
+          strategy={applicationHostnameStrategy}
+          onChange={mockOnChange}
+        />,
+      );
 
-      const hostnameInput = screen.getByDisplayValue('app1.example.com, app2.example.com');
+      const hostnameInput = screen.getByDisplayValue(
+        'app1.example.com, app2.example.com',
+      );
       await userEvent.clear(hostnameInput);
       await userEvent.type(hostnameInput, 'newhost.example.com');
 
@@ -229,18 +314,32 @@ describe('StrategyEditor', () => {
     };
 
     it('shows non-editable message for unsupported strategies', async () => {
-      await renderInTestApp(<StrategyEditor strategy={unsupportedStrategy} onChange={mockOnChange} />);
+      await renderInTestApp(
+        <StrategyEditor
+          strategy={unsupportedStrategy}
+          onChange={mockOnChange}
+        />,
+      );
 
-      expect(screen.getByText(/strategy type "customStrategy" is not editable/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/strategy type "customStrategy" is not editable/i),
+      ).toBeInTheDocument();
       expect(screen.getByText(/use the unleash console/i)).toBeInTheDocument();
     });
 
     it('does not render parameter controls for unsupported strategies', async () => {
-      await renderInTestApp(<StrategyEditor strategy={unsupportedStrategy} onChange={mockOnChange} />);
+      await renderInTestApp(
+        <StrategyEditor
+          strategy={unsupportedStrategy}
+          onChange={mockOnChange}
+        />,
+      );
 
       expect(screen.queryByText(/parameters/i)).not.toBeInTheDocument();
       expect(screen.queryByText(/constraints/i)).not.toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: /add/i })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: /add/i }),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -265,14 +364,24 @@ describe('StrategyEditor', () => {
     };
 
     it('renders existing constraints', async () => {
-      await renderInTestApp(<StrategyEditor strategy={strategyWithConstraints} onChange={mockOnChange} />);
+      await renderInTestApp(
+        <StrategyEditor
+          strategy={strategyWithConstraints}
+          onChange={mockOnChange}
+        />,
+      );
 
       expect(screen.getByDisplayValue('userId')).toBeInTheDocument();
       expect(screen.getByDisplayValue('user1, user2')).toBeInTheDocument();
     });
 
     it('adds a new constraint', async () => {
-      await renderInTestApp(<StrategyEditor strategy={strategyWithConstraints} onChange={mockOnChange} />);
+      await renderInTestApp(
+        <StrategyEditor
+          strategy={strategyWithConstraints}
+          onChange={mockOnChange}
+        />,
+      );
 
       const addButton = screen.getByRole('button', { name: /add constraint/i });
       await userEvent.click(addButton);
@@ -288,7 +397,12 @@ describe('StrategyEditor', () => {
     });
 
     it('updates constraint context name', async () => {
-      await renderInTestApp(<StrategyEditor strategy={strategyWithConstraints} onChange={mockOnChange} />);
+      await renderInTestApp(
+        <StrategyEditor
+          strategy={strategyWithConstraints}
+          onChange={mockOnChange}
+        />,
+      );
 
       const contextInput = screen.getByDisplayValue('userId');
       await userEvent.clear(contextInput);
@@ -296,15 +410,18 @@ describe('StrategyEditor', () => {
 
       expect(mockOnChange).toHaveBeenCalledWith(
         expect.objectContaining({
-          constraints: [
-            expect.objectContaining({ contextName: 'email' }),
-          ],
+          constraints: [expect.objectContaining({ contextName: 'email' })],
         }),
       );
     });
 
     it('updates constraint values', async () => {
-      await renderInTestApp(<StrategyEditor strategy={strategyWithConstraints} onChange={mockOnChange} />);
+      await renderInTestApp(
+        <StrategyEditor
+          strategy={strategyWithConstraints}
+          onChange={mockOnChange}
+        />,
+      );
 
       const valuesInput = screen.getByDisplayValue('user1, user2');
       await userEvent.clear(valuesInput);
@@ -351,15 +468,25 @@ describe('StrategyEditor', () => {
         ],
       };
 
-      await renderInTestApp(<StrategyEditor strategy={allVariableStrategy} onChange={mockOnChange} />);
+      await renderInTestApp(
+        <StrategyEditor
+          strategy={allVariableStrategy}
+          onChange={mockOnChange}
+        />,
+      );
 
       // The component should recalculate weights on mount
       // All 3 variants should be variable and total 1000
       const call = mockOnChange.mock.calls[0]?.[0];
       expect(call).toBeDefined();
-      const totalWeight = call.variants.reduce((sum: number, v: any) => sum + v.weight, 0);
+      const totalWeight = call.variants.reduce(
+        (sum: number, v: any) => sum + v.weight,
+        0,
+      );
       expect(totalWeight).toBe(1000);
-      expect(call.variants.every((v: any) => v.weightType === 'variable')).toBe(true);
+      expect(call.variants.every((v: any) => v.weightType === 'variable')).toBe(
+        true,
+      );
     });
 
     it('distributes remaining weight among variable variants when some are fixed', async () => {
@@ -392,20 +519,35 @@ describe('StrategyEditor', () => {
         ],
       };
 
-      await renderInTestApp(<StrategyEditor strategy={mixedWeightStrategy} onChange={mockOnChange} />);
+      await renderInTestApp(
+        <StrategyEditor
+          strategy={mixedWeightStrategy}
+          onChange={mockOnChange}
+        />,
+      );
 
       // Fixed variant should keep 300
       // Remaining 700 should be split between the 2 variable variants
       const call = mockOnChange.mock.calls[0]?.[0];
       expect(call).toBeDefined();
-      const totalWeight = call.variants.reduce((sum: number, v: any) => sum + v.weight, 0);
+      const totalWeight = call.variants.reduce(
+        (sum: number, v: any) => sum + v.weight,
+        0,
+      );
       expect(totalWeight).toBe(1000);
 
-      const fixedVariant = call.variants.find((v: any) => v.weightType === 'fix');
+      const fixedVariant = call.variants.find(
+        (v: any) => v.weightType === 'fix',
+      );
       expect(fixedVariant.weight).toBe(300);
 
-      const variableVariants = call.variants.filter((v: any) => v.weightType === 'variable');
-      const variableTotal = variableVariants.reduce((sum: number, v: any) => sum + v.weight, 0);
+      const variableVariants = call.variants.filter(
+        (v: any) => v.weightType === 'variable',
+      );
+      const variableTotal = variableVariants.reduce(
+        (sum: number, v: any) => sum + v.weight,
+        0,
+      );
       expect(variableTotal).toBe(700);
     });
   });
@@ -438,7 +580,12 @@ describe('StrategyEditor', () => {
     };
 
     it('removes a variant', async () => {
-      await renderInTestApp(<StrategyEditor strategy={flexibleRolloutStrategy} onChange={mockOnChange} />);
+      await renderInTestApp(
+        <StrategyEditor
+          strategy={flexibleRolloutStrategy}
+          onChange={mockOnChange}
+        />,
+      );
 
       // Find all icon buttons and filter to just delete buttons in the variant table
       const allButtons = screen.getAllByRole('button');
@@ -458,12 +605,18 @@ describe('StrategyEditor', () => {
       );
 
       // Should only have one variant after deletion
-      const lastCall = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
+      const lastCall =
+        mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
       expect(lastCall.variants).toHaveLength(1);
     });
 
     it('updates variant name', async () => {
-      await renderInTestApp(<StrategyEditor strategy={flexibleRolloutStrategy} onChange={mockOnChange} />);
+      await renderInTestApp(
+        <StrategyEditor
+          strategy={flexibleRolloutStrategy}
+          onChange={mockOnChange}
+        />,
+      );
 
       const variantNameInput = screen.getByDisplayValue('Variant A');
       await userEvent.clear(variantNameInput);
@@ -479,7 +632,12 @@ describe('StrategyEditor', () => {
     });
 
     it('updates variant payload value', async () => {
-      await renderInTestApp(<StrategyEditor strategy={flexibleRolloutStrategy} onChange={mockOnChange} />);
+      await renderInTestApp(
+        <StrategyEditor
+          strategy={flexibleRolloutStrategy}
+          onChange={mockOnChange}
+        />,
+      );
 
       const payloadValueInput = screen.getByDisplayValue('valueA');
       await userEvent.clear(payloadValueInput);
@@ -497,22 +655,31 @@ describe('StrategyEditor', () => {
     });
 
     it('changes variant weight type from variable to fix', async () => {
-      await renderInTestApp(<StrategyEditor strategy={flexibleRolloutStrategy} onChange={mockOnChange} />);
+      await renderInTestApp(
+        <StrategyEditor
+          strategy={flexibleRolloutStrategy}
+          onChange={mockOnChange}
+        />,
+      );
 
       // Find the first weight type select
-      const weightTypeSelects = screen.getAllByRole('button').filter(btn =>
-        btn.textContent === 'Variable'
-      );
+      const weightTypeSelects = screen
+        .getAllByRole('button')
+        .filter(btn => btn.textContent === 'Variable');
 
       await userEvent.click(weightTypeSelects[0]);
       const fixedOption = await screen.findByText('Fixed');
       await userEvent.click(fixedOption);
 
-      const lastCall = mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
+      const lastCall =
+        mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
       expect(lastCall.variants[0].weightType).toBe('fix');
 
       // Total weight should still be 1000
-      const totalWeight = lastCall.variants.reduce((sum: number, v: any) => sum + v.weight, 0);
+      const totalWeight = lastCall.variants.reduce(
+        (sum: number, v: any) => sum + v.weight,
+        0,
+      );
       expect(totalWeight).toBe(1000);
     });
 
@@ -537,15 +704,20 @@ describe('StrategyEditor', () => {
         ],
       };
 
-      await renderInTestApp(<StrategyEditor strategy={strategyWithFixedVariant} onChange={mockOnChange} />);
-
-      // Find the weight input for the fixed variant (it's enabled for fixed variants)
-      const weightInputs = screen.getAllByRole('spinbutton').filter(input =>
-        !(input as HTMLInputElement).disabled
+      await renderInTestApp(
+        <StrategyEditor
+          strategy={strategyWithFixedVariant}
+          onChange={mockOnChange}
+        />,
       );
 
-      const fixedWeightInput = weightInputs.find(input =>
-        (input as HTMLInputElement).value === '300'
+      // Find the weight input for the fixed variant (it's enabled for fixed variants)
+      const weightInputs = screen
+        .getAllByRole('spinbutton')
+        .filter(input => !(input as HTMLInputElement).disabled);
+
+      const fixedWeightInput = weightInputs.find(
+        input => (input as HTMLInputElement).value === '300',
       );
 
       expect(fixedWeightInput).toBeDefined();
@@ -575,7 +747,12 @@ describe('StrategyEditor', () => {
     };
 
     it('updates stickiness parameter', async () => {
-      await renderInTestApp(<StrategyEditor strategy={flexibleRolloutStrategy} onChange={mockOnChange} />);
+      await renderInTestApp(
+        <StrategyEditor
+          strategy={flexibleRolloutStrategy}
+          onChange={mockOnChange}
+        />,
+      );
 
       const stickinessSelect = screen.getByRole('button', { name: /default/i });
       await userEvent.click(stickinessSelect);
@@ -593,7 +770,12 @@ describe('StrategyEditor', () => {
     });
 
     it('updates groupId parameter', async () => {
-      await renderInTestApp(<StrategyEditor strategy={flexibleRolloutStrategy} onChange={mockOnChange} />);
+      await renderInTestApp(
+        <StrategyEditor
+          strategy={flexibleRolloutStrategy}
+          onChange={mockOnChange}
+        />,
+      );
 
       const groupIdInput = screen.getByDisplayValue('test-group');
       await userEvent.clear(groupIdInput);
@@ -630,7 +812,12 @@ describe('StrategyEditor', () => {
     };
 
     it('removes a constraint', async () => {
-      await renderInTestApp(<StrategyEditor strategy={strategyWithConstraints} onChange={mockOnChange} />);
+      await renderInTestApp(
+        <StrategyEditor
+          strategy={strategyWithConstraints}
+          onChange={mockOnChange}
+        />,
+      );
 
       // Find all icon buttons and filter to just delete buttons
       const allButtons = screen.getAllByRole('button');
@@ -649,12 +836,19 @@ describe('StrategyEditor', () => {
     });
 
     it('updates constraint operator', async () => {
-      await renderInTestApp(<StrategyEditor strategy={strategyWithConstraints} onChange={mockOnChange} />);
+      await renderInTestApp(
+        <StrategyEditor
+          strategy={strategyWithConstraints}
+          onChange={mockOnChange}
+        />,
+      );
 
       // Find the operator select specifically (not the Add Constraint button which also contains "in")
       const allButtons = screen.getAllByRole('button');
-      const operatorSelect = allButtons.find(btn =>
-        btn.textContent === 'IN' && btn.getAttribute('aria-haspopup') === 'listbox'
+      const operatorSelect = allButtons.find(
+        btn =>
+          btn.textContent === 'IN' &&
+          btn.getAttribute('aria-haspopup') === 'listbox',
       );
 
       if (!operatorSelect) {
@@ -668,9 +862,7 @@ describe('StrategyEditor', () => {
 
       expect(mockOnChange).toHaveBeenCalledWith(
         expect.objectContaining({
-          constraints: [
-            expect.objectContaining({ operator: 'NOT_IN' }),
-          ],
+          constraints: [expect.objectContaining({ operator: 'NOT_IN' })],
         }),
       );
     });
@@ -687,7 +879,12 @@ describe('StrategyEditor', () => {
         constraints: [],
       };
 
-      await renderInTestApp(<StrategyEditor strategy={remoteAddressStrategy} onChange={mockOnChange} />);
+      await renderInTestApp(
+        <StrategyEditor
+          strategy={remoteAddressStrategy}
+          onChange={mockOnChange}
+        />,
+      );
 
       const addButton = screen.getByRole('button', { name: /add constraint/i });
       await userEvent.click(addButton);
@@ -711,7 +908,12 @@ describe('StrategyEditor', () => {
         constraints: [],
       };
 
-      await renderInTestApp(<StrategyEditor strategy={applicationHostnameStrategy} onChange={mockOnChange} />);
+      await renderInTestApp(
+        <StrategyEditor
+          strategy={applicationHostnameStrategy}
+          onChange={mockOnChange}
+        />,
+      );
 
       const addButton = screen.getByRole('button', { name: /add constraint/i });
       await userEvent.click(addButton);
@@ -743,11 +945,16 @@ describe('StrategyEditor', () => {
     };
 
     it('changes variant payload type from string to json', async () => {
-      await renderInTestApp(<StrategyEditor strategy={flexibleRolloutStrategy} onChange={mockOnChange} />);
-
-      const payloadTypeSelects = screen.getAllByRole('button').filter(btn =>
-        btn.textContent === 'String'
+      await renderInTestApp(
+        <StrategyEditor
+          strategy={flexibleRolloutStrategy}
+          onChange={mockOnChange}
+        />,
       );
+
+      const payloadTypeSelects = screen
+        .getAllByRole('button')
+        .filter(btn => btn.textContent === 'String');
 
       await userEvent.click(payloadTypeSelects[0]);
       const jsonOption = await screen.findByText('JSON');
@@ -765,11 +972,16 @@ describe('StrategyEditor', () => {
     });
 
     it('changes variant payload type from string to csv', async () => {
-      await renderInTestApp(<StrategyEditor strategy={flexibleRolloutStrategy} onChange={mockOnChange} />);
-
-      const payloadTypeSelects = screen.getAllByRole('button').filter(btn =>
-        btn.textContent === 'String'
+      await renderInTestApp(
+        <StrategyEditor
+          strategy={flexibleRolloutStrategy}
+          onChange={mockOnChange}
+        />,
       );
+
+      const payloadTypeSelects = screen
+        .getAllByRole('button')
+        .filter(btn => btn.textContent === 'String');
 
       await userEvent.click(payloadTypeSelects[0]);
       const csvOption = await screen.findByText('CSV');
@@ -784,6 +996,71 @@ describe('StrategyEditor', () => {
           ]),
         }),
       );
+    });
+  });
+
+  describe('edge cases', () => {
+    it('handles strategy with all fixed weight variants', async () => {
+      const allFixedStrategy: Strategy = {
+        id: 'strategy-9',
+        name: 'flexibleRollout',
+        parameters: {},
+        variants: [
+          {
+            name: 'Variant A',
+            weight: 500,
+            weightType: 'fix',
+            stickiness: 'default',
+            payload: { type: 'string', value: '' },
+          },
+          {
+            name: 'Variant B',
+            weight: 500,
+            weightType: 'fix',
+            stickiness: 'default',
+            payload: { type: 'string', value: '' },
+          },
+        ],
+      };
+
+      await renderInTestApp(
+        <StrategyEditor strategy={allFixedStrategy} onChange={mockOnChange} />,
+      );
+
+      // Component should handle all fixed variants without error
+      // Variants section should be visible
+      expect(screen.getByText('Variants')).toBeInTheDocument();
+
+      // The variant names appear in text inputs, so we need to find them by value
+      const variantInputs = screen
+        .getAllByRole('textbox')
+        .filter(
+          input =>
+            (input as HTMLInputElement).value === 'Variant A' ||
+            (input as HTMLInputElement).value === 'Variant B',
+        );
+      expect(variantInputs.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('handles unsupported strategy type', async () => {
+      const unsupportedStrategy: Strategy = {
+        id: 'strategy-10',
+        name: 'customStrategy',
+        parameters: {},
+      };
+
+      await renderInTestApp(
+        <StrategyEditor
+          strategy={unsupportedStrategy}
+          onChange={mockOnChange}
+        />,
+      );
+
+      // Should show non-editable message
+      expect(
+        screen.getByText(/not editable in this interface/i),
+      ).toBeInTheDocument();
+      expect(screen.getByText(/customStrategy/i)).toBeInTheDocument();
     });
   });
 });

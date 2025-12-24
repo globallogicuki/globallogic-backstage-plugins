@@ -97,9 +97,13 @@ export const UnleashPage = () => {
 
   const totalFlags = projects.reduce((sum, p) => sum + p.featureCount, 0);
   // Technical debt is inverted health (100% health = 0% technical debt)
-  const averageTechnicalDebt = projects.length > 0
-    ? Math.round(projects.reduce((sum, p) => sum + (100 - p.health), 0) / projects.length)
-    : 0;
+  const averageTechnicalDebt =
+    projects.length > 0
+      ? Math.round(
+          projects.reduce((sum, p) => sum + (100 - p.health), 0) /
+            projects.length,
+        )
+      : 0;
   const totalEnabledToggles = environments.reduce(
     (sum, e) => sum + e.enabledToggleCount,
     0,
@@ -184,7 +188,9 @@ export const UnleashPage = () => {
                         <Chip
                           size="small"
                           label={env.type}
-                          color={env.type === 'production' ? 'secondary' : 'default'}
+                          color={
+                            env.type === 'production' ? 'secondary' : 'default'
+                          }
                           className={classes.environmentChip}
                         />
                         {env.protected && (
@@ -195,8 +201,13 @@ export const UnleashPage = () => {
                             className={classes.environmentChip}
                           />
                         )}
-                        <Typography variant="caption" color="textSecondary" display="block">
-                          {env.projectCount} projects • {env.enabledToggleCount} toggles
+                        <Typography
+                          variant="caption"
+                          color="textSecondary"
+                          display="block"
+                        >
+                          {env.projectCount} projects • {env.enabledToggleCount}{' '}
+                          toggles
                         </Typography>
                       </CardContent>
                     </Card>
@@ -214,14 +225,22 @@ export const UnleashPage = () => {
                   <Grid item xs={12} sm={6} md={3} key={project.id}>
                     <Card variant="outlined" className={classes.projectCard}>
                       <CardContent>
-                        <Typography variant="subtitle1">{project.name}</Typography>
+                        <Typography variant="subtitle1">
+                          {project.name}
+                        </Typography>
                         {project.description && (
-                          <Typography variant="caption" color="textSecondary" display="block">
+                          <Typography
+                            variant="caption"
+                            color="textSecondary"
+                            display="block"
+                          >
                             {project.description}
                           </Typography>
                         )}
                         <Typography variant="caption" display="block">
-                          <span className={classes.technicalDebtBadge}>Debt: {100 - project.health}%</span>
+                          <span className={classes.technicalDebtBadge}>
+                            Debt: {100 - project.health}%
+                          </span>
                           {' • '}
                           {project.featureCount} flags
                           {' • '}

@@ -42,6 +42,7 @@ export UNLEASH_API_TOKEN="your-service-account-token"
 ```
 
 **Token Requirements:**
+
 - Use a **Service Account token** (Unleash Enterprise) or **Personal Access Token**
 - Token must have access to the projects you want to manage
 - Recommended scopes: `READ` for viewing, `ADMIN` for toggling flags
@@ -58,7 +59,7 @@ metadata:
   description: My awesome service
   annotations:
     unleash.io/project-id: my-project-id
-    unleash.io/environment: production  # Optional: default environment to display
+    unleash.io/environment: production # Optional: default environment to display
 spec:
   type: service
   lifecycle: production
@@ -66,6 +67,7 @@ spec:
 ```
 
 **Available Annotations:**
+
 - `unleash.io/project-id` (required): The Unleash project ID
 - `unleash.io/environment` (optional): Default environment to display
 - `unleash.io/filter-tags` (optional): JSON array of tags to filter flags
@@ -77,6 +79,7 @@ Once configured and annotated, the Unleash integration will appear on component 
 ### Overview Card
 
 Navigate to any component with the `unleash.io/project-id` annotation. The Overview tab will display a **Feature Flags** card showing:
+
 - Total number of flags
 - Number of enabled flags
 - Flag status across environments
@@ -85,6 +88,7 @@ Navigate to any component with the `unleash.io/project-id` annotation. The Overv
 ### Feature Flags Tab
 
 Click the **Feature Flags** tab to access the full management interface:
+
 - View all flags for the project
 - Toggle flags on/off by environment
 - See flag types (release, experiment, operational, etc.)
@@ -186,6 +190,7 @@ The plugin uses a hybrid architecture with:
 3. **Common Package**: Shared TypeScript types, permissions, and utilities
 
 This architecture ensures:
+
 - Secure token management (tokens never exposed to frontend)
 - Proper permission enforcement
 - Type safety across frontend and backend

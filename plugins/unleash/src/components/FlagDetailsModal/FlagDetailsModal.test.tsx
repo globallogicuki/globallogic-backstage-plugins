@@ -100,9 +100,7 @@ describe('FlagDetailsModal', () => {
     );
 
     await waitFor(() => {
-      expect(
-        screen.getByText('test-flag - development'),
-      ).toBeInTheDocument();
+      expect(screen.getByText('test-flag - development')).toBeInTheDocument();
     });
 
     expect(screen.getByText('release')).toBeInTheDocument();
@@ -267,7 +265,9 @@ describe('FlagDetailsModal', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('Failed to load flag details')).toBeInTheDocument();
+      expect(
+        screen.getByText('Failed to load flag details'),
+      ).toBeInTheDocument();
     });
   });
 
@@ -301,14 +301,18 @@ describe('FlagDetailsModal', () => {
 
     // Strategy editor should be visible
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Cancel' }),
+      ).toBeInTheDocument();
     });
 
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
 
     // Should return to view mode
     await waitFor(() => {
-      expect(screen.queryByRole('button', { name: 'Save Changes' })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'Save Changes' }),
+      ).not.toBeInTheDocument();
     });
 
     expect(mockUnleashApi.updateStrategy).not.toHaveBeenCalled();

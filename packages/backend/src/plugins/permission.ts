@@ -49,7 +49,9 @@ export class CustomPermissionPolicy implements PermissionPolicy {
       // For resource permissions with a resourceRef, use conditional authorization
       // This delegates the decision to check if the user is the entity owner
       if ('resourceRef' in request) {
-        console.log('[Permission Policy] Using conditional authorization with IS_ENTITY_OWNER');
+        console.log(
+          '[Permission Policy] Using conditional authorization with IS_ENTITY_OWNER',
+        );
         return {
           result: AuthorizeResult.CONDITIONAL,
           pluginId: 'catalog',

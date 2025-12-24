@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, fireEvent } from '@testing-library/react';
 import { EntityProvider } from '@backstage/plugin-catalog-react';
 import { TestApiProvider, renderInTestApp } from '@backstage/test-utils';
 import { EntityUnleashCard } from './EntityUnleashCard';
@@ -142,6 +142,170 @@ describe('EntityUnleashCard', () => {
 
     await waitFor(() => {
       expect(screen.getByText('stale')).toBeInTheDocument();
+    });
+  });
+
+  it('opens details modal when flag name is clicked', async () => {
+    mockUnleashApi.getFlags.mockResolvedValue(mockFeatureFlagsList);
+    mockUnleashApi.getConfig.mockResolvedValue({
+      editableEnvs: [],
+      numEnvs: 4,
+    });
+    mockUnleashApi.getFlag.mockResolvedValue(mockFeatureFlagsList.features[0]);
+
+    await renderInTestApp(
+      <TestApiProvider apis={[[unleashApiRef, mockUnleashApi]]}>
+        <EntityProvider entity={mockEntity}>
+          <EntityUnleashCard />
+        </EntityProvider>
+      </TestApiProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('test-flag')).toBeInTheDocument();
+    });
+
+    // Click on flag name
+    const flagName = screen.getByText('test-flag');
+    fireEvent.click(flagName);
+
+    // Modal should open
+    await waitFor(() => {
+      expect(mockUnleashApi.getFlag).toHaveBeenCalledWith(
+        'test-project',
+        'test-flag',
+      );
+    });
+  });
+
+  it('opens details modal when Enter key is pressed on flag name', async () => {
+    mockUnleashApi.getFlags.mockResolvedValue(mockFeatureFlagsList);
+    mockUnleashApi.getConfig.mockResolvedValue({
+      editableEnvs: [],
+      numEnvs: 4,
+    });
+    mockUnleashApi.getFlag.mockResolvedValue(mockFeatureFlagsList.features[0]);
+
+    await renderInTestApp(
+      <TestApiProvider apis={[[unleashApiRef, mockUnleashApi]]}>
+        <EntityProvider entity={mockEntity}>
+          <EntityUnleashCard />
+        </EntityProvider>
+      </TestApiProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('test-flag')).toBeInTheDocument();
+    });
+
+    // Press Enter on flag name
+    const flagName = screen.getByText('test-flag');
+    fireEvent.keyDown(flagName, { key: 'Enter', code: 'Enter' });
+
+    // Modal should open
+    await waitFor(() => {
+      expect(mockUnleashApi.getFlag).toHaveBeenCalledWith(
+        'test-project',
+        'test-flag',
+      );
+    });
+  });
+
+  it('opens details modal when Space key is pressed on flag name', async () => {
+    mockUnleashApi.getFlags.mockResolvedValue(mockFeatureFlagsList);
+    mockUnleashApi.getConfig.mockResolvedValue({
+      editableEnvs: [],
+      numEnvs: 4,
+    });
+    mockUnleashApi.getFlag.mockResolvedValue(mockFeatureFlagsList.features[0]);
+
+    await renderInTestApp(
+      <TestApiProvider apis={[[unleashApiRef, mockUnleashApi]]}>
+        <EntityProvider entity={mockEntity}>
+          <EntityUnleashCard />
+        </EntityProvider>
+      </TestApiProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('test-flag')).toBeInTheDocument();
+    });
+
+    // Press Space on flag name
+    const flagName = screen.getByText('test-flag');
+    fireEvent.keyDown(flagName, { key: ' ', code: 'Space' });
+
+    // Modal should open
+    await waitFor(() => {
+      expect(mockUnleashApi.getFlag).toHaveBeenCalledWith(
+        'test-project',
+        'test-flag',
+      );
+    });
+  });
+
+  it('does not open modal when other keys are pressed on flag name', async () => {
+    mockUnleashApi.getFlags.mockResolvedValue(mockFeatureFlagsList);
+    mockUnleashApi.getConfig.mockResolvedValue({
+      editableEnvs: [],
+      numEnvs: 4,
+    });
+
+    await renderInTestApp(
+      <TestApiProvider apis={[[unleashApiRef, mockUnleashApi]]}>
+        <EntityProvider entity={mockEntity}>
+          <EntityUnleashCard />
+        </EntityProvider>
+      </TestApiProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('test-flag')).toBeInTheDocument();
+    });
+
+    // Press a different key
+    const flagName = screen.getByText('test-flag');
+    fireEvent.keyDown(flagName, { key: 'a', code: 'KeyA' });
+
+    // Modal should not open
+    expect(mockUnleashApi.getFlag).not.toHaveBeenCalled();
+  });
+
+  it('closes details modal when onClose is called', async () => {
+    mockUnleashApi.getFlags.mockResolvedValue(mockFeatureFlagsList);
+    mockUnleashApi.getConfig.mockResolvedValue({
+      editableEnvs: [],
+      numEnvs: 4,
+    });
+    mockUnleashApi.getFlag.mockResolvedValue(mockFeatureFlagsList.features[0]);
+
+    await renderInTestApp(
+      <TestApiProvider apis={[[unleashApiRef, mockUnleashApi]]}>
+        <EntityProvider entity={mockEntity}>
+          <EntityUnleashCard />
+        </EntityProvider>
+      </TestApiProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('test-flag')).toBeInTheDocument();
+    });
+
+    // Open modal
+    const flagName = screen.getByText('test-flag');
+    fireEvent.click(flagName);
+
+    await waitFor(() => {
+      expect(mockUnleashApi.getFlag).toHaveBeenCalled();
+    });
+
+    // Close modal
+    const closeButton = await screen.findByText('Close');
+    fireEvent.click(closeButton);
+
+    // Modal should close
+    await waitFor(() => {
+      expect(screen.queryByText('Close')).not.toBeInTheDocument();
     });
   });
 });

@@ -29,7 +29,8 @@ export const getUnleashEnvironment = (entity: Entity): string | undefined =>
  * Get filter tags from an entity
  */
 export const getUnleashFilterTags = (entity: Entity): string[] => {
-  const tagsAnnotation = entity.metadata.annotations?.[UNLEASH_FILTER_TAGS_ANNOTATION];
+  const tagsAnnotation =
+    entity.metadata.annotations?.[UNLEASH_FILTER_TAGS_ANNOTATION];
   if (!tagsAnnotation) return [];
   try {
     return JSON.parse(tagsAnnotation);

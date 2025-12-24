@@ -55,7 +55,9 @@ export class UnleashApiClient implements UnleashApi {
     enable: boolean,
   ): Promise<void> {
     await this.fetch(
-      `/projects/${projectId}/features/${flagName}/environments/${environment}/${enable ? 'on' : 'off'}`,
+      `/projects/${projectId}/features/${flagName}/environments/${environment}/${
+        enable ? 'on' : 'off'
+      }`,
       { method: 'POST' },
     );
   }
@@ -65,14 +67,11 @@ export class UnleashApiClient implements UnleashApi {
     flagName: string,
     variants: Variant[],
   ): Promise<void> {
-    await this.fetch(
-      `/projects/${projectId}/features/${flagName}/variants`,
-      {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(variants),
-      },
-    );
+    await this.fetch(`/projects/${projectId}/features/${flagName}/variants`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(variants),
+    });
   }
 
   async getMetrics(
@@ -101,11 +100,21 @@ export class UnleashApiClient implements UnleashApi {
     );
   }
 
-  async getProjects(): Promise<{ version: number; projects: ProjectSummary[] }> {
-    return this.fetch<{ version: number; projects: ProjectSummary[] }>('/projects');
+  async getProjects(): Promise<{
+    version: number;
+    projects: ProjectSummary[];
+  }> {
+    return this.fetch<{ version: number; projects: ProjectSummary[] }>(
+      '/projects',
+    );
   }
 
-  async getEnvironments(): Promise<{ version: number; environments: EnvironmentSummary[] }> {
-    return this.fetch<{ version: number; environments: EnvironmentSummary[] }>('/environments');
+  async getEnvironments(): Promise<{
+    version: number;
+    environments: EnvironmentSummary[];
+  }> {
+    return this.fetch<{ version: number; environments: EnvironmentSummary[] }>(
+      '/environments',
+    );
   }
 }

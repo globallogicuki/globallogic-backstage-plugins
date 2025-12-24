@@ -143,9 +143,7 @@ describe('FlagToggle', () => {
 
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
     await waitFor(() => {
-      expect(
-        screen.queryByText('Confirm Flag Toggle'),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByText('Confirm Flag Toggle')).not.toBeInTheDocument();
     });
   });
 

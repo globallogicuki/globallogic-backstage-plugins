@@ -92,9 +92,7 @@ describe('EntityUnleashContent', () => {
       mockUnleashApi.getFlags.mockImplementation(
         () => new Promise(() => {}), // Never resolves
       );
-      mockUnleashApi.getConfig.mockImplementation(
-        () => new Promise(() => {}),
-      );
+      mockUnleashApi.getConfig.mockImplementation(() => new Promise(() => {}));
 
       await renderInTestApp(
         <TestApiProvider apis={[[unleashApiRef, mockUnleashApi]]}>
@@ -151,9 +149,7 @@ describe('EntityUnleashContent', () => {
 
       expect(screen.getByText('test-flag')).toBeInTheDocument();
       expect(screen.getByText('another-flag')).toBeInTheDocument();
-      expect(
-        screen.getByText('A test feature flag'),
-      ).toBeInTheDocument();
+      expect(screen.getByText('A test feature flag')).toBeInTheDocument();
       expect(screen.getByText('Another test flag')).toBeInTheDocument();
     });
 
@@ -242,8 +238,12 @@ describe('EntityUnleashContent', () => {
         expect(screen.getByText('Feature Flags')).toBeInTheDocument();
       });
 
-      expect(screen.getByRole('tab', { name: 'development' })).toBeInTheDocument();
-      expect(screen.getByRole('tab', { name: 'production' })).toBeInTheDocument();
+      expect(
+        screen.getByRole('tab', { name: 'development' }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('tab', { name: 'production' }),
+      ).toBeInTheDocument();
     });
 
     it('switches between environments when tabs are clicked', async () => {
@@ -415,7 +415,9 @@ describe('EntityUnleashContent', () => {
         // Modal should open with flag details
         const dialog = screen.getByRole('dialog');
         expect(dialog).toBeInTheDocument();
-        expect(within(dialog).getByText('test-flag - development')).toBeInTheDocument();
+        expect(
+          within(dialog).getByText('test-flag - development'),
+        ).toBeInTheDocument();
       });
 
       expect(mockUnleashApi.getFlag).toHaveBeenCalledWith(
@@ -542,7 +544,9 @@ describe('EntityUnleashContent', () => {
         expect(screen.getByText('Feature Flags')).toBeInTheDocument();
       });
 
-      expect(screen.getByTestId('header-title')).toHaveTextContent('Feature Flags');
+      expect(screen.getByTestId('header-title')).toHaveTextContent(
+        'Feature Flags',
+      );
     });
   });
 });

@@ -41,7 +41,9 @@ describe('Unleash Frontend Extensions', () => {
 
     it('has correct extension type', () => {
       expect(unleashPageExtension).toHaveProperty('$$type');
-      expect(unleashPageExtension.$$type).toBe('@backstage/ExtensionDefinition');
+      expect(unleashPageExtension.$$type).toBe(
+        '@backstage/ExtensionDefinition',
+      );
     });
   });
 
@@ -52,7 +54,9 @@ describe('Unleash Frontend Extensions', () => {
 
     it('has correct extension type', () => {
       expect(unleashEntityCardExtension).toHaveProperty('$$type');
-      expect(unleashEntityCardExtension.$$type).toBe('@backstage/ExtensionDefinition');
+      expect(unleashEntityCardExtension.$$type).toBe(
+        '@backstage/ExtensionDefinition',
+      );
     });
   });
 
@@ -63,7 +67,9 @@ describe('Unleash Frontend Extensions', () => {
 
     it('has correct extension type', () => {
       expect(unleashEntityContentExtension).toHaveProperty('$$type');
-      expect(unleashEntityContentExtension.$$type).toBe('@backstage/ExtensionDefinition');
+      expect(unleashEntityContentExtension.$$type).toBe(
+        '@backstage/ExtensionDefinition',
+      );
     });
   });
 

@@ -32,9 +32,7 @@ export const EntityUnleashCard = unleashPlugin.provide(
     name: 'EntityUnleashCard',
     component: {
       lazy: () =>
-        import('./components/EntityUnleashCard').then(
-          m => m.EntityUnleashCard,
-        ),
+        import('./components/EntityUnleashCard').then(m => m.EntityUnleashCard),
     },
   }),
 );

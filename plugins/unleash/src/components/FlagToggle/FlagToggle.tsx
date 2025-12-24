@@ -46,7 +46,9 @@ export const FlagToggle = ({
     try {
       await unleashApi.toggleFlag(projectId, flagName, environment, !enabled);
       alertApi.post({
-        message: `Flag ${flagName} ${!enabled ? 'enabled' : 'disabled'} in ${environment}`,
+        message: `Flag ${flagName} ${
+          !enabled ? 'enabled' : 'disabled'
+        } in ${environment}`,
         severity: 'success',
       });
       onToggled();
@@ -56,7 +58,8 @@ export const FlagToggle = ({
 
       // Check if it's a permission denied error
       if (e.message?.includes('Permission denied')) {
-        errorMessage = "You don't have permission to modify this flag. Only component owners can toggle flags.";
+        errorMessage =
+          "You don't have permission to modify this flag. Only component owners can toggle flags.";
       } else if (e.message?.includes('Forbidden')) {
         errorMessage = "You don't have permission to modify this flag.";
       } else if (e.message?.includes('not editable')) {

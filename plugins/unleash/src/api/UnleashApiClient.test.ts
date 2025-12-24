@@ -188,12 +188,7 @@ describe('UnleashApiClient', () => {
         json: jest.fn().mockResolvedValue({}),
       } as unknown as Response);
 
-      await client.toggleFlag(
-        'test-project',
-        'test-flag',
-        'production',
-        false,
-      );
+      await client.toggleFlag('test-project', 'test-flag', 'production', false);
 
       expect(mockFetchApi.fetch).toHaveBeenCalledWith(
         `${baseUrl}/projects/test-project/features/test-flag/environments/production/off`,

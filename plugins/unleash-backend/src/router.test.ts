@@ -540,8 +540,12 @@ describe('createRouter', () => {
       expect(response.status).toEqual(200);
       expect(mockPermissions.authorize).toHaveBeenCalledWith(
         expect.arrayContaining([
-          expect.objectContaining({ resourceRef: stringifyEntityRef(mockEntity) }),
-          expect.objectContaining({ resourceRef: stringifyEntityRef(mockEntity2) }),
+          expect.objectContaining({
+            resourceRef: stringifyEntityRef(mockEntity),
+          }),
+          expect.objectContaining({
+            resourceRef: stringifyEntityRef(mockEntity2),
+          }),
         ]),
         expect.any(Object),
       );
@@ -578,7 +582,9 @@ describe('createRouter', () => {
       (toggleFeatureFlag as jest.Mock).mockRejectedValue(forbiddenError);
 
       const response = await request(app)
-        .post('/projects/test-project/features/test-flag/environments/development/on')
+        .post(
+          '/projects/test-project/features/test-flag/environments/development/on',
+        )
         .set('Authorization', mockCredentials.user.header());
 
       expect(response.status).toEqual(403);
@@ -591,7 +597,9 @@ describe('createRouter', () => {
       (toggleFeatureFlag as jest.Mock).mockRejectedValue(serverError);
 
       const response = await request(app)
-        .post('/projects/test-project/features/test-flag/environments/development/on')
+        .post(
+          '/projects/test-project/features/test-flag/environments/development/on',
+        )
         .set('Authorization', mockCredentials.user.header());
 
       expect(response.status).toEqual(500);
@@ -616,7 +624,9 @@ describe('createRouter', () => {
       (updateStrategy as jest.Mock).mockRejectedValue(forbiddenError);
 
       const response = await request(app)
-        .put('/projects/test-project/features/test-flag/environments/development/strategies/strat1')
+        .put(
+          '/projects/test-project/features/test-flag/environments/development/strategies/strat1',
+        )
         .set('Authorization', mockCredentials.user.header())
         .send({ name: 'default' });
 
@@ -634,7 +644,9 @@ describe('createRouter', () => {
 
     it('denies strategy update for non-editable environment', async () => {
       const response = await request(app)
-        .put('/projects/test-project/features/test-flag/environments/production/strategies/strat1')
+        .put(
+          '/projects/test-project/features/test-flag/environments/production/strategies/strat1',
+        )
         .set('Authorization', mockCredentials.user.header())
         .send({ name: 'default' });
 
@@ -698,7 +710,9 @@ describe('createRouter', () => {
       (toggleFeatureFlag as jest.Mock).mockResolvedValue(null);
 
       const response = await request(appNoPermissions)
-        .post('/projects/test-project/features/test-flag/environments/development/on')
+        .post(
+          '/projects/test-project/features/test-flag/environments/development/on',
+        )
         .set('Authorization', mockCredentials.user.header());
 
       expect(response.status).toEqual(200);

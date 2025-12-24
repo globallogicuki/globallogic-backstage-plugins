@@ -227,7 +227,9 @@ export const EntityUnleashContent = () => {
                           <TableCell>
                             <Box display="flex" alignItems="center">
                               {(() => {
-                                if (envStatus?.strategies?.length !== undefined) {
+                                if (
+                                  envStatus?.strategies?.length !== undefined
+                                ) {
                                   return `${envStatus.strategies.length} strategies`;
                                 }
                                 if (envStatus?.hasStrategies) {

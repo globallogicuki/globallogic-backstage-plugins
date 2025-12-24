@@ -115,7 +115,7 @@ export const EntityUnleashCard = () => {
                       <span
                         className={classes.flagName}
                         onClick={() => setDetailsModal(flag.name)}
-                        onKeyDown={(e) => {
+                        onKeyDown={e => {
                           if (e.key === 'Enter' || e.key === ' ') {
                             setDetailsModal(flag.name);
                           }
