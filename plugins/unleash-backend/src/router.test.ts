@@ -415,5 +415,321 @@ describe('createRouter', () => {
         'test-flag',
       );
     });
+
+    it('requires permission', async () => {
+      mockCatalogApi.getEntities.mockResolvedValue({ items: [mockEntity] });
+      mockPermissions.authorize.mockResolvedValue([
+        { result: AuthorizeResult.DENY },
+      ]);
+
+      const response = await request(app)
+        .get('/projects/test-project/features/test-flag/metrics')
+        .set('Authorization', mockCredentials.user.header());
+
+      expect(response.status).toEqual(403);
+      expect(getFeatureMetrics).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('GET /config', () => {
+    it('returns configuration', async () => {
+      const response = await request(app).get('/config');
+
+      expect(response.status).toEqual(200);
+      expect(response.body).toEqual({
+        editableEnvs: ['development', 'staging'],
+        numEnvs: 4,
+      });
+    });
+  });
+
+  describe('GET /projects', () => {
+    const mockProjects = {
+      version: 1,
+      projects: [
+        { id: 'project-1', name: 'Project 1' },
+        { id: 'project-2', name: 'Project 2' },
+      ],
+    };
+
+    it('returns all projects', async () => {
+      const { getAllProjects } = require('./lib');
+      (getAllProjects as jest.Mock).mockResolvedValue(mockProjects);
+
+      const response = await request(app)
+        .get('/projects')
+        .set('Authorization', mockCredentials.user.header());
+
+      expect(response.status).toEqual(200);
+      expect(response.body).toEqual(mockProjects);
+      expect(getAllProjects).toHaveBeenCalledWith(
+        expect.objectContaining({
+          baseUrl: 'https://unleash.example.com',
+          token: 'test-token',
+        }),
+      );
+    });
+
+    it('requires authentication', async () => {
+      const response = await request(app)
+        .get('/projects')
+        .set('Authorization', mockCredentials.none.header());
+
+      expect(response.status).toBe(401);
+    });
+  });
+
+  describe('GET /environments', () => {
+    const mockEnvironments = {
+      version: 1,
+      environments: [
+        { name: 'development', enabled: true },
+        { name: 'production', enabled: true },
+      ],
+    };
+
+    it('returns all environments', async () => {
+      const { getAllEnvironments } = require('./lib');
+      (getAllEnvironments as jest.Mock).mockResolvedValue(mockEnvironments);
+
+      const response = await request(app)
+        .get('/environments')
+        .set('Authorization', mockCredentials.user.header());
+
+      expect(response.status).toEqual(200);
+      expect(response.body).toEqual(mockEnvironments);
+      expect(getAllEnvironments).toHaveBeenCalledWith(
+        expect.objectContaining({
+          baseUrl: 'https://unleash.example.com',
+          token: 'test-token',
+        }),
+      );
+    });
+
+    it('requires authentication', async () => {
+      const response = await request(app)
+        .get('/environments')
+        .set('Authorization', mockCredentials.none.header());
+
+      expect(response.status).toBe(401);
+    });
+  });
+
+  describe('Permission checks with multiple entities', () => {
+    const mockEntity2 = {
+      ...mockEntity,
+      metadata: {
+        ...mockEntity.metadata,
+        name: 'test-component-2',
+      },
+    };
+
+    it('allows access if user has permission on any linked entity', async () => {
+      mockCatalogApi.getEntities.mockResolvedValue({
+        items: [mockEntity, mockEntity2],
+      });
+      mockPermissions.authorize.mockResolvedValue([
+        { result: AuthorizeResult.DENY }, // First entity: deny
+        { result: AuthorizeResult.ALLOW }, // Second entity: allow
+      ]);
+
+      const response = await request(app)
+        .get('/projects/test-project/features')
+        .set('Authorization', mockCredentials.user.header());
+
+      expect(response.status).toEqual(200);
+      expect(mockPermissions.authorize).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          expect.objectContaining({ resourceRef: stringifyEntityRef(mockEntity) }),
+          expect.objectContaining({ resourceRef: stringifyEntityRef(mockEntity2) }),
+        ]),
+        expect.any(Object),
+      );
+    });
+
+    it('denies access if user has no permission on any linked entity', async () => {
+      mockCatalogApi.getEntities.mockResolvedValue({
+        items: [mockEntity, mockEntity2],
+      });
+      mockPermissions.authorize.mockResolvedValue([
+        { result: AuthorizeResult.DENY },
+        { result: AuthorizeResult.DENY },
+      ]);
+
+      const response = await request(app)
+        .get('/projects/test-project/features')
+        .set('Authorization', mockCredentials.user.header());
+
+      expect(response.status).toEqual(403);
+    });
+  });
+
+  describe('Error handling from Unleash API', () => {
+    beforeEach(() => {
+      mockCatalogApi.getEntities.mockResolvedValue({ items: [mockEntity] });
+      mockPermissions.authorize.mockResolvedValue([
+        { result: AuthorizeResult.ALLOW },
+      ]);
+    });
+
+    it('handles 403 Forbidden from toggle endpoint', async () => {
+      const forbiddenError: any = new Error('Forbidden');
+      forbiddenError.statusCode = 403;
+      (toggleFeatureFlag as jest.Mock).mockRejectedValue(forbiddenError);
+
+      const response = await request(app)
+        .post('/projects/test-project/features/test-flag/environments/development/on')
+        .set('Authorization', mockCredentials.user.header());
+
+      expect(response.status).toEqual(403);
+      expect(response.body.error).toContain('Permission denied');
+    });
+
+    it('handles 500 error from toggle endpoint', async () => {
+      const serverError: any = new Error('Internal server error');
+      serverError.statusCode = 500;
+      (toggleFeatureFlag as jest.Mock).mockRejectedValue(serverError);
+
+      const response = await request(app)
+        .post('/projects/test-project/features/test-flag/environments/development/on')
+        .set('Authorization', mockCredentials.user.header());
+
+      expect(response.status).toEqual(500);
+    });
+
+    it('handles 403 from variant update', async () => {
+      const forbiddenError: any = new Error('Forbidden');
+      forbiddenError.statusCode = 403;
+      (updateFeatureVariants as jest.Mock).mockRejectedValue(forbiddenError);
+
+      const response = await request(app)
+        .put('/projects/test-project/features/test-flag/variants')
+        .set('Authorization', mockCredentials.user.header())
+        .send([]);
+
+      expect(response.status).toEqual(403);
+    });
+
+    it('handles 403 from strategy update', async () => {
+      const forbiddenError: any = new Error('Forbidden');
+      forbiddenError.statusCode = 403;
+      (updateStrategy as jest.Mock).mockRejectedValue(forbiddenError);
+
+      const response = await request(app)
+        .put('/projects/test-project/features/test-flag/environments/development/strategies/strat1')
+        .set('Authorization', mockCredentials.user.header())
+        .send({ name: 'default' });
+
+      expect(response.status).toEqual(403);
+    });
+  });
+
+  describe('Strategy update non-editable environment', () => {
+    beforeEach(() => {
+      mockCatalogApi.getEntities.mockResolvedValue({ items: [mockEntity] });
+      mockPermissions.authorize.mockResolvedValue([
+        { result: AuthorizeResult.ALLOW },
+      ]);
+    });
+
+    it('denies strategy update for non-editable environment', async () => {
+      const response = await request(app)
+        .put('/projects/test-project/features/test-flag/environments/production/strategies/strat1')
+        .set('Authorization', mockCredentials.user.header())
+        .send({ name: 'default' });
+
+      expect(response.status).toEqual(403);
+      expect(response.body.error).toContain('not editable');
+      expect(updateStrategy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Variant update with no editable environments', () => {
+    it('denies variant update when no environments are editable', async () => {
+      const routerNoEditable = await createRouter({
+        logger: mockServices.logger.mock(),
+        unleashUrl: 'https://unleash.example.com',
+        unleashToken: 'test-token',
+        editableEnvs: [],
+        numEnvs: 4,
+        httpAuth: mockServices.httpAuth(),
+        permissions: mockPermissions,
+        catalog: mockCatalogApi,
+      });
+      const appNoEditable = express();
+      appNoEditable.use(routerNoEditable);
+      appNoEditable.use(mockErrorHandler());
+
+      const response = await request(appNoEditable)
+        .put('/projects/test-project/features/test-flag/variants')
+        .set('Authorization', mockCredentials.user.header())
+        .send([]);
+
+      expect(response.status).toEqual(403);
+      expect(response.body.error).toContain('No environments are editable');
+    });
+  });
+
+  describe('Permissions disabled mode', () => {
+    let appNoPermissions: express.Express;
+
+    beforeEach(async () => {
+      const routerNoPermissions = await createRouter({
+        logger: mockServices.logger.mock(),
+        unleashUrl: 'https://unleash.example.com',
+        unleashToken: 'test-token',
+        editableEnvs: ['development'],
+        numEnvs: 4,
+        httpAuth: mockServices.httpAuth(),
+        permissions: mockPermissions,
+        catalog: mockCatalogApi,
+        enablePermissions: false,
+      });
+      appNoPermissions = express();
+      appNoPermissions.use(routerNoPermissions);
+      appNoPermissions.use(mockErrorHandler());
+
+      // Reset mocks
+      mockCatalogApi.getEntities.mockReset();
+      mockPermissions.authorize.mockReset();
+    });
+
+    it('allows toggle without permission checks when disabled', async () => {
+      (toggleFeatureFlag as jest.Mock).mockResolvedValue(null);
+
+      const response = await request(appNoPermissions)
+        .post('/projects/test-project/features/test-flag/environments/development/on')
+        .set('Authorization', mockCredentials.user.header());
+
+      expect(response.status).toEqual(200);
+      expect(mockCatalogApi.getEntities).not.toHaveBeenCalled();
+      expect(mockPermissions.authorize).not.toHaveBeenCalled();
+      expect(toggleFeatureFlag).toHaveBeenCalled();
+    });
+
+    it('allows reading features without permission checks when disabled', async () => {
+      (getProjectFeatures as jest.Mock).mockResolvedValue(mockFeatureFlagsList);
+
+      const response = await request(appNoPermissions)
+        .get('/projects/test-project/features')
+        .set('Authorization', mockCredentials.user.header());
+
+      expect(response.status).toEqual(200);
+      expect(mockCatalogApi.getEntities).not.toHaveBeenCalled();
+      expect(mockPermissions.authorize).not.toHaveBeenCalled();
+    });
+
+    it('allows variant updates without permission checks when disabled', async () => {
+      (updateFeatureVariants as jest.Mock).mockResolvedValue({ variants: [] });
+
+      const response = await request(appNoPermissions)
+        .put('/projects/test-project/features/test-flag/variants')
+        .set('Authorization', mockCredentials.user.header())
+        .send([]);
+
+      expect(response.status).toEqual(200);
+      expect(mockCatalogApi.getEntities).not.toHaveBeenCalled();
+      expect(mockPermissions.authorize).not.toHaveBeenCalled();
+    });
   });
 });
