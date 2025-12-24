@@ -14,4 +14,7 @@ integrations:
       - development
       - staging
       # - production
+    # By default, permissions are enabled which will limit feature
+    # flag management users in the component owners group. If you
+    # want anyone to be able to control flags, set to false
     enablePermissions: false
