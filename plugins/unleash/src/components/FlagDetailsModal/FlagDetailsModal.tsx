@@ -132,10 +132,15 @@ export const FlagDetailsModal = ({
         {environment && ` - ${environment}`}
       </DialogTitle>
       <DialogContent dividers>
-        {loading ? (
-          <Progress />
-        ) : flag ? (
-          <Box>
+        {(() => {
+          if (loading) {
+            return <Progress />;
+          }
+          if (!flag) {
+            return <Typography>Failed to load flag details</Typography>;
+          }
+          return (
+            <Box>
             {/* Flag metadata */}
             <Box className={classes.section}>
               <Typography className={classes.sectionTitle}>Details</Typography>
@@ -423,9 +428,8 @@ export const FlagDetailsModal = ({
               </Box>
             )}
           </Box>
-        ) : (
-          <Typography>Failed to load flag details</Typography>
-        )}
+          );
+        })()}
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="primary">

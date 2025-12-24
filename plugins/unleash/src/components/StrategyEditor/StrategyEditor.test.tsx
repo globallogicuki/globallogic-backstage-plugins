@@ -101,7 +101,7 @@ describe('StrategyEditor', () => {
       expect(totalWeight).toBe(1000); // Should always total 100%
     });
 
-    it('displays weight warning when total is not 100%', async () => {
+    it('auto-corrects weights on mount when total is not 100%', async () => {
       const invalidWeightStrategy: Strategy = {
         ...flexibleRolloutStrategy,
         variants: [
@@ -124,7 +124,19 @@ describe('StrategyEditor', () => {
 
       await renderInTestApp(<StrategyEditor strategy={invalidWeightStrategy} onChange={mockOnChange} />);
 
-      expect(screen.getByText(/warning.*50%.*should be 100%/i)).toBeInTheDocument();
+      // Component should auto-recalculate weights on mount
+      const call = mockOnChange.mock.calls[0]?.[0];
+      expect(call).toBeDefined();
+      const totalWeight = call.variants.reduce((sum: number, v: any) => sum + v.weight, 0);
+      expect(totalWeight).toBe(1000);
+
+      // Fixed variant should keep its weight
+      const fixedVariant = call.variants.find((v: any) => v.weightType === 'fix');
+      expect(fixedVariant.weight).toBe(300);
+
+      // Variable variant should get remaining weight
+      const variableVariant = call.variants.find((v: any) => v.weightType === 'variable');
+      expect(variableVariant.weight).toBe(700);
     });
   });
 
@@ -344,11 +356,10 @@ describe('StrategyEditor', () => {
       // The component should recalculate weights on mount
       // All 3 variants should be variable and total 1000
       const call = mockOnChange.mock.calls[0]?.[0];
-      if (call) {
-        const totalWeight = call.variants.reduce((sum: number, v: any) => sum + v.weight, 0);
-        expect(totalWeight).toBe(1000);
-        expect(call.variants.every((v: any) => v.weightType === 'variable')).toBe(true);
-      }
+      expect(call).toBeDefined();
+      const totalWeight = call.variants.reduce((sum: number, v: any) => sum + v.weight, 0);
+      expect(totalWeight).toBe(1000);
+      expect(call.variants.every((v: any) => v.weightType === 'variable')).toBe(true);
     });
 
     it('distributes remaining weight among variable variants when some are fixed', async () => {
@@ -386,17 +397,16 @@ describe('StrategyEditor', () => {
       // Fixed variant should keep 300
       // Remaining 700 should be split between the 2 variable variants
       const call = mockOnChange.mock.calls[0]?.[0];
-      if (call) {
-        const totalWeight = call.variants.reduce((sum: number, v: any) => sum + v.weight, 0);
-        expect(totalWeight).toBe(1000);
+      expect(call).toBeDefined();
+      const totalWeight = call.variants.reduce((sum: number, v: any) => sum + v.weight, 0);
+      expect(totalWeight).toBe(1000);
 
-        const fixedVariant = call.variants.find((v: any) => v.weightType === 'fix');
-        expect(fixedVariant.weight).toBe(300);
+      const fixedVariant = call.variants.find((v: any) => v.weightType === 'fix');
+      expect(fixedVariant.weight).toBe(300);
 
-        const variableVariants = call.variants.filter((v: any) => v.weightType === 'variable');
-        const variableTotal = variableVariants.reduce((sum: number, v: any) => sum + v.weight, 0);
-        expect(variableTotal).toBe(700);
-      }
+      const variableVariants = call.variants.filter((v: any) => v.weightType === 'variable');
+      const variableTotal = variableVariants.reduce((sum: number, v: any) => sum + v.weight, 0);
+      expect(variableTotal).toBe(700);
     });
   });
 
@@ -538,17 +548,16 @@ describe('StrategyEditor', () => {
         (input as HTMLInputElement).value === '300'
       );
 
-      if (fixedWeightInput) {
-        fireEvent.change(fixedWeightInput, { target: { value: '400' } });
+      expect(fixedWeightInput).toBeDefined();
+      fireEvent.change(fixedWeightInput!, { target: { value: '400' } });
 
-        expect(mockOnChange).toHaveBeenCalledWith(
-          expect.objectContaining({
-            variants: expect.arrayContaining([
-              expect.objectContaining({ weight: 400, weightType: 'fix' }),
-            ]),
-          }),
-        );
-      }
+      expect(mockOnChange).toHaveBeenCalledWith(
+        expect.objectContaining({
+          variants: expect.arrayContaining([
+            expect.objectContaining({ weight: 400, weightType: 'fix' }),
+          ]),
+        }),
+      );
     });
   });
 

@@ -161,7 +161,7 @@ export const EntityUnleashContent = () => {
             <Card>
               <Tabs
                 value={currentEnv}
-                onChange={(_, value) => setSelectedEnv(value)}
+                onChange={(_, newValue) => setSelectedEnv(newValue)}
                 indicatorColor="primary"
                 textColor="primary"
               >
@@ -226,29 +226,35 @@ export const EntityUnleashContent = () => {
                           </TableCell>
                           <TableCell>
                             <Box display="flex" alignItems="center">
-                              {envStatus?.strategies?.length !== undefined ? (
-                                `${envStatus.strategies.length} strategies`
-                              ) : envStatus?.hasStrategies ? (
-                                <Chip
-                                  size="small"
-                                  label="Has strategies"
-                                  color="primary"
-                                  variant="outlined"
-                                  onClick={() =>
-                                    setDetailsModal({
-                                      flagName: flag.name,
-                                      environment: currentEnv,
-                                    })
-                                  }
-                                  clickable
-                                />
-                              ) : (
-                                <Chip
-                                  size="small"
-                                  label="No strategies"
-                                  variant="outlined"
-                                />
-                              )}
+                              {(() => {
+                                if (envStatus?.strategies?.length !== undefined) {
+                                  return `${envStatus.strategies.length} strategies`;
+                                }
+                                if (envStatus?.hasStrategies) {
+                                  return (
+                                    <Chip
+                                      size="small"
+                                      label="Has strategies"
+                                      color="primary"
+                                      variant="outlined"
+                                      onClick={() =>
+                                        setDetailsModal({
+                                          flagName: flag.name,
+                                          environment: currentEnv,
+                                        })
+                                      }
+                                      clickable
+                                    />
+                                  );
+                                }
+                                return (
+                                  <Chip
+                                    size="small"
+                                    label="No strategies"
+                                    variant="outlined"
+                                  />
+                                );
+                              })()}
                               {(envStatus?.hasStrategies ||
                                 (envStatus?.strategies?.length ?? 0) > 0) && (
                                 <Tooltip title="View details">

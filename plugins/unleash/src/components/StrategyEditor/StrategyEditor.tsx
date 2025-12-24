@@ -49,16 +49,6 @@ export const StrategyEditor = ({ strategy, onChange }: StrategyEditorProps) => {
   const classes = useStyles();
   const [localStrategy, setLocalStrategy] = useState<Strategy>(strategy);
 
-  useEffect(() => {
-    setLocalStrategy(strategy);
-  }, [strategy]);
-
-  const updateStrategy = (updates: Partial<Strategy>) => {
-    const updated = { ...localStrategy, ...updates };
-    setLocalStrategy(updated);
-    onChange(updated);
-  };
-
   // Variant weight management following Unleash's logic
   const recalculateVariantWeights = (variants: Variant[]): Variant[] => {
     const total = 1000; // 100%
@@ -101,6 +91,27 @@ export const StrategyEditor = ({ strategy, onChange }: StrategyEditorProps) => {
       variableIndex++;
       return { ...v, weight };
     });
+  };
+
+  useEffect(() => {
+    setLocalStrategy(strategy);
+  }, [strategy]);
+
+  // Recalculate variant weights on mount to ensure proper distribution
+  useEffect(() => {
+    if (strategy.variants && strategy.variants.length > 0) {
+      const recalculated = recalculateVariantWeights(strategy.variants);
+      const updated = { ...strategy, variants: recalculated };
+      setLocalStrategy(updated);
+      onChange(updated);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const updateStrategy = (updates: Partial<Strategy>) => {
+    const updated = { ...localStrategy, ...updates };
+    setLocalStrategy(updated);
+    onChange(updated);
   };
 
   const handleVariantChange = (index: number, field: keyof Variant, value: any) => {
@@ -366,7 +377,7 @@ export const StrategyEditor = ({ strategy, onChange }: StrategyEditorProps) => {
                   <TextField
                     type="number"
                     value={variant.weight}
-                    onChange={e => handleVariantChange(index, 'weight', parseInt(e.target.value) || 0)}
+                    onChange={e => handleVariantChange(index, 'weight', parseInt(e.target.value, 10) || 0)}
                     size="small"
                     className={classes.weightInput}
                     disabled={variant.weightType === 'variable'}
