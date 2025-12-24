@@ -1,3 +1,4 @@
+import { LoggerService } from '@backstage/backend-plugin-api';
 import { BackstageIdentityResponse } from '@backstage/plugin-auth-node';
 import {
   AuthorizeResult,
@@ -9,6 +10,8 @@ import {
 } from '@backstage/plugin-permission-node';
 
 export class CustomPermissionPolicy implements PermissionPolicy {
+  constructor(private readonly logger: LoggerService) {}
+
   async handle(
     request: PolicyQuery,
     user?: BackstageIdentityResponse,
@@ -23,7 +26,7 @@ export class CustomPermissionPolicy implements PermissionPolicy {
       request.permission.name === 'unleash.flag.toggle' ||
       request.permission.name === 'unleash.variant.manage'
     ) {
-      console.log('[Permission Policy] Unleash write permission check:', {
+      this.logger.debug('[Permission Policy] Unleash write permission check', {
         permission: request.permission.name,
         userEntityRef: user?.identity.userEntityRef,
         ownershipEntityRefs: user?.identity.ownershipEntityRefs,
@@ -32,7 +35,7 @@ export class CustomPermissionPolicy implements PermissionPolicy {
 
       // Deny if no user is authenticated
       if (!user) {
-        console.log('[Permission Policy] DENY - No user authenticated');
+        this.logger.warn('[Permission Policy] DENY - No user authenticated');
         return { result: AuthorizeResult.DENY };
       }
 
@@ -42,14 +45,14 @@ export class CustomPermissionPolicy implements PermissionPolicy {
         user.identity.userEntityRef === 'user:default/guest' ||
         user.identity.userEntityRef?.toLowerCase().includes('/guest')
       ) {
-        console.log('[Permission Policy] DENY - Guest user detected');
+        this.logger.warn('[Permission Policy] DENY - Guest user detected');
         return { result: AuthorizeResult.DENY };
       }
 
       // For resource permissions with a resourceRef, use conditional authorization
       // This delegates the decision to check if the user is the entity owner
       if ('resourceRef' in request) {
-        console.log(
+        this.logger.debug(
           '[Permission Policy] Using conditional authorization with IS_ENTITY_OWNER',
         );
         return {
@@ -67,7 +70,7 @@ export class CustomPermissionPolicy implements PermissionPolicy {
       }
 
       // Default deny for Unleash write operations without a resourceRef
-      console.log('[Permission Policy] DENY - No resourceRef provided');
+      this.logger.warn('[Permission Policy] DENY - No resourceRef provided');
       return { result: AuthorizeResult.DENY };
     }
 

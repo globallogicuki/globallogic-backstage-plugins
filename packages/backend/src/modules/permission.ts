@@ -1,4 +1,4 @@
-import { createBackendModule } from '@backstage/backend-plugin-api';
+import { coreServices, createBackendModule } from '@backstage/backend-plugin-api';
 import { policyExtensionPoint } from '@backstage/plugin-permission-node/alpha';
 import { CustomPermissionPolicy } from '../plugins/permission';
 
@@ -7,11 +7,11 @@ export default createBackendModule({
   moduleId: 'custom-policy',
   register(reg) {
     reg.registerInit({
-      deps: { policy: policyExtensionPoint },
-      async init({ policy }) {
-        console.log('[Permission Module] Registering custom permission policy');
-        policy.setPolicy(new CustomPermissionPolicy());
-        console.log('[Permission Module] Custom permission policy registered');
+      deps: { policy: policyExtensionPoint, logger: coreServices.logger },
+      async init({ policy, logger }) {
+        logger.info('Registering custom permission policy');
+        policy.setPolicy(new CustomPermissionPolicy(logger));
+        logger.info('Custom permission policy registered');
       },
     });
   },
