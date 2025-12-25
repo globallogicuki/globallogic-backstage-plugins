@@ -1,5 +1,4 @@
 import { LoggerService } from '@backstage/backend-plugin-api';
-import { BackstageIdentityResponse } from '@backstage/plugin-auth-node';
 import {
   AuthorizeResult,
   PolicyDecision,
@@ -7,6 +6,7 @@ import {
 import {
   PermissionPolicy,
   PolicyQuery,
+  PolicyQueryUser,
 } from '@backstage/plugin-permission-node';
 
 export class UnleashPermissionPolicy implements PermissionPolicy {
@@ -14,7 +14,7 @@ export class UnleashPermissionPolicy implements PermissionPolicy {
 
   async handle(
     request: PolicyQuery,
-    user?: BackstageIdentityResponse,
+    user?: PolicyQueryUser,
   ): Promise<PolicyDecision> {
     // Allow read permissions for all authenticated users (including Guest for viewing)
     if (request.permission.name === 'unleash.flag.read') {
@@ -28,7 +28,7 @@ export class UnleashPermissionPolicy implements PermissionPolicy {
     ) {
       this.logger.debug('[Permission Policy] Unleash write permission check', {
         permission: request.permission.name,
-        userEntityRef: user?.identity.userEntityRef,
+        userEntityRef: user?.info.userEntityRef,
         ownershipEntityRefs: user?.identity.ownershipEntityRefs,
         resourceRef:
           'resourceRef' in request
@@ -44,9 +44,9 @@ export class UnleashPermissionPolicy implements PermissionPolicy {
 
       // Deny Guest users explicitly
       if (
-        user.identity.userEntityRef === 'user:development/guest' ||
-        user.identity.userEntityRef === 'user:default/guest' ||
-        user.identity.userEntityRef?.toLowerCase().includes('/guest')
+        user.info.userEntityRef === 'user:development/guest' ||
+        user.info.userEntityRef === 'user:default/guest' ||
+        user.info.userEntityRef?.toLowerCase().includes('/guest')
       ) {
         this.logger.warn('[Permission Policy] DENY - Guest user detected');
         return { result: AuthorizeResult.DENY };

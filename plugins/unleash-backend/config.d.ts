@@ -15,11 +15,15 @@ export interface Config {
      */
     apiToken: string;
     /**
-     * Enable permission checks for Unleash operations
-     * When set to false, permission checks will be bypassed (useful for development)
-     * @default true
+     * List of environment names that can be modified via the UI
      * @visibility backend
      */
-    enablePermissions?: boolean;
+    editableEnvs?: string[];
+    /**
+     * Number of environments to display in the UI
+     * @default 4
+     * @visibility frontend
+     */
+    numEnvs?: number;
   };
 }

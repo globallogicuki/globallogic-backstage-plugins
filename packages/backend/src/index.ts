@@ -34,11 +34,12 @@ backend.add(import('@backstage/plugin-catalog-backend-module-logs'));
 // permission plugin
 backend.add(import('@backstage/plugin-permission-backend'));
 // See https://backstage.io/docs/permissions/getting-started for how to create your own permission policy
-backend.add(
-  import('@backstage/plugin-permission-backend-module-allow-all-policy'),
-);
-// Custom permission policy for testing Unleash (and other plugin) permissions
-// backend.add(import('./modules/permission'));
+// Use ONE of the following permission policies:
+// - allow-all-policy: Open access to all users
+// - unleash-backend/permissions: Owner-based access for Unleash, allow-all for everything else
+// backend.add(
+//   import('@backstage/plugin-permission-backend-module-allow-all-policy'),
+// );
 
 // search plugin
 backend.add(import('@backstage/plugin-search-backend'));
@@ -63,7 +64,7 @@ backend.add(import('@backstage/plugin-signals-backend'));
 
 backend.add(import('@globallogicuki/backstage-plugin-unleash-backend'));
 // Optional Unleash permission policy module that restricts actions to component owners
-// backend.add(
-//   import('@globallogicuki/backstage-plugin-unleash-backend/permissions'),
-// );
+backend.add(
+  import('@globallogicuki/backstage-plugin-unleash-backend/permissions'),
+);
 backend.start();

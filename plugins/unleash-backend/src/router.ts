@@ -37,7 +37,6 @@ export interface RouterOptions {
   httpAuth: HttpAuthService;
   permissions: PermissionsService;
   catalog: CatalogService;
-  enablePermissions?: boolean;
 }
 
 export async function createRouter(
@@ -52,7 +51,6 @@ export async function createRouter(
     httpAuth,
     permissions,
     catalog,
-    enablePermissions = true,
   } = options;
   const router = Router();
   router.use(express.json());
@@ -74,14 +72,6 @@ export async function createRouter(
     req: express.Request,
     permission: ResourcePermission<string>,
   ): Promise<{ result: AuthorizeResult }> => {
-    // Skip permission checks if disabled
-    if (!enablePermissions) {
-      logger.debug(
-        `[checkPermission] Permissions disabled, allowing ${permission.name}`,
-      );
-      return { result: AuthorizeResult.ALLOW };
-    }
-
     const { projectId } = req.params;
     logger.warn(
       `[checkPermission] Starting: ${permission.name} for project ${projectId}`,

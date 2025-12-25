@@ -1,7 +1,6 @@
 import { LoggerService } from '@backstage/backend-plugin-api';
-import { BackstageIdentityResponse } from '@backstage/plugin-auth-node';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
-import { PolicyQuery } from '@backstage/plugin-permission-node';
+import { PolicyQuery, PolicyQueryUser } from '@backstage/plugin-permission-node';
 import { UnleashPermissionPolicy } from './permissionPolicy';
 
 const createLoggerMock = (): LoggerService =>
@@ -11,24 +10,34 @@ const createLoggerMock = (): LoggerService =>
     warn: jest.fn(),
     error: jest.fn(),
     child: jest.fn().mockReturnThis(),
-  } as unknown as LoggerService);
+  }) as unknown as LoggerService;
 
 const makeQuery = (permissionName: string, resourceRef?: string): PolicyQuery =>
   ({
     permission: { name: permissionName },
     ...(resourceRef ? { resourceRef } : {}),
-  } as PolicyQuery);
+  }) as PolicyQuery;
 
 const makeUser = (
   userEntityRef: string,
   ownershipEntityRefs: string[] = [],
-): BackstageIdentityResponse =>
+): PolicyQueryUser =>
   ({
+    token: 'test-token',
     identity: {
+      type: 'user',
       userEntityRef,
       ownershipEntityRefs,
     },
-  } as BackstageIdentityResponse);
+    credentials: {
+      $$type: '@backstage/BackstageCredentials',
+      principal: { type: 'user', userEntityRef },
+    },
+    info: {
+      userEntityRef,
+      ownershipEntityRefs,
+    },
+  }) as PolicyQueryUser;
 
 describe('UnleashPermissionPolicy', () => {
   it('allows Unleash read for any user', async () => {

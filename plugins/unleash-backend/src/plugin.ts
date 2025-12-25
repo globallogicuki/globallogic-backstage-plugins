@@ -44,8 +44,6 @@ export const unleashPlugin = createBackendPlugin({
         const editableEnvs =
           unleashConfig.getOptionalStringArray('editableEnvs') ?? [];
         const numEnvs = unleashConfig.getOptionalNumber('numEnvs') ?? 4;
-        const enablePermissions =
-          unleashConfig.getOptionalBoolean('enablePermissions') ?? true;
 
         httpRouter.use(
           await createRouter({
@@ -57,7 +55,6 @@ export const unleashPlugin = createBackendPlugin({
             httpAuth,
             permissions,
             catalog,
-            enablePermissions,
           }),
         );
 
