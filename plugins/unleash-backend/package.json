@@ -4,10 +4,42 @@
   "license": "Apache-2.0",
   "main": "src/index.ts",
   "types": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./permissions": "./src/permissions/index.ts",
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "permissions": [
+        "src/permissions/index.ts"
+      ]
+    }
+  },
   "publishConfig": {
     "access": "public",
     "main": "dist/index.cjs.js",
-    "types": "dist/index.d.ts"
+    "types": "dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "require": "./dist/index.cjs.js",
+        "default": "./dist/index.cjs.js"
+      },
+      "./permissions": {
+        "types": "./dist/permissions/index.d.ts",
+        "require": "./dist/permissions/index.cjs.js",
+        "default": "./dist/permissions/index.cjs.js"
+      },
+      "./package.json": "./package.json"
+    },
+    "typesVersions": {
+      "*": {
+        "permissions": [
+          "dist/permissions/index.d.ts"
+        ]
+      }
+    }
   },
   "homepage": "https://github.com/globallogicuki/globallogic-backstage-plugins/tree/main/plugins/unleash-backend",
   "bugs": {
@@ -38,8 +70,10 @@
     "@backstage/catalog-client": "^1.12.1",
     "@backstage/catalog-model": "^1.7.6",
     "@backstage/errors": "^1.2.7",
+    "@backstage/plugin-auth-node": "^0.6.6",
     "@backstage/plugin-catalog-node": "^1.20.0",
     "@backstage/plugin-permission-common": "^0.9.3",
+    "@backstage/plugin-permission-node": "^0.10.3",
     "@globallogicuki/backstage-plugin-unleash-common": "workspace:^",
     "express": "^4.17.1",
     "express-promise-router": "^4.1.0",

@@ -9,7 +9,7 @@ import {
   PolicyQuery,
 } from '@backstage/plugin-permission-node';
 
-export class CustomPermissionPolicy implements PermissionPolicy {
+export class UnleashPermissionPolicy implements PermissionPolicy {
   constructor(private readonly logger: LoggerService) {}
 
   async handle(
@@ -30,7 +30,10 @@ export class CustomPermissionPolicy implements PermissionPolicy {
         permission: request.permission.name,
         userEntityRef: user?.identity.userEntityRef,
         ownershipEntityRefs: user?.identity.ownershipEntityRefs,
-        resourceRef: 'resourceRef' in request ? request.resourceRef : undefined,
+        resourceRef:
+          'resourceRef' in request
+            ? (request as { resourceRef: string }).resourceRef
+            : undefined,
       });
 
       // Deny if no user is authenticated

@@ -112,6 +112,14 @@ The plugin supports Backstage's permission system with three permissions:
 
 By default, all authenticated users can read flags. To restrict toggle actions, configure permission policies in your backend.
 
+This plugin also ships an optional permission policy module you can enable in your backend:
+
+```ts
+backend.add(
+  import('@globallogicuki/backstage-plugin-unleash-backend/permissions'),
+);
+```
+
 ## API
 
 ### Frontend API

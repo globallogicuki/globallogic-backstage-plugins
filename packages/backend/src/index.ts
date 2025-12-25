@@ -62,4 +62,8 @@ backend.add(import('@backstage/plugin-notifications-backend'));
 backend.add(import('@backstage/plugin-signals-backend'));
 
 backend.add(import('@globallogicuki/backstage-plugin-unleash-backend'));
+// Optional Unleash permission policy module that restricts actions to component owners
+// backend.add(
+//   import('@globallogicuki/backstage-plugin-unleash-backend/permissions'),
+// );
 backend.start();
