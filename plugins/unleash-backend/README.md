@@ -23,10 +23,10 @@ backend.add(import('@globallogicuki/backstage-plugin-unleash-backend'));
 
 The Unleash plugin integrates with Backstage's permission framework. The plugin defines the following permissions (exported from `@globallogicuki/backstage-plugin-unleash-common`):
 
-| Permission | Description |
-|------------|-------------|
-| `unleash.flag.read` | View feature flags and their status |
-| `unleash.flag.toggle` | Toggle feature flags on/off |
+| Permission               | Description                                 |
+| ------------------------ | ------------------------------------------- |
+| `unleash.flag.read`      | View feature flags and their status         |
+| `unleash.flag.toggle`    | Toggle feature flags on/off                 |
 | `unleash.variant.manage` | Manage feature flag variants and strategies |
 
 ### Choosing a Permission Strategy
