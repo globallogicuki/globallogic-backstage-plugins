@@ -37,8 +37,11 @@ backend.add(import('@backstage/plugin-permission-backend'));
 // Use ONE of the following permission policies:
 // - allow-all-policy: Open access to all users
 // - unleash-backend/permissions: Owner-based access for Unleash, allow-all for everything else
+backend.add(
+  import('@backstage/plugin-permission-backend-module-allow-all-policy'),
+);
 // backend.add(
-//   import('@backstage/plugin-permission-backend-module-allow-all-policy'),
+//   import('@globallogicuki/backstage-plugin-unleash-backend/permissions'),
 // );
 
 // search plugin
@@ -63,8 +66,5 @@ backend.add(import('@backstage/plugin-notifications-backend'));
 backend.add(import('@backstage/plugin-signals-backend'));
 
 backend.add(import('@globallogicuki/backstage-plugin-unleash-backend'));
-// Optional Unleash permission policy module that restricts actions to component owners
-backend.add(
-  import('@globallogicuki/backstage-plugin-unleash-backend/permissions'),
-);
+
 backend.start();
