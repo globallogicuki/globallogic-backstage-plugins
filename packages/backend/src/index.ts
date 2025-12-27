@@ -34,9 +34,15 @@ backend.add(import('@backstage/plugin-catalog-backend-module-logs'));
 // permission plugin
 backend.add(import('@backstage/plugin-permission-backend'));
 // See https://backstage.io/docs/permissions/getting-started for how to create your own permission policy
+// Use ONE of the following permission policies:
+// - allow-all-policy: Open access to all users
+// - unleash-backend/permissions: Owner-based access for Unleash, allow-all for everything else
 backend.add(
   import('@backstage/plugin-permission-backend-module-allow-all-policy'),
 );
+// backend.add(
+//   import('@globallogicuki/backstage-plugin-unleash-backend/permissions'),
+// );
 
 // search plugin
 backend.add(import('@backstage/plugin-search-backend'));
@@ -58,5 +64,7 @@ backend.add(import('@globallogicuki/backstage-plugin-terraform-backend'));
 // notifications and signals plugins
 backend.add(import('@backstage/plugin-notifications-backend'));
 backend.add(import('@backstage/plugin-signals-backend'));
+
+backend.add(import('@globallogicuki/backstage-plugin-unleash-backend'));
 
 backend.start();
