@@ -1,5 +1,11 @@
 # @globallogicuki/backstage-plugin-unleash-common
 
+## 0.1.1
+
+### Patch Changes
+
+- 11da489: Initial release of Unleash plugin
+
 ## 0.1.0
 
 ### Minor Changes
