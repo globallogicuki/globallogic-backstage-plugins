@@ -1,5 +1,13 @@
 # @globallogicuki/backstage-plugin-unleash-backend
 
+## 0.1.2
+
+### Patch Changes
+
+- b79336d: Publish Unleash plugin
+- Updated dependencies [b79336d]
+  - @globallogicuki/backstage-plugin-unleash-common@0.1.2
+
 ## 0.1.1
 
 ### Patch Changes
