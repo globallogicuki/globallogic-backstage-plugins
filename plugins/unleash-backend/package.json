@@ -13,13 +13,14 @@
     "*": {
       "permissions": [
         "src/permissions/index.ts"
+      ],
+      "package.json": [
+        "package.json"
       ]
     }
   },
   "publishConfig": {
     "access": "public",
-    "main": "dist/index.cjs.js",
-    "types": "dist/index.d.ts",
     "exports": {
       ".": {
         "types": "./dist/index.d.ts",
@@ -53,7 +54,12 @@
   "configSchema": "config.d.ts",
   "backstage": {
     "role": "backend-plugin",
-    "pluginId": "unleash"
+    "pluginId": "unleash",
+    "pluginPackages": [
+      "@globallogicuki/backstage-plugin-unleash",
+      "@globallogicuki/backstage-plugin-unleash-backend",
+      "@globallogicuki/backstage-plugin-unleash-common"
+    ]
   },
   "scripts": {
     "start": "backstage-cli package start",

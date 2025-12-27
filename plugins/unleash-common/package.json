@@ -19,7 +19,13 @@
     "directory": "plugins/unleash-common"
   },
   "backstage": {
-    "role": "common-library"
+    "role": "common-library",
+    "pluginId": "unleash",
+    "pluginPackages": [
+      "@globallogicuki/backstage-plugin-unleash",
+      "@globallogicuki/backstage-plugin-unleash-backend",
+      "@globallogicuki/backstage-plugin-unleash-common"
+    ]
   },
   "sideEffects": false,
   "scripts": {
