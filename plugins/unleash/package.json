@@ -5,14 +5,22 @@
   "main": "src/index.ts",
   "types": "src/index.ts",
   "publishConfig": {
-    "access": "public",
-    "main": "dist/index.esm.js",
-    "types": "dist/index.d.ts"
+    "access": "public"
   },
   "exports": {
     ".": "./src/index.ts",
     "./alpha": "./src/alpha.tsx",
     "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "alpha": [
+        "src/alpha.tsx"
+      ],
+      "package.json": [
+        "package.json"
+      ]
+    }
   },
   "homepage": "https://github.com/globallogicuki/globallogic-backstage-plugins/tree/main/plugins/unleash",
   "bugs": {
@@ -25,7 +33,12 @@
   },
   "backstage": {
     "role": "frontend-plugin",
-    "pluginId": "unleash"
+    "pluginId": "unleash",
+    "pluginPackages": [
+      "@globallogicuki/backstage-plugin-unleash",
+      "@globallogicuki/backstage-plugin-unleash-backend",
+      "@globallogicuki/backstage-plugin-unleash-common"
+    ]
   },
   "sideEffects": false,
   "scripts": {
