@@ -1,5 +1,11 @@
 # @globallogicuki/backstage-plugin-unleash-common
 
+## 0.1.4
+
+### Patch Changes
+
+- fd43b66: Fixed ESM/CJS module resolution issue causing "does not provide an export named" errors on Node.js 22. Added proper conditional exports to package.json to ensure CJS consumers receive the `.cjs.js` build and ESM consumers receive the `.esm.js` build.
+
 ## 0.1.3
 
 ### Patch Changes
