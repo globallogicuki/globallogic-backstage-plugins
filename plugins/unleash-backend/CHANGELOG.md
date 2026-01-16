@@ -1,5 +1,13 @@
 # @globallogicuki/backstage-plugin-unleash-backend
 
+## 0.1.5
+
+### Patch Changes
+
+- f7f2e3f: Align unleash plugin versions using fixed versioning strategy.
+- Updated dependencies [f7f2e3f]
+  - @globallogicuki/backstage-plugin-unleash-common@0.1.5
+
 ## 0.1.3
 
 ### Patch Changes

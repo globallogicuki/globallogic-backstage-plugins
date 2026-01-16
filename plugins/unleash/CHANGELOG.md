@@ -1,5 +1,19 @@
 # @globallogicuki/backstage-plugin-unleash
 
+## 0.1.5
+
+### Patch Changes
+
+- f7f2e3f: Align unleash plugin versions using fixed versioning strategy.
+- a261034: Refactor alpha (new frontend system) implementation to align with Backstage v1.42+ patterns:
+  - Restructured into modular alpha/ folder
+  - Updated ApiBlueprint to use defineParams callback pattern
+  - Replaced string filters with isUnleashAvailable predicate function
+  - Added explicit type annotations
+  - Updated tests to use frontend-test-utils
+- Updated dependencies [f7f2e3f]
+  - @globallogicuki/backstage-plugin-unleash-common@0.1.5
+
 ## 0.1.3
 
 ### Patch Changes
