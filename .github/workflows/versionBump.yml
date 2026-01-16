@@ -18,11 +18,16 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Install native build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3 build-essential
+
       # Beginning of yarn setup
-      - name: use node.js 20.x
+      - name: use node.js 22.x
         uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4
         with:
-          node-version: 20.x
+          node-version: 22.x
           registry-url: https://registry.npmjs.org/ # Needed for auth
       - name: cache all node_modules
         id: cache-modules
