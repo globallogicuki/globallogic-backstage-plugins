@@ -3,7 +3,13 @@
   "changelog": "@changesets/cli/changelog",
   "commit": false,
   "fixed": [],
-  "linked": [],
+  "linked": [
+    [
+      "@globallogicuki/backstage-plugin-unleash",
+      "@globallogicuki/backstage-plugin-unleash-backend",
+      "@globallogicuki/backstage-plugin-unleash-common"
+    ]
+  ],
   "access": "restricted",
   "baseBranch": "origin/main",
   "updateInternalDependencies": "patch",
