@@ -80,7 +80,7 @@
     "@backstage/plugin-catalog-node": "^1.20.0",
     "@backstage/plugin-permission-common": "^0.9.3",
     "@backstage/plugin-permission-node": "^0.10.3",
-    "@globallogicuki/backstage-plugin-unleash-common": "workspace:^",
+    "@globallogicuki/backstage-plugin-unleash-common": "^0.1.2",
     "express": "^4.17.1",
     "express-promise-router": "^4.1.0",
     "node-fetch": "^2.6.7",
