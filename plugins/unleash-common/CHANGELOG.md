@@ -1,5 +1,11 @@
 # @globallogicuki/backstage-plugin-unleash-common
 
+## 0.1.3
+
+### Patch Changes
+
+- e115c9b: Fixed npm install failure caused by `workspace:^` protocol in published packages. Replaced workspace protocol references with explicit version numbers to ensure packages can be installed from npm registry.
+
 ## 0.1.2
 
 ### Patch Changes
