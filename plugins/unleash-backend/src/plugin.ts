@@ -52,7 +52,6 @@ export const unleashPlugin = createBackendPlugin({
           unleashVariantManagePermission,
         ]);
 
-
         const unleashUrl = unleashConfig.getString('url');
         const unleashToken = unleashConfig.getString('apiToken');
         const editableEnvs =
