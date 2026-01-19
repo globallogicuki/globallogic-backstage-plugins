@@ -7,7 +7,7 @@ import { createRouter } from './router';
 import {  
   unleashFlagReadPermission,
   unleashFlagTogglePermission,
-  unleashVariantManagePermission
+  unleashVariantManagePermission,
 } from '@globallogicuki/backstage-plugin-unleash-common';
 
 /**
