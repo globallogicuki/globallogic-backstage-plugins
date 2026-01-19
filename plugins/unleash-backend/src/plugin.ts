@@ -4,7 +4,7 @@ import {
 } from '@backstage/backend-plugin-api';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node';
 import { createRouter } from './router';
-import {  
+import {
   unleashFlagReadPermission,
   unleashFlagTogglePermission,
   unleashVariantManagePermission,
@@ -46,13 +46,13 @@ export const unleashPlugin = createBackendPlugin({
           return;
         }
 
-        permissionsRegistry.addPermissions([  
+        permissionsRegistry.addPermissions([
           unleashFlagReadPermission,
           unleashFlagTogglePermission,
           unleashVariantManagePermission,
         ]);
 
-        
+
         const unleashUrl = unleashConfig.getString('url');
         const unleashToken = unleashConfig.getString('apiToken');
         const editableEnvs =
