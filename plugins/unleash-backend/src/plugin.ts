@@ -49,7 +49,7 @@ export const unleashPlugin = createBackendPlugin({
         permissionsRegistry.addPermissions([  
           unleashFlagReadPermission,
           unleashFlagTogglePermission,
-          unleashVariantManagePermission
+          unleashVariantManagePermission,
         ]);
 
         
