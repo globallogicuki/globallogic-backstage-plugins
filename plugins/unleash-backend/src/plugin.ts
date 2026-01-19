@@ -4,6 +4,11 @@ import {
 } from '@backstage/backend-plugin-api';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node';
 import { createRouter } from './router';
+import {  
+  unleashFlagReadPermission,
+  unleashFlagTogglePermission,
+  unleashVariantManagePermission
+} from '@globallogicuki/backstage-plugin-unleash-common';
 
 /**
  * Unleash backend plugin
@@ -20,6 +25,7 @@ export const unleashPlugin = createBackendPlugin({
         httpRouter: coreServices.httpRouter,
         config: coreServices.rootConfig,
         permissions: coreServices.permissions,
+        permissionsRegistry: coreServices.permissionsRegistry,
         catalog: catalogServiceRef,
       },
       async init({
@@ -28,6 +34,7 @@ export const unleashPlugin = createBackendPlugin({
         httpRouter,
         config,
         permissions,
+        permissionsRegistry,
         catalog,
       }) {
         const unleashConfig = config.getOptionalConfig('unleash');
@@ -39,6 +46,13 @@ export const unleashPlugin = createBackendPlugin({
           return;
         }
 
+        permissionsRegistry.addPermissions([  
+          unleashFlagReadPermission,
+          unleashFlagTogglePermission,
+          unleashVariantManagePermission
+        ]);
+
+        
         const unleashUrl = unleashConfig.getString('url');
         const unleashToken = unleashConfig.getString('apiToken');
         const editableEnvs =
