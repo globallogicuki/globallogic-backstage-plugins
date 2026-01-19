@@ -1,5 +1,15 @@
 # @globallogicuki/backstage-plugin-unleash-backend
 
+## 0.2.0
+
+### Minor Changes
+
+- bd445a4: Register unleash permissions (read, toggle, manage-variants) with the permissions registry
+
+### Patch Changes
+
+- @globallogicuki/backstage-plugin-unleash-common@0.2.0
+
 ## 0.1.5
 
 ### Patch Changes
