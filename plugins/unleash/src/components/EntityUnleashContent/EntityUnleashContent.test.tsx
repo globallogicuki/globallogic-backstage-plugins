@@ -2,6 +2,7 @@ import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { EntityProvider } from '@backstage/plugin-catalog-react';
 import { TestApiProvider, renderInTestApp } from '@backstage/test-utils';
+import { alertApiRef } from '@backstage/core-plugin-api';
 import { EntityUnleashContent } from './EntityUnleashContent';
 import { unleashApiRef } from '../../api';
 import {
@@ -191,7 +192,11 @@ describe('EntityUnleashContent', () => {
       });
 
       // Stale flag indicator is shown as a warning icon with tooltip, not text
-      expect(screen.getByTitle('This flag is marked as stale and may no longer be in use')).toBeInTheDocument();
+      expect(
+        screen.getByTitle(
+          'This flag is marked as stale and may no longer be in use',
+        ),
+      ).toBeInTheDocument();
     });
 
     it('shows stale flags alert when stale flags exist', async () => {
@@ -449,15 +454,112 @@ describe('EntityUnleashContent', () => {
         expect(screen.getByRole('dialog')).toBeInTheDocument();
       });
     });
+
+    it('opens modal when clicking info icon button', async () => {
+      const user = userEvent.setup();
+
+      // Create a flag with hasStrategies flag but no strategies array
+      const flagWithHasStrategies = {
+        features: [
+          {
+            ...mockFeatureFlag,
+            environments: [
+              {
+                name: 'development',
+                enabled: true,
+                hasStrategies: true,
+              },
+            ],
+          },
+        ],
+      };
+
+      mockUnleashApi.getFlags.mockResolvedValue(flagWithHasStrategies);
+
+      await renderInTestApp(
+        <TestApiProvider apis={[[unleashApiRef, mockUnleashApi]]}>
+          <EntityProvider entity={mockEntity}>
+            <EntityUnleashContent />
+          </EntityProvider>
+        </TestApiProvider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('test-flag')).toBeInTheDocument();
+      });
+
+      // Click the info icon button (View details)
+      const infoButton = screen.getByTitle('View details');
+      await user.click(infoButton);
+
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+    });
+
+    it('closes modal when clicking close button', async () => {
+      const user = userEvent.setup();
+
+      // Create a flag with hasStrategies flag but no strategies array
+      const flagWithHasStrategies = {
+        features: [
+          {
+            ...mockFeatureFlag,
+            environments: [
+              {
+                name: 'development',
+                enabled: true,
+                hasStrategies: true,
+              },
+            ],
+          },
+        ],
+      };
+
+      mockUnleashApi.getFlags.mockResolvedValue(flagWithHasStrategies);
+
+      await renderInTestApp(
+        <TestApiProvider apis={[[unleashApiRef, mockUnleashApi]]}>
+          <EntityProvider entity={mockEntity}>
+            <EntityUnleashContent />
+          </EntityProvider>
+        </TestApiProvider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('test-flag')).toBeInTheDocument();
+      });
+
+      // Open the modal
+      const hasStrategiesChip = screen.getByText('Has strategies');
+      await user.click(hasStrategiesChip);
+
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+
+      // Close the modal by clicking the Close button
+      const closeButton = screen.getByRole('button', { name: 'Close' });
+      await user.click(closeButton);
+
+      await waitFor(() => {
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      });
+    });
   });
 
   describe('Data Refresh', () => {
-    it('fetches data on mount', async () => {
+    const mockAlertApi = { post: jest.fn() };
+
+    beforeEach(() => {
       mockUnleashApi.getFlags.mockResolvedValue(mockFeatureFlagsList);
       mockUnleashApi.getConfig.mockResolvedValue({
         editableEnvs: ['development'],
       });
+      mockUnleashApi.toggleFlag.mockResolvedValue(undefined);
+    });
 
+    it('fetches data on mount', async () => {
       await renderInTestApp(
         <TestApiProvider apis={[[unleashApiRef, mockUnleashApi]]}>
           <EntityProvider entity={mockEntity}>
@@ -469,6 +571,46 @@ describe('EntityUnleashContent', () => {
       await waitFor(() => {
         expect(mockUnleashApi.getFlags).toHaveBeenCalledWith('test-project');
         expect(mockUnleashApi.getConfig).toHaveBeenCalled();
+      });
+    });
+
+    it('refreshes data after successfully toggling a flag', async () => {
+      const user = userEvent.setup();
+
+      await renderInTestApp(
+        <TestApiProvider
+          apis={[
+            [unleashApiRef, mockUnleashApi],
+            [alertApiRef, mockAlertApi],
+          ]}
+        >
+          <EntityProvider entity={mockEntity}>
+            <EntityUnleashContent />
+          </EntityProvider>
+        </TestApiProvider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('test-flag')).toBeInTheDocument();
+      });
+
+      expect(mockUnleashApi.getFlags).toHaveBeenCalledTimes(1);
+
+      const toggles = screen.getAllByRole('checkbox');
+      await user.click(toggles[0]);
+
+      await waitFor(() => {
+        expect(screen.getByText('Confirm Flag Toggle')).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole('button', { name: 'Confirm' }));
+
+      await waitFor(() => {
+        expect(mockUnleashApi.toggleFlag).toHaveBeenCalled();
+      });
+
+      await waitFor(() => {
+        expect(mockUnleashApi.getFlags).toHaveBeenCalledTimes(2);
       });
     });
   });
@@ -591,6 +733,185 @@ describe('EntityUnleashContent', () => {
       // The filtered flags should display their tags
       const serviceAChips = screen.getAllByText('component:service-a');
       expect(serviceAChips.length).toBeGreaterThan(0);
+    });
+
+    it('displays active filter chips with remove buttons', async () => {
+      await renderInTestApp(
+        <TestApiProvider apis={[[unleashApiRef, mockUnleashApi]]}>
+          <EntityProvider entity={mockEntityWithFilterTags}>
+            <EntityUnleashContent />
+          </EntityProvider>
+        </TestApiProvider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('Filtering by:')).toBeInTheDocument();
+      });
+
+      const filterChips = screen.getAllByText('component:service-a');
+      expect(filterChips.length).toBeGreaterThan(0);
+    });
+
+    it('removes filter when clicking delete button on filter chip', async () => {
+      const user = userEvent.setup();
+
+      await renderInTestApp(
+        <TestApiProvider apis={[[unleashApiRef, mockUnleashApi]]}>
+          <EntityProvider entity={mockEntityWithFilterTags}>
+            <EntityUnleashContent />
+          </EntityProvider>
+        </TestApiProvider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('shared-flag')).toBeInTheDocument();
+      });
+
+      expect(screen.queryByText('service-b-only')).not.toBeInTheDocument();
+
+      const filteringByText = screen.getByText('Filtering by:');
+      const filterContainer = filteringByText.parentElement;
+      const deleteButton = filterContainer?.querySelector(
+        '.MuiChip-deleteIcon',
+      );
+      expect(deleteButton).toBeInTheDocument();
+      await user.click(deleteButton!);
+
+      await waitFor(() => {
+        expect(screen.getByText('service-b-only')).toBeInTheDocument();
+      });
+    });
+
+    it('shows reset filters button when filters have been modified', async () => {
+      const user = userEvent.setup();
+
+      await renderInTestApp(
+        <TestApiProvider apis={[[unleashApiRef, mockUnleashApi]]}>
+          <EntityProvider entity={mockEntityWithFilterTags}>
+            <EntityUnleashContent />
+          </EntityProvider>
+        </TestApiProvider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('shared-flag')).toBeInTheDocument();
+      });
+
+      expect(screen.queryByText('Reset filters')).not.toBeInTheDocument();
+
+      const filteringByText = screen.getByText('Filtering by:');
+      const filterContainer = filteringByText.parentElement;
+      const deleteButton = filterContainer?.querySelector(
+        '.MuiChip-deleteIcon',
+      );
+      await user.click(deleteButton!);
+
+      await waitFor(() => {
+        expect(screen.getByText('Reset filters')).toBeInTheDocument();
+      });
+    });
+
+    it('resets filters when clicking reset button', async () => {
+      const user = userEvent.setup();
+
+      await renderInTestApp(
+        <TestApiProvider apis={[[unleashApiRef, mockUnleashApi]]}>
+          <EntityProvider entity={mockEntityWithFilterTags}>
+            <EntityUnleashContent />
+          </EntityProvider>
+        </TestApiProvider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('shared-flag')).toBeInTheDocument();
+      });
+
+      const filteringByText = screen.getByText('Filtering by:');
+      const filterContainer = filteringByText.parentElement;
+      const deleteButton = filterContainer?.querySelector(
+        '.MuiChip-deleteIcon',
+      );
+      await user.click(deleteButton!);
+
+      await waitFor(() => {
+        expect(screen.getByText('service-b-only')).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByText('Reset filters'));
+
+      await waitFor(() => {
+        expect(screen.queryByText('service-b-only')).not.toBeInTheDocument();
+      });
+    });
+
+    it('adds filter when clicking a tag in the table', async () => {
+      const user = userEvent.setup();
+
+      await renderInTestApp(
+        <TestApiProvider apis={[[unleashApiRef, mockUnleashApi]]}>
+          <EntityProvider entity={mockEntity}>
+            <EntityUnleashContent />
+          </EntityProvider>
+        </TestApiProvider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('shared-flag')).toBeInTheDocument();
+      });
+
+      expect(screen.queryByText('Filtering by:')).not.toBeInTheDocument();
+
+      const tagChips = screen.getAllByText('component:service-a');
+      await user.click(tagChips[0]);
+
+      await waitFor(() => {
+        expect(screen.getByText('Filtering by:')).toBeInTheDocument();
+      });
+
+      expect(screen.queryByText('service-b-only')).not.toBeInTheDocument();
+    });
+
+    it('does not add duplicate filter when clicking already active tag', async () => {
+      const user = userEvent.setup();
+
+      await renderInTestApp(
+        <TestApiProvider apis={[[unleashApiRef, mockUnleashApi]]}>
+          <EntityProvider entity={mockEntityWithFilterTags}>
+            <EntityUnleashContent />
+          </EntityProvider>
+        </TestApiProvider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('shared-flag')).toBeInTheDocument();
+      });
+
+      const filterContainer = screen.getByText('Filtering by:').parentElement;
+      const initialFilterCount =
+        filterContainer?.querySelectorAll('.MuiChip-root').length;
+
+      const tagChips = screen.getAllByText('component:service-a');
+      await user.click(tagChips[1]);
+
+      const finalFilterCount =
+        filterContainer?.querySelectorAll('.MuiChip-root').length;
+      expect(finalFilterCount).toBe(initialFilterCount);
+    });
+
+    it('does not show filter chips when no filters are configured', async () => {
+      await renderInTestApp(
+        <TestApiProvider apis={[[unleashApiRef, mockUnleashApi]]}>
+          <EntityProvider entity={mockEntity}>
+            <EntityUnleashContent />
+          </EntityProvider>
+        </TestApiProvider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('shared-flag')).toBeInTheDocument();
+      });
+
+      expect(screen.queryByText('Filtering by:')).not.toBeInTheDocument();
     });
   });
 });

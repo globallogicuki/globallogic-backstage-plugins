@@ -4,10 +4,8 @@ import {
   formatTagFilter,
   getUnleashFilterTags,
   getUnleashProjectId,
-  getUnleashEnvironment,
   isUnleashAvailable,
   UNLEASH_PROJECT_ANNOTATION,
-  UNLEASH_ENVIRONMENT_ANNOTATION,
   UNLEASH_FILTER_TAGS_ANNOTATION,
 } from './annotations';
 
@@ -194,28 +192,5 @@ describe('getUnleashProjectId', () => {
   it('returns undefined when annotation is missing', () => {
     const entity = createEntity({});
     expect(getUnleashProjectId(entity)).toBeUndefined();
-  });
-});
-
-describe('getUnleashEnvironment', () => {
-  const createEntity = (annotations: Record<string, string>): Entity => ({
-    apiVersion: 'backstage.io/v1alpha1',
-    kind: 'Component',
-    metadata: {
-      name: 'test',
-      annotations,
-    },
-  });
-
-  it('returns environment when annotation is present', () => {
-    const entity = createEntity({
-      [UNLEASH_ENVIRONMENT_ANNOTATION]: 'production',
-    });
-    expect(getUnleashEnvironment(entity)).toBe('production');
-  });
-
-  it('returns undefined when annotation is missing', () => {
-    const entity = createEntity({});
-    expect(getUnleashEnvironment(entity)).toBeUndefined();
   });
 });

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useAsync } from 'react-use';
 import {
   Progress,
@@ -32,6 +32,7 @@ import {
   filterFlagsByTags,
   UNLEASH_PROJECT_ANNOTATION,
   FeatureFlag,
+  TagFilter,
 } from '@globallogicuki/backstage-plugin-unleash-common';
 import { FlagToggle } from '../FlagToggle';
 
@@ -39,6 +40,18 @@ const useStyles = makeStyles(theme => ({
   tagChip: {
     marginRight: theme.spacing(0.5),
     marginBottom: theme.spacing(0.5),
+  },
+  activeFiltersContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: theme.spacing(1),
+    padding: theme.spacing(1, 2),
+    backgroundColor: theme.palette.background.default,
+    borderBottom: `1px solid ${theme.palette.divider}`,
+  },
+  filterChip: {
+    margin: theme.spacing(0.25),
   },
 }));
 
@@ -53,7 +66,10 @@ export const EntityUnleashContent = () => {
   const { entity } = useEntity();
   const unleashApi = useApi(unleashApiRef);
   const projectId = getUnleashProjectId(entity);
-  const defaultFilterTags = getUnleashFilterTags(entity);
+  const defaultFilterTags = useMemo(
+    () => getUnleashFilterTags(entity),
+    [entity],
+  );
 
   const [selectedEnv, setSelectedEnv] = useState<string>('');
   const [refreshKey, setRefreshKey] = useState(0);
@@ -61,6 +77,12 @@ export const EntityUnleashContent = () => {
     flagName: string;
     environment: string;
   } | null>(null);
+  const [activeFilters, setActiveFilters] =
+    useState<TagFilter[]>(defaultFilterTags);
+
+  useEffect(() => {
+    setActiveFilters(defaultFilterTags);
+  }, [defaultFilterTags]);
 
   const { value, loading, error } = useAsync(async () => {
     if (!projectId) return null;
@@ -71,12 +93,45 @@ export const EntityUnleashContent = () => {
     return { flagsData, config };
   }, [projectId, refreshKey]);
 
-  const allFlags = value?.flagsData?.features ?? [];
-  const editableEnvs = value?.config?.editableEnvs ?? [];
+  const allFlags = useMemo(
+    () => value?.flagsData?.features ?? [],
+    [value?.flagsData?.features],
+  );
+  const editableEnvs = useMemo(
+    () => value?.config?.editableEnvs ?? [],
+    [value?.config?.editableEnvs],
+  );
 
   const filteredFlags = useMemo(() => {
-    return filterFlagsByTags(allFlags, defaultFilterTags);
-  }, [allFlags, defaultFilterTags]);
+    return filterFlagsByTags(allFlags, activeFilters);
+  }, [allFlags, activeFilters]);
+
+  const removeFilter = (filterToRemove: TagFilter) => {
+    setActiveFilters(prev =>
+      prev.filter(
+        f => f.type !== filterToRemove.type || f.value !== filterToRemove.value,
+      ),
+    );
+  };
+
+  const resetFilters = () => {
+    setActiveFilters(defaultFilterTags);
+  };
+
+  const addFilter = (filter: TagFilter) => {
+    const alreadyExists = activeFilters.some(
+      f => f.type === filter.type && f.value === filter.value,
+    );
+    if (!alreadyExists) {
+      setActiveFilters(prev => [...prev, filter]);
+    }
+  };
+
+  const isFilterActive = (filter: TagFilter) => {
+    return activeFilters.some(
+      f => f.type === filter.type && f.value === filter.value,
+    );
+  };
 
   const allEnvs = useMemo(() => {
     const envs = new Set<string>();
@@ -195,15 +250,30 @@ export const EntityUnleashContent = () => {
       render: row =>
         row.tags && row.tags.length > 0 ? (
           <Box display="flex" flexWrap="wrap">
-            {row.tags.map(tag => (
-              <Chip
-                key={`${tag.type}:${tag.value}`}
-                size="small"
-                label={formatTagFilter(tag)}
-                variant="outlined"
-                className={classes.tagChip}
-              />
-            ))}
+            {row.tags.map(tag => {
+              const active = isFilterActive(tag);
+              return (
+                <Tooltip
+                  key={`${tag.type}:${tag.value}`}
+                  title={
+                    active
+                      ? 'Already filtering by this tag'
+                      : 'Click to filter by this tag'
+                  }
+                >
+                  <Chip
+                    size="small"
+                    label={formatTagFilter(tag)}
+                    variant={active ? 'default' : 'outlined'}
+                    color={active ? 'primary' : 'default'}
+                    className={classes.tagChip}
+                    onClick={() => addFilter(tag)}
+                    clickable={!active}
+                    style={{ cursor: active ? 'default' : 'pointer' }}
+                  />
+                </Tooltip>
+              );
+            })}
           </Box>
         ) : null,
     },
@@ -283,6 +353,34 @@ export const EntityUnleashContent = () => {
         </Box>
       )}
 
+      {(activeFilters.length > 0 || defaultFilterTags.length > 0) && (
+        <Box className={classes.activeFiltersContainer}>
+          <Typography variant="body2" color="textSecondary">
+            {activeFilters.length > 0 ? 'Filtering by:' : 'No active filters'}
+          </Typography>
+          {activeFilters.map(filter => (
+            <Chip
+              key={`${filter.type}:${filter.value}`}
+              size="small"
+              label={formatTagFilter(filter)}
+              onDelete={() => removeFilter(filter)}
+              className={classes.filterChip}
+              color="primary"
+              variant="outlined"
+            />
+          ))}
+          {activeFilters.length !== defaultFilterTags.length && (
+            <Chip
+              size="small"
+              label="Reset filters"
+              onClick={resetFilters}
+              className={classes.filterChip}
+              variant="outlined"
+            />
+          )}
+        </Box>
+      )}
+
       <Table
         options={{
           search: true,
@@ -290,6 +388,12 @@ export const EntityUnleashContent = () => {
           pageSize: 10,
           pageSizeOptions: [10, 25, 50],
           padding: 'dense',
+        }}
+        localization={{
+          toolbar: {
+            searchPlaceholder: 'Search',
+            searchTooltip: 'Search flags',
+          },
         }}
         columns={columns}
         data={tableData}

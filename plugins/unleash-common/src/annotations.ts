@@ -4,7 +4,6 @@
 import type { Entity } from '@backstage/catalog-model';
 
 export const UNLEASH_PROJECT_ANNOTATION = 'unleash.io/project-id';
-export const UNLEASH_ENVIRONMENT_ANNOTATION = 'unleash.io/environment';
 export const UNLEASH_FILTER_TAGS_ANNOTATION = 'unleash.io/filter-tags';
 
 /**
@@ -18,12 +17,6 @@ export const isUnleashAvailable = (entity: Entity): boolean =>
  */
 export const getUnleashProjectId = (entity: Entity): string | undefined =>
   entity.metadata.annotations?.[UNLEASH_PROJECT_ANNOTATION];
-
-/**
- * Get the default environment from an entity
- */
-export const getUnleashEnvironment = (entity: Entity): string | undefined =>
-  entity.metadata.annotations?.[UNLEASH_ENVIRONMENT_ANNOTATION];
 
 export interface TagFilter {
   type: string;

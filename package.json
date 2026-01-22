@@ -36,6 +36,7 @@
     "@jest/environment-jsdom-abstract": "^30",
     "@playwright/test": "^1.32.3",
     "@types/jest": "^30",
+    "eslint-plugin-jest": "^29.12.1",
     "jest": "^30",
     "jsdom": "^27",
     "node-gyp": "^10.0.0",

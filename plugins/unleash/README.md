@@ -59,7 +59,6 @@ metadata:
   description: My awesome service
   annotations:
     unleash.io/project-id: my-project-id
-    unleash.io/environment: production # Optional: default environment to display
 spec:
   type: service
   lifecycle: production
@@ -69,8 +68,7 @@ spec:
 **Available Annotations:**
 
 - `unleash.io/project-id` (required): The Unleash project ID
-- `unleash.io/environment` (optional): Default environment to display
-- `unleash.io/filter-tags` (optional): JSON array of tags to filter flags (see [Tag Filtering](#tag-filtering))
+- `unleash.io/filter-tags` (optional): Comma-separated tags to filter flags (see [Tag Filtering](#tag-filtering))
 
 ## Usage
 
