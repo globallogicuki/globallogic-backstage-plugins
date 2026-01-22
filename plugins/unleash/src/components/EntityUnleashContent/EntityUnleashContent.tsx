@@ -1,64 +1,60 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useAsync } from 'react-use';
 import {
   Progress,
   ResponseErrorPanel,
   EmptyState,
   Content,
-  ContentHeader,
-  SupportButton,
+  Table,
+  TableColumn,
 } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
 import { useEntity } from '@backstage/plugin-catalog-react';
 import {
   Box,
-  Card,
-  CardContent,
   Chip,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Tabs,
-  Tab,
   Typography,
   makeStyles,
-  IconButton,
   Tooltip,
+  IconButton,
 } from '@material-ui/core';
+import { Tabs, TabList, Tab } from '@backstage/ui';
+import type { Key } from 'react-aria-components';
+import WarningIcon from '@material-ui/icons/Warning';
 import InfoIcon from '@material-ui/icons/Info';
 import { Alert } from '@material-ui/lab';
 import { unleashApiRef } from '../../api';
 import { FlagDetailsModal } from '../FlagDetailsModal';
 import {
   getUnleashProjectId,
+  getUnleashFilterTags,
+  formatTagFilter,
+  filterFlagsByTags,
   UNLEASH_PROJECT_ANNOTATION,
+  FeatureFlag,
 } from '@globallogicuki/backstage-plugin-unleash-common';
 import { FlagToggle } from '../FlagToggle';
 
 const useStyles = makeStyles(theme => ({
-  flagName: {
-    fontWeight: 'bold',
-    marginBottom: theme.spacing(1),
-  },
-  flagDescription: {
-    color: theme.palette.text.secondary,
-    marginBottom: theme.spacing(2),
-  },
-  flagType: {
-    marginRight: theme.spacing(1),
+  tagChip: {
+    marginRight: theme.spacing(0.5),
+    marginBottom: theme.spacing(0.5),
   },
 }));
 
-/**
- * Full entity tab content for managing feature flags
- */
+type FlagTableRow = FeatureFlag & {
+  currentEnvEnabled: boolean;
+  currentEnvStrategiesCount: number | null;
+  currentEnvHasStrategies: boolean;
+};
+
 export const EntityUnleashContent = () => {
   const classes = useStyles();
   const { entity } = useEntity();
   const unleashApi = useApi(unleashApiRef);
   const projectId = getUnleashProjectId(entity);
+  const defaultFilterTags = getUnleashFilterTags(entity);
+
   const [selectedEnv, setSelectedEnv] = useState<string>('');
   const [refreshKey, setRefreshKey] = useState(0);
   const [detailsModal, setDetailsModal] = useState<{
@@ -74,6 +70,161 @@ export const EntityUnleashContent = () => {
     ]);
     return { flagsData, config };
   }, [projectId, refreshKey]);
+
+  const allFlags = value?.flagsData?.features ?? [];
+  const editableEnvs = value?.config?.editableEnvs ?? [];
+
+  const filteredFlags = useMemo(() => {
+    return filterFlagsByTags(allFlags, defaultFilterTags);
+  }, [allFlags, defaultFilterTags]);
+
+  const allEnvs = useMemo(() => {
+    const envs = new Set<string>();
+    allFlags.forEach(flag => {
+      flag.environments?.forEach(env => {
+        if (env?.name) envs.add(env.name);
+      });
+    });
+    return Array.from(envs);
+  }, [allFlags]);
+
+  const currentEnv = selectedEnv || allEnvs[0] || '';
+
+  const tableData: FlagTableRow[] = useMemo(() => {
+    return filteredFlags.map(flag => {
+      const envStatus = flag.environments?.find(e => e?.name === currentEnv);
+      return {
+        ...flag,
+        currentEnvEnabled: envStatus?.enabled ?? false,
+        currentEnvStrategiesCount: envStatus?.strategies?.length ?? null,
+        currentEnvHasStrategies: envStatus?.hasStrategies ?? false,
+      };
+    });
+  }, [filteredFlags, currentEnv]);
+
+  const isEnvironmentEditable = (environment: string) => {
+    return editableEnvs.length > 0 && editableEnvs.includes(environment);
+  };
+
+  const handleRefresh = () => {
+    setRefreshKey(prev => prev + 1);
+  };
+
+  const columns: TableColumn<FlagTableRow>[] = [
+    {
+      title: 'Flag',
+      field: 'name',
+      highlight: true,
+      render: row => (
+        <Box>
+          <Typography variant="body2" style={{ fontWeight: 'bold' }}>
+            {row.name}
+          </Typography>
+          {row.description && (
+            <Typography variant="body2" color="textSecondary">
+              {row.description}
+            </Typography>
+          )}
+        </Box>
+      ),
+    },
+    {
+      title: 'Type',
+      field: 'type',
+      width: '100px',
+      render: row => <Chip size="small" label={row.type} />,
+    },
+    {
+      title: 'Stale',
+      field: 'stale',
+      width: '80px',
+      align: 'center',
+      render: row =>
+        row.stale ? (
+          <Tooltip title="This flag is marked as stale and may no longer be in use">
+            <WarningIcon color="secondary" fontSize="small" />
+          </Tooltip>
+        ) : null,
+    },
+    {
+      title: 'Strategies',
+      sorting: false,
+      render: row => {
+        if (row.currentEnvStrategiesCount !== null) {
+          return `${row.currentEnvStrategiesCount} strategies`;
+        }
+        if (row.currentEnvHasStrategies) {
+          return (
+            <Box display="flex" alignItems="center">
+              <Chip
+                size="small"
+                label="Has strategies"
+                color="primary"
+                variant="outlined"
+                onClick={() =>
+                  setDetailsModal({
+                    flagName: row.name,
+                    environment: currentEnv,
+                  })
+                }
+                clickable
+              />
+              <Tooltip title="View details">
+                <IconButton
+                  size="small"
+                  onClick={() =>
+                    setDetailsModal({
+                      flagName: row.name,
+                      environment: currentEnv,
+                    })
+                  }
+                >
+                  <InfoIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          );
+        }
+        return <Chip size="small" label="No strategies" variant="outlined" />;
+      },
+    },
+    {
+      title: 'Tags',
+      field: 'tags',
+      sorting: false,
+      render: row =>
+        row.tags && row.tags.length > 0 ? (
+          <Box display="flex" flexWrap="wrap">
+            {row.tags.map(tag => (
+              <Chip
+                key={`${tag.type}:${tag.value}`}
+                size="small"
+                label={formatTagFilter(tag)}
+                variant="outlined"
+                className={classes.tagChip}
+              />
+            ))}
+          </Box>
+        ) : null,
+    },
+    {
+      title: 'Enabled',
+      field: 'currentEnvEnabled',
+      width: '80px',
+      align: 'center',
+      render: row =>
+        projectId && (
+          <FlagToggle
+            projectId={projectId}
+            flagName={row.name}
+            environment={currentEnv}
+            enabled={row.currentEnvEnabled}
+            readonly={!isEnvironmentEditable(currentEnv)}
+            onToggled={handleRefresh}
+          />
+        ),
+    },
+  ];
 
   if (!projectId) {
     return (
@@ -101,210 +252,63 @@ export const EntityUnleashContent = () => {
     );
   }
 
-  const flags = value?.flagsData?.features ?? [];
-  const editableEnvs = value?.config?.editableEnvs ?? [];
-
-  // Helper to check if environment is editable
-  const isEnvironmentEditable = (environment: string) => {
-    return editableEnvs.length > 0 && editableEnvs.includes(environment);
-  };
-
-  if (!flags || !Array.isArray(flags)) {
+  if (!allFlags || !Array.isArray(allFlags) || allFlags.length === 0) {
     return (
       <Content>
         <EmptyState
           missing="data"
           title="No feature flags found"
-          description={`No feature flags found for project "${projectId}".`}
+          description={`No feature flags found for project "${projectId}". Create some flags in Unleash first.`}
         />
       </Content>
     );
   }
 
-  // Get all unique environment names
-  const allEnvs = new Set<string>();
-  flags.forEach(flag => {
-    if (flag.environments && Array.isArray(flag.environments)) {
-      flag.environments.forEach(env => {
-        if (env && env.name) {
-          allEnvs.add(env.name);
-        }
-      });
-    }
-  });
-  const environments = Array.from(allEnvs);
-
-  // Set default environment if not set
-  const currentEnv = selectedEnv || environments[0] || '';
-
-  const handleRefresh = () => {
-    setRefreshKey(prev => prev + 1);
-  };
-
   return (
-    <Content>
-      <ContentHeader title="Feature Flags">
-        <SupportButton>
-          Manage feature flags for {entity.metadata.name}
-        </SupportButton>
-      </ContentHeader>
+    <Content noPadding>
+      {allEnvs.length > 0 && (
+        <Box mb={2}>
+          <Tabs
+            selectedKey={currentEnv}
+            onSelectionChange={(key: Key) => setSelectedEnv(key as string)}
+          >
+            <TabList aria-label="Environment tabs">
+              {allEnvs.map(env => (
+                <Tab key={env} id={env}>
+                  {env}
+                </Tab>
+              ))}
+            </TabList>
+          </Tabs>
+        </Box>
+      )}
 
-      {flags.length === 0 ? (
-        <EmptyState
-          missing="data"
-          title="No feature flags found"
-          description={`No feature flags found for project "${projectId}". Create some flags in Unleash first.`}
-        />
-      ) : (
-        <>
-          {environments.length > 0 && (
-            <Card>
-              <Tabs
-                value={currentEnv}
-                onChange={(_, newValue) => setSelectedEnv(newValue)}
-                indicatorColor="primary"
-                textColor="primary"
-              >
-                {environments.map(env => (
-                  <Tab key={env} label={env} value={env} />
-                ))}
-              </Tabs>
-            </Card>
-          )}
-
-          <Box mt={2}>
-            <Card>
-              <CardContent>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Flag</TableCell>
-                      <TableCell>Type</TableCell>
-                      <TableCell>Status</TableCell>
-                      <TableCell>Strategies</TableCell>
-                      <TableCell align="center">Enabled</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {flags.map(flag => {
-                      const envStatus = flag.environments?.find(
-                        e => e?.name === currentEnv,
-                      );
-
-                      return (
-                        <TableRow key={flag.name}>
-                          <TableCell>
-                            <Box>
-                              <Typography className={classes.flagName}>
-                                {flag.name}
-                              </Typography>
-                              {flag.description && (
-                                <Typography
-                                  variant="body2"
-                                  className={classes.flagDescription}
-                                >
-                                  {flag.description}
-                                </Typography>
-                              )}
-                            </Box>
-                          </TableCell>
-                          <TableCell>
-                            <Chip
-                              size="small"
-                              label={flag.type}
-                              className={classes.flagType}
-                            />
-                          </TableCell>
-                          <TableCell>
-                            {flag.stale && (
-                              <Chip
-                                size="small"
-                                label="Stale"
-                                color="secondary"
-                              />
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <Box display="flex" alignItems="center">
-                              {(() => {
-                                if (
-                                  envStatus?.strategies?.length !== undefined
-                                ) {
-                                  return `${envStatus.strategies.length} strategies`;
-                                }
-                                if (envStatus?.hasStrategies) {
-                                  return (
-                                    <Chip
-                                      size="small"
-                                      label="Has strategies"
-                                      color="primary"
-                                      variant="outlined"
-                                      onClick={() =>
-                                        setDetailsModal({
-                                          flagName: flag.name,
-                                          environment: currentEnv,
-                                        })
-                                      }
-                                      clickable
-                                    />
-                                  );
-                                }
-                                return (
-                                  <Chip
-                                    size="small"
-                                    label="No strategies"
-                                    variant="outlined"
-                                  />
-                                );
-                              })()}
-                              {(envStatus?.hasStrategies ||
-                                (envStatus?.strategies?.length ?? 0) > 0) && (
-                                <Tooltip title="View details">
-                                  <IconButton
-                                    size="small"
-                                    onClick={() =>
-                                      setDetailsModal({
-                                        flagName: flag.name,
-                                        environment: currentEnv,
-                                      })
-                                    }
-                                  >
-                                    <InfoIcon fontSize="small" />
-                                  </IconButton>
-                                </Tooltip>
-                              )}
-                            </Box>
-                          </TableCell>
-                          <TableCell align="center">
-                            {envStatus && projectId && (
-                              <FlagToggle
-                                projectId={projectId}
-                                flagName={flag.name}
-                                environment={currentEnv}
-                                enabled={envStatus.enabled}
-                                readonly={!isEnvironmentEditable(currentEnv)}
-                                onToggled={handleRefresh}
-                              />
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+      <Table
+        options={{
+          search: true,
+          paging: tableData.length > 10,
+          pageSize: 10,
+          pageSizeOptions: [10, 25, 50],
+          padding: 'dense',
+        }}
+        columns={columns}
+        data={tableData}
+        emptyContent={
+          <Box p={2} textAlign="center">
+            <Typography color="textSecondary">
+              No feature flags found
+            </Typography>
           </Box>
+        }
+      />
 
-          {flags.some(f => f.stale) && (
-            <Box mt={2}>
-              <Alert severity="info">
-                Some flags are marked as stale and may no longer be in use.
-                Consider archiving them in Unleash.
-              </Alert>
-            </Box>
-          )}
-        </>
+      {filteredFlags.some(f => f.stale) && (
+        <Box mt={2}>
+          <Alert severity="info">
+            Some flags are marked as stale and may no longer be in use. Consider
+            archiving them in Unleash.
+          </Alert>
+        </Box>
       )}
 
       {detailsModal && projectId && (

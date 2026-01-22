@@ -25,16 +25,37 @@ export const getUnleashProjectId = (entity: Entity): string | undefined =>
 export const getUnleashEnvironment = (entity: Entity): string | undefined =>
   entity.metadata.annotations?.[UNLEASH_ENVIRONMENT_ANNOTATION];
 
-/**
- * Get filter tags from an entity
- */
-export const getUnleashFilterTags = (entity: Entity): string[] => {
+export interface TagFilter {
+  type: string;
+  value: string;
+}
+
+export const parseTagFilter = (tag: string): TagFilter => {
+  const colonIndex = tag.indexOf(':');
+  if (colonIndex === -1) {
+    return { type: 'simple', value: tag };
+  }
+  return {
+    type: tag.slice(0, colonIndex),
+    value: tag.slice(colonIndex + 1),
+  };
+};
+
+export const formatTagFilter = (filter: TagFilter): string => {
+  if (filter.type === 'simple') {
+    return filter.value;
+  }
+  return `${filter.type}:${filter.value}`;
+};
+
+export const getUnleashFilterTags = (entity: Entity): TagFilter[] => {
   const tagsAnnotation =
     entity.metadata.annotations?.[UNLEASH_FILTER_TAGS_ANNOTATION];
-  if (!tagsAnnotation) return [];
-  try {
-    return JSON.parse(tagsAnnotation);
-  } catch {
-    return [];
-  }
+  if (!tagsAnnotation?.trim()) return [];
+
+  return tagsAnnotation
+    .split(',')
+    .map(tag => tag.trim())
+    .filter(tag => tag.length > 0)
+    .map(parseTagFilter);
 };

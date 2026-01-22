@@ -2,6 +2,11 @@
  * Unleash feature flag type definitions
  */
 
+export interface Tag {
+  type: string;
+  value: string;
+}
+
 export interface FeatureFlag {
   name: string;
   description?: string;
@@ -13,6 +18,7 @@ export interface FeatureFlag {
   variants?: Variant[];
   project?: string;
   impressionData?: boolean;
+  tags?: Tag[];
 }
 
 export interface EnvironmentStatus {

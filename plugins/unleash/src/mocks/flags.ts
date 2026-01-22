@@ -25,6 +25,10 @@ export const mockFeatureFlag: FeatureFlag = {
       strategies: [],
     },
   ],
+  tags: [
+    { type: 'component', value: 'service-a' },
+    { type: 'team', value: 'platform' },
+  ],
 };
 
 export const mockFeatureFlagsList = {
@@ -36,6 +40,35 @@ export const mockFeatureFlagsList = {
       description: 'Another test flag',
       type: 'experiment' as const,
       stale: true,
+      tags: [{ type: 'component', value: 'service-b' }],
+    },
+  ],
+};
+
+export const mockFeatureFlagsWithTags = {
+  features: [
+    {
+      ...mockFeatureFlag,
+      name: 'shared-flag',
+      tags: [
+        { type: 'component', value: 'service-a' },
+        { type: 'component', value: 'service-b' },
+      ],
+    },
+    {
+      ...mockFeatureFlag,
+      name: 'service-a-only',
+      tags: [{ type: 'component', value: 'service-a' }],
+    },
+    {
+      ...mockFeatureFlag,
+      name: 'service-b-only',
+      tags: [{ type: 'component', value: 'service-b' }],
+    },
+    {
+      ...mockFeatureFlag,
+      name: 'no-tags-flag',
+      tags: [],
     },
   ],
 };

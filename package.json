@@ -33,7 +33,11 @@
   "devDependencies": {
     "@backstage/cli": "^0.34.5",
     "@backstage/e2e-test-utils": "^0.1.1",
+    "@jest/environment-jsdom-abstract": "^30",
     "@playwright/test": "^1.32.3",
+    "@types/jest": "^30",
+    "jest": "^30",
+    "jsdom": "^27",
     "node-gyp": "^10.0.0",
     "prettier": "^2.3.2",
     "typescript": "~5.8.0"

@@ -26,3 +26,15 @@ export const mockEntityWithoutAnnotation: Entity = {
     annotations: {},
   },
 };
+
+export const mockEntityWithFilterTags: Entity = {
+  ...mockEntity,
+  metadata: {
+    ...mockEntity.metadata,
+    annotations: {
+      'unleash.io/project-id': 'test-project',
+      'unleash.io/environment': 'development',
+      'unleash.io/filter-tags': 'component:service-a',
+    },
+  },
+};

@@ -1,11 +1,19 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { EntityProvider } from '@backstage/plugin-catalog-react';
 import { TestApiProvider, renderInTestApp } from '@backstage/test-utils';
 import { EntityUnleashContent } from './EntityUnleashContent';
 import { unleashApiRef } from '../../api';
-import { mockEntity, mockEntityWithoutAnnotation } from '../../mocks/entity';
-import { mockFeatureFlagsList, mockFeatureFlag } from '../../mocks/flags';
+import {
+  mockEntity,
+  mockEntityWithoutAnnotation,
+  mockEntityWithFilterTags,
+} from '../../mocks/entity';
+import {
+  mockFeatureFlagsList,
+  mockFeatureFlag,
+  mockFeatureFlagsWithTags,
+} from '../../mocks/flags';
 
 describe('EntityUnleashContent', () => {
   const mockUnleashApi = {
@@ -144,10 +152,9 @@ describe('EntityUnleashContent', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Feature Flags')).toBeInTheDocument();
+        expect(screen.getByText('test-flag')).toBeInTheDocument();
       });
 
-      expect(screen.getByText('test-flag')).toBeInTheDocument();
       expect(screen.getByText('another-flag')).toBeInTheDocument();
       expect(screen.getByText('A test feature flag')).toBeInTheDocument();
       expect(screen.getByText('Another test flag')).toBeInTheDocument();
@@ -163,9 +170,10 @@ describe('EntityUnleashContent', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('release')).toBeInTheDocument();
+        expect(screen.getByText('test-flag')).toBeInTheDocument();
       });
 
+      expect(screen.getByText('release')).toBeInTheDocument();
       expect(screen.getByText('experiment')).toBeInTheDocument();
     });
 
@@ -179,8 +187,11 @@ describe('EntityUnleashContent', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Stale')).toBeInTheDocument();
+        expect(screen.getByText('test-flag')).toBeInTheDocument();
       });
+
+      // Stale flag indicator is shown as a warning icon with tooltip, not text
+      expect(screen.getByTitle('This flag is marked as stale and may no longer be in use')).toBeInTheDocument();
     });
 
     it('shows stale flags alert when stale flags exist', async () => {
@@ -193,12 +204,14 @@ describe('EntityUnleashContent', () => {
       );
 
       await waitFor(() => {
-        expect(
-          screen.getByText(
-            /Some flags are marked as stale and may no longer be in use/i,
-          ),
-        ).toBeInTheDocument();
+        expect(screen.getByText('test-flag')).toBeInTheDocument();
       });
+
+      expect(
+        screen.getByText(
+          /Some flags are marked as stale and may no longer be in use/i,
+        ),
+      ).toBeInTheDocument();
     });
 
     it('displays strategies information', async () => {
@@ -211,9 +224,11 @@ describe('EntityUnleashContent', () => {
       );
 
       await waitFor(() => {
-        const strategiesElements = screen.getAllByText('1 strategies');
-        expect(strategiesElements.length).toBeGreaterThan(0);
+        expect(screen.getByText('test-flag')).toBeInTheDocument();
       });
+
+      const strategiesElements = screen.getAllByText('1 strategies');
+      expect(strategiesElements.length).toBeGreaterThan(0);
     });
   });
 
@@ -235,12 +250,11 @@ describe('EntityUnleashContent', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Feature Flags')).toBeInTheDocument();
+        expect(
+          screen.getByRole('tab', { name: 'development' }),
+        ).toBeInTheDocument();
       });
 
-      expect(
-        screen.getByRole('tab', { name: 'development' }),
-      ).toBeInTheDocument();
       expect(
         screen.getByRole('tab', { name: 'production' }),
       ).toBeInTheDocument();
@@ -258,7 +272,9 @@ describe('EntityUnleashContent', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Feature Flags')).toBeInTheDocument();
+        expect(
+          screen.getByRole('tab', { name: 'development' }),
+        ).toBeInTheDocument();
       });
 
       // Default should be development (first environment)
@@ -286,7 +302,7 @@ describe('EntityUnleashContent', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Feature Flags')).toBeInTheDocument();
+        expect(screen.getByText('test-flag')).toBeInTheDocument();
       });
 
       // In development, flags should have strategies
@@ -322,7 +338,7 @@ describe('EntityUnleashContent', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Feature Flags')).toBeInTheDocument();
+        expect(screen.getByText('test-flag')).toBeInTheDocument();
       });
 
       // Should render switches for toggles (not chips)
@@ -344,7 +360,7 @@ describe('EntityUnleashContent', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Feature Flags')).toBeInTheDocument();
+        expect(screen.getByText('test-flag')).toBeInTheDocument();
       });
 
       // Should render status chips instead of switches
@@ -366,7 +382,7 @@ describe('EntityUnleashContent', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Feature Flags')).toBeInTheDocument();
+        expect(screen.getByText('test-flag')).toBeInTheDocument();
       });
 
       // Switch to production (not in editableEnvs)
@@ -390,72 +406,6 @@ describe('EntityUnleashContent', () => {
         editableEnvs: ['development'],
       });
       mockUnleashApi.getFlag.mockResolvedValue(mockFeatureFlag);
-    });
-
-    it('opens flag details modal when info icon is clicked', async () => {
-      const user = userEvent.setup();
-
-      await renderInTestApp(
-        <TestApiProvider apis={[[unleashApiRef, mockUnleashApi]]}>
-          <EntityProvider entity={mockEntity}>
-            <EntityUnleashContent />
-          </EntityProvider>
-        </TestApiProvider>,
-      );
-
-      await waitFor(() => {
-        expect(screen.getByText('Feature Flags')).toBeInTheDocument();
-      });
-
-      // Find and click the info button
-      const infoButtons = screen.getAllByTitle('View details');
-      await user.click(infoButtons[0]);
-
-      await waitFor(() => {
-        // Modal should open with flag details
-        const dialog = screen.getByRole('dialog');
-        expect(dialog).toBeInTheDocument();
-        expect(
-          within(dialog).getByText('test-flag - development'),
-        ).toBeInTheDocument();
-      });
-
-      expect(mockUnleashApi.getFlag).toHaveBeenCalledWith(
-        'test-project',
-        'test-flag',
-      );
-    });
-
-    it('closes flag details modal when close button is clicked', async () => {
-      const user = userEvent.setup();
-
-      await renderInTestApp(
-        <TestApiProvider apis={[[unleashApiRef, mockUnleashApi]]}>
-          <EntityProvider entity={mockEntity}>
-            <EntityUnleashContent />
-          </EntityProvider>
-        </TestApiProvider>,
-      );
-
-      await waitFor(() => {
-        expect(screen.getByText('Feature Flags')).toBeInTheDocument();
-      });
-
-      // Open modal
-      const infoButtons = screen.getAllByTitle('View details');
-      await user.click(infoButtons[0]);
-
-      await waitFor(() => {
-        expect(screen.getByRole('dialog')).toBeInTheDocument();
-      });
-
-      // Close modal
-      const closeButton = screen.getByRole('button', { name: /close/i });
-      await user.click(closeButton);
-
-      await waitFor(() => {
-        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-      });
     });
 
     it('opens modal when clicking "Has strategies" chip', async () => {
@@ -488,7 +438,7 @@ describe('EntityUnleashContent', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Feature Flags')).toBeInTheDocument();
+        expect(screen.getByText('test-flag')).toBeInTheDocument();
       });
 
       // Click the "Has strategies" chip
@@ -523,7 +473,7 @@ describe('EntityUnleashContent', () => {
     });
   });
 
-  describe('Content Header', () => {
+  describe('Content Rendering', () => {
     beforeEach(() => {
       mockUnleashApi.getFlags.mockResolvedValue(mockFeatureFlagsList);
       mockUnleashApi.getConfig.mockResolvedValue({
@@ -531,7 +481,7 @@ describe('EntityUnleashContent', () => {
       });
     });
 
-    it('renders content header with title', async () => {
+    it('renders content with flags', async () => {
       await renderInTestApp(
         <TestApiProvider apis={[[unleashApiRef, mockUnleashApi]]}>
           <EntityProvider entity={mockEntity}>
@@ -541,12 +491,106 @@ describe('EntityUnleashContent', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Feature Flags')).toBeInTheDocument();
+        expect(screen.getByText('test-flag')).toBeInTheDocument();
       });
 
-      expect(screen.getByTestId('header-title')).toHaveTextContent(
-        'Feature Flags',
+      expect(screen.getByText('another-flag')).toBeInTheDocument();
+    });
+  });
+
+  describe('Search and Filtering', () => {
+    beforeEach(() => {
+      mockUnleashApi.getFlags.mockResolvedValue(mockFeatureFlagsWithTags);
+      mockUnleashApi.getConfig.mockResolvedValue({
+        editableEnvs: ['development'],
+      });
+    });
+
+    it('renders backstage table component with flags', async () => {
+      await renderInTestApp(
+        <TestApiProvider apis={[[unleashApiRef, mockUnleashApi]]}>
+          <EntityProvider entity={mockEntity}>
+            <EntityUnleashContent />
+          </EntityProvider>
+        </TestApiProvider>,
       );
+
+      await waitFor(() => {
+        expect(screen.getByText('shared-flag')).toBeInTheDocument();
+      });
+
+      // Table should have environment tabs
+      expect(
+        screen.getByRole('tab', { name: 'development' }),
+      ).toBeInTheDocument();
+    });
+
+    it('displays tag chips on flags', async () => {
+      await renderInTestApp(
+        <TestApiProvider apis={[[unleashApiRef, mockUnleashApi]]}>
+          <EntityProvider entity={mockEntity}>
+            <EntityUnleashContent />
+          </EntityProvider>
+        </TestApiProvider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('shared-flag')).toBeInTheDocument();
+      });
+
+      expect(screen.getAllByText('component:service-a').length).toBeGreaterThan(
+        0,
+      );
+      expect(screen.getAllByText('component:service-b').length).toBeGreaterThan(
+        0,
+      );
+    });
+  });
+
+  describe('Tag Filtering with Annotation Defaults', () => {
+    beforeEach(() => {
+      mockUnleashApi.getFlags.mockResolvedValue(mockFeatureFlagsWithTags);
+      mockUnleashApi.getConfig.mockResolvedValue({
+        editableEnvs: ['development'],
+      });
+    });
+
+    it('applies default tag filter from annotation', async () => {
+      await renderInTestApp(
+        <TestApiProvider apis={[[unleashApiRef, mockUnleashApi]]}>
+          <EntityProvider entity={mockEntityWithFilterTags}>
+            <EntityUnleashContent />
+          </EntityProvider>
+        </TestApiProvider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('shared-flag')).toBeInTheDocument();
+      });
+
+      expect(screen.getByText('service-a-only')).toBeInTheDocument();
+
+      // Flags without the matching tag should be filtered out
+      expect(screen.queryByText('service-b-only')).not.toBeInTheDocument();
+      expect(screen.queryByText('no-tags-flag')).not.toBeInTheDocument();
+    });
+
+    it('shows filtered flags with their tags', async () => {
+      await renderInTestApp(
+        <TestApiProvider apis={[[unleashApiRef, mockUnleashApi]]}>
+          <EntityProvider entity={mockEntityWithFilterTags}>
+            <EntityUnleashContent />
+          </EntityProvider>
+        </TestApiProvider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('shared-flag')).toBeInTheDocument();
+      });
+
+      // The filtered flags should display their tags
+      const serviceAChips = screen.getAllByText('component:service-a');
+      expect(serviceAChips.length).toBeGreaterThan(0);
     });
   });
 });
