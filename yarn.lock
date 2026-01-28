@@ -5853,7 +5853,7 @@ __metadata:
     "@backstage/plugin-catalog-node": "npm:^1.20.0"
     "@backstage/plugin-permission-common": "npm:^0.9.3"
     "@backstage/plugin-permission-node": "npm:^0.10.3"
-    "@globallogicuki/backstage-plugin-unleash-common": "npm:^0.2.0"
+    "@globallogicuki/backstage-plugin-unleash-common": "npm:^0.2.1"
     "@types/express": "npm:^4.17.6"
     "@types/supertest": "npm:^2.0.12"
     express: "npm:^4.17.1"
@@ -5864,7 +5864,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@globallogicuki/backstage-plugin-unleash-common@npm:^0.2.0, @globallogicuki/backstage-plugin-unleash-common@workspace:plugins/unleash-common":
+"@globallogicuki/backstage-plugin-unleash-common@npm:^0.2.1, @globallogicuki/backstage-plugin-unleash-common@workspace:plugins/unleash-common":
   version: 0.0.0-use.local
   resolution: "@globallogicuki/backstage-plugin-unleash-common@workspace:plugins/unleash-common"
   dependencies:
@@ -5892,7 +5892,7 @@ __metadata:
     "@backstage/test-utils": "npm:^1.7.13"
     "@backstage/theme": "npm:^0.7.0"
     "@backstage/ui": "npm:^0.11.0"
-    "@globallogicuki/backstage-plugin-unleash-common": "npm:^0.2.0"
+    "@globallogicuki/backstage-plugin-unleash-common": "npm:^0.2.1"
     "@material-ui/core": "npm:^4.12.2"
     "@material-ui/icons": "npm:^4.9.1"
     "@material-ui/lab": "npm:^4.0.0-alpha.61"

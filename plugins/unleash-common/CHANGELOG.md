@@ -1,5 +1,11 @@
 # @globallogicuki/backstage-plugin-unleash-common
 
+## 0.2.1
+
+### Patch Changes
+
+- 5983650: Add tag-based filtering for feature flags with interactive UI and annotation defaults
+
 ## 0.2.0
 
 ## 0.1.5

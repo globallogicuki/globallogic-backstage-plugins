@@ -1,5 +1,12 @@
 # @globallogicuki/backstage-plugin-unleash-backend
 
+## 0.2.1
+
+### Patch Changes
+
+- Updated dependencies [5983650]
+  - @globallogicuki/backstage-plugin-unleash-common@0.2.1
+
 ## 0.2.0
 
 ### Minor Changes
