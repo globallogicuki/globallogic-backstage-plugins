@@ -1,5 +1,15 @@
 # @globallogicuki/backstage-plugin-unleash-backend
 
+## 0.3.0
+
+### Minor Changes
+
+- a14b176: Add audit logging via Backstage Auditor Service for flag toggle, variant update, and strategy update operations
+
+### Patch Changes
+
+- @globallogicuki/backstage-plugin-unleash-common@0.3.0
+
 ## 0.2.1
 
 ### Patch Changes

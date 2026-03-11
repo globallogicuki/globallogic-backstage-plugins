@@ -1,5 +1,11 @@
 # @globallogicuki/backstage-plugin-unleash
 
+## 0.3.0
+
+### Patch Changes
+
+- @globallogicuki/backstage-plugin-unleash-common@0.3.0
+
 ## 0.2.1
 
 ### Patch Changes
