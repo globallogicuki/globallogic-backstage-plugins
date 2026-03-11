@@ -233,8 +233,7 @@ export async function createRouter(
       logger.warn('[TOGGLE] ALLOWING - permission check passed');
 
       const credentials = await httpAuth.credentials(req, { allow: ['user'] });
-      const userEntityRef =
-        credentials.principal.userEntityRef || 'unknown';
+      const userEntityRef = credentials.principal.userEntityRef || 'unknown';
 
       const auditEvent = await auditor.createEvent({
         eventId: 'flag-toggle',
@@ -313,8 +312,7 @@ export async function createRouter(
       const { projectId, featureName } = req.params;
 
       const credentials = await httpAuth.credentials(req, { allow: ['user'] });
-      const userEntityRef =
-        credentials.principal.userEntityRef || 'unknown';
+      const userEntityRef = credentials.principal.userEntityRef || 'unknown';
 
       const auditEvent = await auditor.createEvent({
         eventId: 'variant-update',
@@ -407,8 +405,7 @@ export async function createRouter(
       }
 
       const credentials = await httpAuth.credentials(req, { allow: ['user'] });
-      const userEntityRef =
-        credentials.principal.userEntityRef || 'unknown';
+      const userEntityRef = credentials.principal.userEntityRef || 'unknown';
 
       const auditEvent = await auditor.createEvent({
         eventId: 'strategy-update',
