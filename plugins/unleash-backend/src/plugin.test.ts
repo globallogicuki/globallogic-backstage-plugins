@@ -4,6 +4,13 @@ import { mockServices } from '@backstage/backend-test-utils';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { CatalogService } from '@backstage/plugin-catalog-node';
 
+const mockAuditor = mockServices.auditor.mock();
+const mockAuditEvent = {
+  success: jest.fn(),
+  fail: jest.fn(),
+};
+mockAuditor.createEvent.mockResolvedValue(mockAuditEvent);
+
 describe('unleashPlugin exports', () => {
   it('should export plugin', () => {
     expect(unleashPlugin).toBeDefined();
@@ -39,6 +46,7 @@ describe('unleashPlugin router creation', () => {
 
     const router = await createRouter({
       logger: mockServices.logger.mock(),
+      auditor: mockAuditor,
       unleashUrl: 'https://unleash.example.com',
       unleashToken: 'test-token',
       httpAuth: mockServices.httpAuth(),
@@ -79,6 +87,7 @@ describe('unleashPlugin router creation', () => {
 
     const router = await createRouter({
       logger: mockServices.logger.mock(),
+      auditor: mockAuditor,
       unleashUrl: 'https://unleash.example.com',
       unleashToken: 'test-token',
       httpAuth: mockServices.httpAuth(),
@@ -115,6 +124,7 @@ describe('unleashPlugin router creation', () => {
 
     const router = await createRouter({
       logger: mockServices.logger.mock(),
+      auditor: mockAuditor,
       unleashUrl: 'https://unleash.example.com',
       unleashToken: 'test-token',
       httpAuth: mockServices.httpAuth(),
@@ -152,6 +162,7 @@ describe('unleashPlugin router creation', () => {
 
     const router = await createRouter({
       logger: mockServices.logger.mock(),
+      auditor: mockAuditor,
       unleashUrl: 'https://unleash.example.com',
       unleashToken: 'test-token',
       httpAuth: mockServices.httpAuth(),

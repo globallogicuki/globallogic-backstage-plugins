@@ -27,6 +27,7 @@ export const unleashPlugin = createBackendPlugin({
         permissions: coreServices.permissions,
         permissionsRegistry: coreServices.permissionsRegistry,
         catalog: catalogServiceRef,
+        auditor: coreServices.auditor,
       },
       async init({
         logger,
@@ -36,6 +37,7 @@ export const unleashPlugin = createBackendPlugin({
         permissions,
         permissionsRegistry,
         catalog,
+        auditor,
       }) {
         const unleashConfig = config.getOptionalConfig('unleash');
 
@@ -61,6 +63,7 @@ export const unleashPlugin = createBackendPlugin({
         httpRouter.use(
           await createRouter({
             logger,
+            auditor,
             unleashUrl,
             unleashToken,
             editableEnvs,

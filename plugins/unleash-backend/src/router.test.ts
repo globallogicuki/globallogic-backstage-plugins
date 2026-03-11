@@ -46,6 +46,11 @@ const mockEntity = {
 describe('createRouter', () => {
   let app: express.Express;
   const mockPermissions = mockServices.permissions.mock();
+  const mockAuditor = mockServices.auditor.mock();
+  const mockAuditEvent = {
+    success: jest.fn(),
+    fail: jest.fn(),
+  };
   const mockCatalogApi = {
     getEntities: jest.fn(),
     getEntitiesByRefs: jest.fn(),
@@ -68,9 +73,11 @@ describe('createRouter', () => {
 
   beforeEach(async () => {
     mockCatalogApi.getEntities.mockResolvedValue({ items: [] });
+    mockAuditor.createEvent.mockResolvedValue(mockAuditEvent);
 
     const router = await createRouter({
       logger: mockServices.logger.mock(),
+      auditor: mockAuditor,
       unleashUrl: 'https://unleash.example.com',
       unleashToken: 'test-token',
       editableEnvs: ['development', 'staging'],
@@ -660,6 +667,7 @@ describe('createRouter', () => {
     it('denies variant update when no environments are editable', async () => {
       const routerNoEditable = await createRouter({
         logger: mockServices.logger.mock(),
+        auditor: mockAuditor,
         unleashUrl: 'https://unleash.example.com',
         unleashToken: 'test-token',
         editableEnvs: [],
