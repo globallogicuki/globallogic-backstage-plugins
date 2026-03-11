@@ -1,4 +1,5 @@
 import {
+  AuditorService,
   HttpAuthService,
   LoggerService,
   PermissionsService,
@@ -30,6 +31,7 @@ import { CatalogService } from '@backstage/plugin-catalog-node';
 
 export interface RouterOptions {
   logger: LoggerService;
+  auditor: AuditorService;
   unleashUrl: string;
   unleashToken: string;
   editableEnvs: string[];
@@ -44,6 +46,7 @@ export async function createRouter(
 ): Promise<express.Router> {
   const {
     logger,
+    auditor,
     unleashUrl,
     unleashToken,
     editableEnvs,
@@ -229,6 +232,23 @@ export async function createRouter(
 
       logger.warn('[TOGGLE] ALLOWING - permission check passed');
 
+      const credentials = await httpAuth.credentials(req, { allow: ['user'] });
+      const userEntityRef =
+        credentials.principal.userEntityRef || 'unknown';
+
+      const auditEvent = await auditor.createEvent({
+        eventId: 'flag-toggle',
+        severityLevel: 'medium',
+        request: req,
+        meta: {
+          featureName,
+          action,
+          environment,
+          projectId,
+          userEntityRef,
+        },
+      });
+
       try {
         await toggleFeatureFlag(
           unleashClientOptions,
@@ -238,11 +258,15 @@ export async function createRouter(
           action as 'on' | 'off',
         );
 
+        await auditEvent.success();
+
         logger.info(
-          `User toggled flag ${featureName} ${action} in ${environment} (project: ${projectId})`,
+          `User ${userEntityRef} toggled flag ${featureName} ${action} in ${environment} (project: ${projectId})`,
         );
         return res.json({ success: true });
       } catch (error: any) {
+        await auditEvent.fail({ error });
+
         // Pass through the status code from Unleash API if available
         const statusCode = error.statusCode || 500;
         const message = error.message || 'Unknown error';
@@ -288,6 +312,21 @@ export async function createRouter(
 
       const { projectId, featureName } = req.params;
 
+      const credentials = await httpAuth.credentials(req, { allow: ['user'] });
+      const userEntityRef =
+        credentials.principal.userEntityRef || 'unknown';
+
+      const auditEvent = await auditor.createEvent({
+        eventId: 'variant-update',
+        severityLevel: 'medium',
+        request: req,
+        meta: {
+          featureName,
+          projectId,
+          userEntityRef,
+        },
+      });
+
       try {
         const data = await updateFeatureVariants(
           unleashClientOptions,
@@ -296,11 +335,15 @@ export async function createRouter(
           req.body,
         );
 
+        await auditEvent.success();
+
         logger.info(
-          `User updated variants for flag ${featureName} (project: ${projectId})`,
+          `User ${userEntityRef} updated variants for flag ${featureName} (project: ${projectId})`,
         );
         return res.json(data);
       } catch (error: any) {
+        await auditEvent.fail({ error });
+
         const statusCode = error.statusCode || 500;
         const message = error.message || 'Unknown error';
 
@@ -362,6 +405,24 @@ export async function createRouter(
           .status(403)
           .json({ error: 'Permission denied for strategy management' });
       }
+
+      const credentials = await httpAuth.credentials(req, { allow: ['user'] });
+      const userEntityRef =
+        credentials.principal.userEntityRef || 'unknown';
+
+      const auditEvent = await auditor.createEvent({
+        eventId: 'strategy-update',
+        severityLevel: 'medium',
+        request: req,
+        meta: {
+          featureName,
+          strategyId,
+          environment,
+          projectId,
+          userEntityRef,
+        },
+      });
+
       try {
         const data = await updateStrategy(
           unleashClientOptions,
@@ -372,11 +433,15 @@ export async function createRouter(
           req.body,
         );
 
+        await auditEvent.success();
+
         logger.info(
-          `User updated strategy ${strategyId} for flag ${featureName} in ${environment} (project: ${projectId})`,
+          `User ${userEntityRef} updated strategy ${strategyId} for flag ${featureName} in ${environment} (project: ${projectId})`,
         );
         return res.json(data);
       } catch (error: any) {
+        await auditEvent.fail({ error });
+
         const statusCode = error.statusCode || 500;
         const message = error.message || 'Unknown error';
 
