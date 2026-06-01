@@ -1,5 +1,6 @@
 import {
   AuditorService,
+  AuditorServiceEvent,
   HttpAuthService,
   LoggerService,
   PermissionsService,
@@ -147,6 +148,27 @@ export async function createRouter(
     return editableEnvs.length > 0 && editableEnvs.includes(environment);
   };
 
+  // Helper to resolve the calling user and create an audit event for a
+  // mutating operation. Returns the audit event (call success()/fail() on it)
+  // and the resolved userEntityRef for log enrichment.
+  const createAuditEvent = async (
+    req: express.Request,
+    eventId: string,
+    meta: Record<string, string>,
+  ): Promise<{ auditEvent: AuditorServiceEvent; userEntityRef: string }> => {
+    const credentials = await httpAuth.credentials(req, { allow: ['user'] });
+    const userEntityRef = credentials.principal.userEntityRef || 'unknown';
+
+    const auditEvent = await auditor.createEvent({
+      eventId,
+      severityLevel: 'medium',
+      request: req,
+      meta: { ...meta, userEntityRef },
+    });
+
+    return { auditEvent, userEntityRef };
+  };
+
   // Get configuration (including editable environments and numEnvs)
   router.get('/config', async (_req, res) => {
     return res.json({ editableEnvs, numEnvs });
@@ -232,21 +254,11 @@ export async function createRouter(
 
       logger.warn('[TOGGLE] ALLOWING - permission check passed');
 
-      const credentials = await httpAuth.credentials(req, { allow: ['user'] });
-      const userEntityRef = credentials.principal.userEntityRef || 'unknown';
-
-      const auditEvent = await auditor.createEvent({
-        eventId: 'flag-toggle',
-        severityLevel: 'medium',
-        request: req,
-        meta: {
-          featureName,
-          action,
-          environment,
-          projectId,
-          userEntityRef,
-        },
-      });
+      const { auditEvent, userEntityRef } = await createAuditEvent(
+        req,
+        'flag-toggle',
+        { featureName, action, environment, projectId },
+      );
 
       try {
         await toggleFeatureFlag(
@@ -311,19 +323,11 @@ export async function createRouter(
 
       const { projectId, featureName } = req.params;
 
-      const credentials = await httpAuth.credentials(req, { allow: ['user'] });
-      const userEntityRef = credentials.principal.userEntityRef || 'unknown';
-
-      const auditEvent = await auditor.createEvent({
-        eventId: 'variant-update',
-        severityLevel: 'medium',
-        request: req,
-        meta: {
-          featureName,
-          projectId,
-          userEntityRef,
-        },
-      });
+      const { auditEvent, userEntityRef } = await createAuditEvent(
+        req,
+        'variant-update',
+        { featureName, projectId },
+      );
 
       try {
         const data = await updateFeatureVariants(
@@ -404,21 +408,11 @@ export async function createRouter(
           .json({ error: 'Permission denied for strategy management' });
       }
 
-      const credentials = await httpAuth.credentials(req, { allow: ['user'] });
-      const userEntityRef = credentials.principal.userEntityRef || 'unknown';
-
-      const auditEvent = await auditor.createEvent({
-        eventId: 'strategy-update',
-        severityLevel: 'medium',
-        request: req,
-        meta: {
-          featureName,
-          strategyId,
-          environment,
-          projectId,
-          userEntityRef,
-        },
-      });
+      const { auditEvent, userEntityRef } = await createAuditEvent(
+        req,
+        'strategy-update',
+        { featureName, strategyId, environment, projectId },
+      );
 
       try {
         const data = await updateStrategy(

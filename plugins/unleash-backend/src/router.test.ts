@@ -641,6 +641,127 @@ describe('createRouter', () => {
     });
   });
 
+  describe('Audit logging', () => {
+    beforeEach(() => {
+      mockCatalogApi.getEntities.mockResolvedValue({ items: [mockEntity] });
+      mockPermissions.authorize.mockResolvedValue([
+        { result: AuthorizeResult.ALLOW },
+      ]);
+    });
+
+    it('creates a flag-toggle audit event and marks it successful', async () => {
+      (toggleFeatureFlag as jest.Mock).mockResolvedValue(null);
+
+      const response = await request(app)
+        .post(
+          '/projects/test-project/features/test-flag/environments/development/on',
+        )
+        .set('Authorization', mockCredentials.user.header());
+
+      expect(response.status).toEqual(200);
+      expect(mockAuditor.createEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          eventId: 'flag-toggle',
+          severityLevel: 'medium',
+          request: expect.anything(),
+          meta: expect.objectContaining({
+            featureName: 'test-flag',
+            action: 'on',
+            environment: 'development',
+            projectId: 'test-project',
+            userEntityRef: mockCredentials.user().principal.userEntityRef,
+          }),
+        }),
+      );
+      expect(mockAuditEvent.success).toHaveBeenCalledTimes(1);
+      expect(mockAuditEvent.fail).not.toHaveBeenCalled();
+    });
+
+    it('marks the audit event as failed when the toggle errors', async () => {
+      const serverError: any = new Error('Internal server error');
+      serverError.statusCode = 500;
+      (toggleFeatureFlag as jest.Mock).mockRejectedValue(serverError);
+
+      const response = await request(app)
+        .post(
+          '/projects/test-project/features/test-flag/environments/development/on',
+        )
+        .set('Authorization', mockCredentials.user.header());
+
+      expect(response.status).toEqual(500);
+      expect(mockAuditor.createEvent).toHaveBeenCalledWith(
+        expect.objectContaining({ eventId: 'flag-toggle' }),
+      );
+      expect(mockAuditEvent.fail).toHaveBeenCalledWith({ error: serverError });
+      expect(mockAuditEvent.success).not.toHaveBeenCalled();
+    });
+
+    it('creates a variant-update audit event and marks it successful', async () => {
+      (updateFeatureVariants as jest.Mock).mockResolvedValue({});
+
+      const response = await request(app)
+        .put('/projects/test-project/features/test-flag/variants')
+        .set('Authorization', mockCredentials.user.header())
+        .send([]);
+
+      expect(response.status).toEqual(200);
+      expect(mockAuditor.createEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          eventId: 'variant-update',
+          severityLevel: 'medium',
+          meta: expect.objectContaining({
+            featureName: 'test-flag',
+            projectId: 'test-project',
+            userEntityRef: mockCredentials.user().principal.userEntityRef,
+          }),
+        }),
+      );
+      expect(mockAuditEvent.success).toHaveBeenCalledTimes(1);
+    });
+
+    it('creates a strategy-update audit event and marks it successful', async () => {
+      (updateStrategy as jest.Mock).mockResolvedValue({});
+
+      const response = await request(app)
+        .put(
+          '/projects/test-project/features/test-flag/environments/development/strategies/strat1',
+        )
+        .set('Authorization', mockCredentials.user.header())
+        .send({ name: 'default' });
+
+      expect(response.status).toEqual(200);
+      expect(mockAuditor.createEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          eventId: 'strategy-update',
+          severityLevel: 'medium',
+          meta: expect.objectContaining({
+            featureName: 'test-flag',
+            strategyId: 'strat1',
+            environment: 'development',
+            projectId: 'test-project',
+            userEntityRef: mockCredentials.user().principal.userEntityRef,
+          }),
+        }),
+      );
+      expect(mockAuditEvent.success).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not create an audit event when permission is denied', async () => {
+      mockPermissions.authorize.mockResolvedValue([
+        { result: AuthorizeResult.DENY },
+      ]);
+
+      const response = await request(app)
+        .post(
+          '/projects/test-project/features/test-flag/environments/development/on',
+        )
+        .set('Authorization', mockCredentials.user.header());
+
+      expect(response.status).toEqual(403);
+      expect(mockAuditor.createEvent).not.toHaveBeenCalled();
+    });
+  });
+
   describe('Strategy update non-editable environment', () => {
     beforeEach(() => {
       mockCatalogApi.getEntities.mockResolvedValue({ items: [mockEntity] });
