@@ -1,5 +1,29 @@
 # @globallogicuki/backstage-plugin-unleash-backend
 
+## 0.3.1
+
+### Patch Changes
+
+- 923f331: Refactor audit logging to use a shared `createAuditEvent` helper, removing duplicated credential resolution and event creation across the flag-toggle, variant-update, and strategy-update routes. No behavioural change.
+  - @globallogicuki/backstage-plugin-unleash-common@0.3.1
+
+## 0.3.0
+
+### Minor Changes
+
+- a14b176: Add audit logging via Backstage Auditor Service for flag toggle, variant update, and strategy update operations
+
+### Patch Changes
+
+- @globallogicuki/backstage-plugin-unleash-common@0.3.0
+
+## 0.2.1
+
+### Patch Changes
+
+- Updated dependencies [5983650]
+  - @globallogicuki/backstage-plugin-unleash-common@0.2.1
+
 ## 0.2.0
 
 ### Minor Changes

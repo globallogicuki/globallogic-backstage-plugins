@@ -59,7 +59,6 @@ metadata:
   description: My awesome service
   annotations:
     unleash.io/project-id: my-project-id
-    unleash.io/environment: production # Optional: default environment to display
 spec:
   type: service
   lifecycle: production
@@ -69,8 +68,7 @@ spec:
 **Available Annotations:**
 
 - `unleash.io/project-id` (required): The Unleash project ID
-- `unleash.io/environment` (optional): Default environment to display
-- `unleash.io/filter-tags` (optional): JSON array of tags to filter flags
+- `unleash.io/filter-tags` (optional): Comma-separated tags to filter flags (see [Tag Filtering](#tag-filtering))
 
 ## Usage
 
@@ -94,6 +92,45 @@ Click the **Feature Flags** tab to access the full management interface:
 - See flag types (release, experiment, operational, etc.)
 - Identify stale flags
 - View strategy counts per environment
+- Search flags by name or description
+
+### Tag Filtering
+
+When multiple components share a single Unleash project, you can use tags to filter which flags appear for each component. This is useful when:
+
+- Multiple services share a feature flag project
+- You want to show only relevant flags for each component
+- Teams need component-specific views of shared flag projects
+
+#### Configuring Tag Filters
+
+Add the `unleash.io/filter-tags` annotation with comma-separated tags:
+
+```yaml
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: service-alpha
+  annotations:
+    unleash.io/project-id: shared-project
+    unleash.io/filter-tags: component:service-alpha
+```
+
+#### Tag Format
+
+Tags use the format `type:value`:
+
+- `component:service-alpha` - matches flags with tag type "component" and value "service-alpha"
+- `team:platform` - matches flags with tag type "team" and value "platform"
+- `simple-tag` - tags without a colon default to type "simple"
+
+#### Multiple Tag Filters
+
+When multiple tags are specified, flags must match **all** tags (AND logic):
+
+```yaml
+unleash.io/filter-tags: component:service-alpha, team:platform
+```
 
 ### Toggling Flags
 

@@ -1,4 +1,6 @@
 import {
+  AuditorService,
+  AuditorServiceEvent,
   HttpAuthService,
   LoggerService,
   PermissionsService,
@@ -30,6 +32,7 @@ import { CatalogService } from '@backstage/plugin-catalog-node';
 
 export interface RouterOptions {
   logger: LoggerService;
+  auditor: AuditorService;
   unleashUrl: string;
   unleashToken: string;
   editableEnvs: string[];
@@ -44,6 +47,7 @@ export async function createRouter(
 ): Promise<express.Router> {
   const {
     logger,
+    auditor,
     unleashUrl,
     unleashToken,
     editableEnvs,
@@ -144,6 +148,27 @@ export async function createRouter(
     return editableEnvs.length > 0 && editableEnvs.includes(environment);
   };
 
+  // Helper to resolve the calling user and create an audit event for a
+  // mutating operation. Returns the audit event (call success()/fail() on it)
+  // and the resolved userEntityRef for log enrichment.
+  const createAuditEvent = async (
+    req: express.Request,
+    eventId: string,
+    meta: Record<string, string>,
+  ): Promise<{ auditEvent: AuditorServiceEvent; userEntityRef: string }> => {
+    const credentials = await httpAuth.credentials(req, { allow: ['user'] });
+    const userEntityRef = credentials.principal.userEntityRef || 'unknown';
+
+    const auditEvent = await auditor.createEvent({
+      eventId,
+      severityLevel: 'medium',
+      request: req,
+      meta: { ...meta, userEntityRef },
+    });
+
+    return { auditEvent, userEntityRef };
+  };
+
   // Get configuration (including editable environments and numEnvs)
   router.get('/config', async (_req, res) => {
     return res.json({ editableEnvs, numEnvs });
@@ -229,6 +254,12 @@ export async function createRouter(
 
       logger.warn('[TOGGLE] ALLOWING - permission check passed');
 
+      const { auditEvent, userEntityRef } = await createAuditEvent(
+        req,
+        'flag-toggle',
+        { featureName, action, environment, projectId },
+      );
+
       try {
         await toggleFeatureFlag(
           unleashClientOptions,
@@ -238,11 +269,15 @@ export async function createRouter(
           action as 'on' | 'off',
         );
 
+        await auditEvent.success();
+
         logger.info(
-          `User toggled flag ${featureName} ${action} in ${environment} (project: ${projectId})`,
+          `User ${userEntityRef} toggled flag ${featureName} ${action} in ${environment} (project: ${projectId})`,
         );
         return res.json({ success: true });
       } catch (error: any) {
+        await auditEvent.fail({ error });
+
         // Pass through the status code from Unleash API if available
         const statusCode = error.statusCode || 500;
         const message = error.message || 'Unknown error';
@@ -288,6 +323,12 @@ export async function createRouter(
 
       const { projectId, featureName } = req.params;
 
+      const { auditEvent, userEntityRef } = await createAuditEvent(
+        req,
+        'variant-update',
+        { featureName, projectId },
+      );
+
       try {
         const data = await updateFeatureVariants(
           unleashClientOptions,
@@ -296,11 +337,15 @@ export async function createRouter(
           req.body,
         );
 
+        await auditEvent.success();
+
         logger.info(
-          `User updated variants for flag ${featureName} (project: ${projectId})`,
+          `User ${userEntityRef} updated variants for flag ${featureName} (project: ${projectId})`,
         );
         return res.json(data);
       } catch (error: any) {
+        await auditEvent.fail({ error });
+
         const statusCode = error.statusCode || 500;
         const message = error.message || 'Unknown error';
 
@@ -362,6 +407,13 @@ export async function createRouter(
           .status(403)
           .json({ error: 'Permission denied for strategy management' });
       }
+
+      const { auditEvent, userEntityRef } = await createAuditEvent(
+        req,
+        'strategy-update',
+        { featureName, strategyId, environment, projectId },
+      );
+
       try {
         const data = await updateStrategy(
           unleashClientOptions,
@@ -372,11 +424,15 @@ export async function createRouter(
           req.body,
         );
 
+        await auditEvent.success();
+
         logger.info(
-          `User updated strategy ${strategyId} for flag ${featureName} in ${environment} (project: ${projectId})`,
+          `User ${userEntityRef} updated strategy ${strategyId} for flag ${featureName} in ${environment} (project: ${projectId})`,
         );
         return res.json(data);
       } catch (error: any) {
+        await auditEvent.fail({ error });
+
         const statusCode = error.statusCode || 500;
         const message = error.message || 'Unknown error';
 

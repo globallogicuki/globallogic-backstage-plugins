@@ -16,6 +16,7 @@ metadata:
     terraform/organization: orgName
     terraform/workspaces: workspaceName1,workspaceName2,workspaceName3
     unleash.io/project-id: test
+    unleash.io/filter-tags: component:test1, component:test2
 spec:
   type: website
   lifecycle: experimental

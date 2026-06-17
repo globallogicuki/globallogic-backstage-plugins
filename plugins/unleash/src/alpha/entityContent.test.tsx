@@ -26,7 +26,7 @@ describe('entityContent extension', () => {
 
     await waitFor(
       () => {
-        expect(screen.getByText('Feature Flags')).toBeInTheDocument();
+        expect(screen.getByText('test-flag')).toBeInTheDocument();
       },
       { timeout: 5000 },
     );
