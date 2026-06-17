@@ -13,6 +13,10 @@ import { EntityProvider } from '@backstage/plugin-catalog-react';
 import { TerraformApi, terraformApiRef } from '../api';
 import { mockEntity, mockRuns } from '../mocks';
 
+// New-frontend-system render tests are heavy; give them headroom over the
+// inner waitFor timeout so they don't flake against jest's 5s default.
+jest.setTimeout(30000);
+
 describe('entityCards extension', () => {
   const mockTerraformApi = {
     getRuns: jest.fn().mockReturnValue(mockRuns),
