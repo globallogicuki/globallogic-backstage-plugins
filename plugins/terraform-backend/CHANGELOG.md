@@ -1,5 +1,11 @@
 # @globallogicuki/backstage-plugin-terraform-backend
 
+## 0.10.5
+
+### Patch Changes
+
+- 0d21880: Upgrade to Backstage v1.47.0
+
 ## 0.10.4
 
 ### Patch Changes
