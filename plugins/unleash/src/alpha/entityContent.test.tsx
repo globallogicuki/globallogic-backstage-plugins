@@ -9,6 +9,10 @@ import { EntityProvider } from '@backstage/plugin-catalog-react';
 import { UnleashApi, unleashApiRef } from '../api';
 import { mockEntity, mockFeatureFlagsList } from '../mocks';
 
+// New-frontend-system render tests are heavy; give them headroom over the
+// inner waitFor timeout so they don't flake against jest's 5s default.
+jest.setTimeout(30000);
+
 describe('entityContent extension', () => {
   const mockUnleashApi = {
     getFlags: jest.fn().mockResolvedValue(mockFeatureFlagsList),

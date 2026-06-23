@@ -1,0 +1,6 @@
+projectKey=backstage-plugins
+serverUrl=https://sonarqube.agora.gluki.io
+serverVersion=25.9.0.112764
+dashboardUrl=https://sonarqube.agora.gluki.io/dashboard?id=backstage-plugins
+ceTaskId=b846aca8-4714-41e6-b794-ec1966b6e508
+ceTaskUrl=https://sonarqube.agora.gluki.io/api/ce/task?id=b846aca8-4714-41e6-b794-ec1966b6e508
