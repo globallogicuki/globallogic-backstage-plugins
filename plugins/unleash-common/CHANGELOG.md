@@ -1,5 +1,11 @@
 # @globallogicuki/backstage-plugin-unleash-common
 
+## 0.3.2
+
+### Patch Changes
+
+- 0d21880: Upgrade to Backstage v1.47.0
+
 ## 0.3.1
 
 ## 0.3.0

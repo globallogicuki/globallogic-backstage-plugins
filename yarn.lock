@@ -5645,7 +5645,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@globallogicuki/backstage-plugin-terraform-backend@npm:^0.10.0, @globallogicuki/backstage-plugin-terraform-backend@workspace:plugins/terraform-backend":
+"@globallogicuki/backstage-plugin-terraform-backend@npm:^0.10.5, @globallogicuki/backstage-plugin-terraform-backend@workspace:plugins/terraform-backend":
   version: 0.0.0-use.local
   resolution: "@globallogicuki/backstage-plugin-terraform-backend@workspace:plugins/terraform-backend"
   dependencies:
@@ -5671,7 +5671,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@globallogicuki/backstage-plugin-terraform@npm:^0.11.5, @globallogicuki/backstage-plugin-terraform@workspace:plugins/terraform":
+"@globallogicuki/backstage-plugin-terraform@npm:^0.11.6, @globallogicuki/backstage-plugin-terraform@workspace:plugins/terraform":
   version: 0.0.0-use.local
   resolution: "@globallogicuki/backstage-plugin-terraform@workspace:plugins/terraform"
   dependencies:
@@ -5717,7 +5717,7 @@ __metadata:
     "@backstage/plugin-catalog-node": "npm:^1.20.1"
     "@backstage/plugin-permission-common": "npm:^0.9.4"
     "@backstage/plugin-permission-node": "npm:^0.10.8"
-    "@globallogicuki/backstage-plugin-unleash-common": "npm:^0.3.1"
+    "@globallogicuki/backstage-plugin-unleash-common": "npm:^0.3.2"
     "@types/express": "npm:^4.17.6"
     "@types/supertest": "npm:^2.0.12"
     express: "npm:^4.17.1"
@@ -5728,7 +5728,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@globallogicuki/backstage-plugin-unleash-common@npm:^0.3.1, @globallogicuki/backstage-plugin-unleash-common@workspace:plugins/unleash-common":
+"@globallogicuki/backstage-plugin-unleash-common@npm:^0.3.2, @globallogicuki/backstage-plugin-unleash-common@workspace:plugins/unleash-common":
   version: 0.0.0-use.local
   resolution: "@globallogicuki/backstage-plugin-unleash-common@workspace:plugins/unleash-common"
   dependencies:
@@ -5756,7 +5756,7 @@ __metadata:
     "@backstage/test-utils": "npm:^1.7.14"
     "@backstage/theme": "npm:^0.7.1"
     "@backstage/ui": "npm:^0.11.0"
-    "@globallogicuki/backstage-plugin-unleash-common": "npm:^0.3.1"
+    "@globallogicuki/backstage-plugin-unleash-common": "npm:^0.3.2"
     "@material-ui/core": "npm:^4.12.2"
     "@material-ui/icons": "npm:^4.9.1"
     "@material-ui/lab": "npm:^4.0.0-alpha.61"
@@ -16339,7 +16339,7 @@ __metadata:
     "@backstage/test-utils": "npm:^1.7.14"
     "@backstage/theme": "npm:^0.7.1"
     "@backstage/ui": "npm:^0.11.0"
-    "@globallogicuki/backstage-plugin-terraform": "npm:^0.11.5"
+    "@globallogicuki/backstage-plugin-terraform": "npm:^0.11.6"
     "@globallogicuki/backstage-plugin-unleash": "workspace:^"
     "@material-ui/core": "npm:^4.12.2"
     "@material-ui/icons": "npm:^4.9.1"
@@ -16965,7 +16965,7 @@ __metadata:
     "@backstage/plugin-search-backend-node": "npm:^1.4.0"
     "@backstage/plugin-signals-backend": "npm:^0.3.11"
     "@backstage/plugin-techdocs-backend": "npm:^2.1.4"
-    "@globallogicuki/backstage-plugin-terraform-backend": "npm:^0.10.0"
+    "@globallogicuki/backstage-plugin-terraform-backend": "npm:^0.10.5"
     "@globallogicuki/backstage-plugin-unleash-backend": "workspace:^"
     app: "link:../app"
     better-sqlite3: "npm:^12.0.0"
