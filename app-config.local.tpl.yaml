@@ -3,6 +3,29 @@
 integrations:
   terraform:
     token: TOKEN_HERE
+  # If the skills marketplace repo is private, uncomment the credentials for
+  # its host — the skills-marketplace backend reads the repo through these
+  # integrations (same config the catalog uses). Public repos need nothing.
+  # github:
+  #   - host: github.com
+  #     token: GITHUB_TOKEN_HERE
+  # gitlab:
+  #   - host: gitlab.com
+  #     token: GITLAB_TOKEN_HERE
+  # bitbucketCloud:
+  #   - username: BITBUCKET_USERNAME_HERE
+  #     appPassword: BITBUCKET_APP_PASSWORD_HERE
+
+# The repo hosting the Claude Code marketplace shown on the /skills page.
+# Required by the skills-marketplace plugin — it has no defaults. Use the web
+# URL of the repo tree at the branch to read, e.g.
+#   https://github.com/ORG/REPO/tree/main
+#   https://gitlab.com/GROUP/REPO/-/tree/main
+#   https://bitbucket.org/WORKSPACE/REPO/src/main
+skillsMarketplace:
+  url: MARKETPLACE_TREE_URL
+  # URL format for the /plugin marketplace add install command shown to users.
+  # installUrlFormat: https # ssh (default) | https
 
 unleash:
   url: UNLEASH_URL
