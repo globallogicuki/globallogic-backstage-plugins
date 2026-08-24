@@ -27,9 +27,9 @@ describe('TerraformWorkspaceHealthAssessments', () => {
     refetchMock.mockReset();
   });
 
-  it('renders loading indicator when isLoading is true', () => {
+  it('renders nothing while loading with no data yet', () => {
     (useAssessmentResults as jest.Mock).mockReturnValue({
-      data: undefined,
+      data: [],
       error: undefined,
       isLoading: true,
       refetch: refetchMock,
@@ -41,6 +41,30 @@ describe('TerraformWorkspaceHealthAssessments', () => {
       </EntityProvider>,
     );
 
+    expect(screen.queryByText('Workspace Health')).toBeNull();
+    expect(
+      screen.queryByRole('progressbar', {
+        name: /Getting health assessments/i,
+      }),
+    ).toBeNull();
+  });
+
+  it('keeps cards visible and shows loading indicator when refreshing with data', () => {
+    (useAssessmentResults as jest.Mock).mockReturnValue({
+      data: [{ id: '1', workspaceName: 'workspaceA', health: 'healthy' }],
+      error: undefined,
+      isLoading: true,
+      refetch: refetchMock,
+    });
+
+    renderInTestApp(
+      <EntityProvider entity={mockEntity}>
+        <TerraformWorkspaceHealthAssessments />
+      </EntityProvider>,
+    );
+
+    expect(screen.getByText('Workspace Health')).toBeInTheDocument();
+    expect(screen.getByTestId('health-card-1')).toBeInTheDocument();
     expect(
       screen.getByRole('progressbar', { name: /Getting health assessments/i }),
     ).toBeInTheDocument();
@@ -99,7 +123,7 @@ describe('TerraformWorkspaceHealthAssessments', () => {
     expect(screen.getByText(overriddenTitle)).toBeInTheDocument();
   });
 
-  it('renders no TerraformWorkspaceHealthCard components when data is an empty array', async () => {
+  it('renders nothing when data is an empty array', async () => {
     (useAssessmentResults as jest.Mock).mockReturnValue({
       data: [],
       error: undefined,
@@ -113,6 +137,8 @@ describe('TerraformWorkspaceHealthAssessments', () => {
       </EntityProvider>,
     );
 
+    expect(screen.queryByText('Workspace Health')).toBeNull();
+    expect(screen.queryByLabelText('Refresh')).toBeNull();
     expect(screen.queryByTestId('health-card-1')).toBeNull();
     expect(screen.queryByTestId('health-card-2')).toBeNull();
   });
@@ -159,7 +185,7 @@ describe('TerraformWorkspaceHealthAssessments', () => {
 
   it('calls refetch when refresh is clicked', async () => {
     (useAssessmentResults as jest.Mock).mockReturnValue({
-      data: [],
+      data: [{ id: '1', workspaceName: 'workspaceA', health: 'healthy' }],
       error: undefined,
       isLoading: false,
       refetch: refetchMock,

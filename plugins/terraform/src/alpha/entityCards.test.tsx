@@ -21,7 +21,26 @@ describe('entityCards extension', () => {
   const mockTerraformApi = {
     getRuns: jest.fn().mockReturnValue(mockRuns),
     getLatestRun: jest.fn().mockReturnValue(mockRuns[0]),
-    getAssessmentResultsForWorkspaces: jest.fn().mockReturnValue([]),
+    getAssessmentResultsForWorkspaces: jest.fn().mockReturnValue([
+      {
+        id: 'asmt-1',
+        createdAt: '2024-01-01T00:00:00Z',
+        workspaceId: 'ws-1',
+        workspaceName: 'test-workspace',
+        driftMetrics: {
+          drifted: false,
+          resourcesDrifted: 0,
+          resourcesUndrifted: 1,
+        },
+        validationMetrics: {
+          allChecksSucceeded: true,
+          checksErrored: 0,
+          checksFailed: 0,
+          checksPassed: 1,
+          checksUnknown: 0,
+        },
+      },
+    ]),
   } as unknown as TerraformApi;
 
   describe('EntityTerraformCard', () => {
