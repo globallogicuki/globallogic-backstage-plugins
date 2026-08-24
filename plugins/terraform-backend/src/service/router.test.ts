@@ -1,4 +1,4 @@
-import { wrapInOpenApiTestServer } from '@backstage/backend-openapi-utils/testUtils';
+import { wrapServer } from '@backstage/backend-openapi-utils/testUtils';
 import { ConfigReader } from '@backstage/config';
 import { Server } from 'http';
 import express from 'express';
@@ -28,7 +28,7 @@ describe('createRouter', () => {
       logger: mockServices.logger.mock(),
       config: config,
     });
-    app = wrapInOpenApiTestServer(express().use(router));
+    app = await wrapServer(express().use(router));
   });
 
   afterEach(() => {
@@ -111,7 +111,7 @@ describe('createRouter', () => {
     });
 
     it('calls getLatestRunForWorkspaces correctly with single workspace', async () => {
-      (getLatestRunForWorkspaces as jest.Mock).mockResolvedValue([mockRun]);
+      (getLatestRunForWorkspaces as jest.Mock).mockResolvedValue(mockRun);
 
       await request(app).get(
         '/organizations/testOrg/workspaces/testWorkspace1/latestRun',
@@ -126,7 +126,7 @@ describe('createRouter', () => {
     });
 
     it('calls getLatestRunForWorkspaces correctly with multiple workspaces', async () => {
-      (getLatestRunForWorkspaces as jest.Mock).mockResolvedValue([mockRun]);
+      (getLatestRunForWorkspaces as jest.Mock).mockResolvedValue(mockRun);
 
       await request(app).get(TEST_URL);
 
@@ -165,9 +165,9 @@ describe('createRouter', () => {
     });
 
     it('calls getAssessmentResultsForWorkspaces correctly with single workspace', async () => {
-      (getAssessmentResultsForWorkspaces as jest.Mock).mockResolvedValue([
+      (getAssessmentResultsForWorkspaces as jest.Mock).mockResolvedValue(
         mockSingleAssessmentResult,
-      ]);
+      );
 
       await request(app).get(
         '/organizations/testOrg/workspaces/testWorkspace1/assessment-results',
@@ -182,9 +182,9 @@ describe('createRouter', () => {
     });
 
     it('calls getAssessmentResultsForWorkspaces correctly with multiple workspaces', async () => {
-      (getAssessmentResultsForWorkspaces as jest.Mock).mockResolvedValue([
+      (getAssessmentResultsForWorkspaces as jest.Mock).mockResolvedValue(
         mockAssessmentResults,
-      ]);
+      );
 
       await request(app).get(TEST_URL);
 

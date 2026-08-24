@@ -42,7 +42,7 @@ describe('unleashPlugin router creation', () => {
       getLocationByEntity: jest.fn(),
       analyzeLocation: jest.fn(),
       streamEntities: jest.fn(),
-    } as jest.Mocked<CatalogService>;
+    } as unknown as jest.Mocked<CatalogService>;
 
     const router = await createRouter({
       logger: mockServices.logger.mock(),
@@ -83,7 +83,7 @@ describe('unleashPlugin router creation', () => {
       getLocationByEntity: jest.fn(),
       analyzeLocation: jest.fn(),
       streamEntities: jest.fn(),
-    } as jest.Mocked<CatalogService>;
+    } as unknown as jest.Mocked<CatalogService>;
 
     const router = await createRouter({
       logger: mockServices.logger.mock(),
@@ -120,7 +120,7 @@ describe('unleashPlugin router creation', () => {
       getLocationByEntity: jest.fn(),
       analyzeLocation: jest.fn(),
       streamEntities: jest.fn(),
-    } as jest.Mocked<CatalogService>;
+    } as unknown as jest.Mocked<CatalogService>;
 
     const router = await createRouter({
       logger: mockServices.logger.mock(),
@@ -158,7 +158,7 @@ describe('unleashPlugin router creation', () => {
       getLocationByEntity: jest.fn(),
       analyzeLocation: jest.fn(),
       streamEntities: jest.fn(),
-    } as jest.Mocked<CatalogService>;
+    } as unknown as jest.Mocked<CatalogService>;
 
     const router = await createRouter({
       logger: mockServices.logger.mock(),

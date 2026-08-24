@@ -17,7 +17,7 @@ export type GetLatestRun = {
     orgName: string;
     workspaceNames: string;
   };
-  response: LatestRun;
+  response: LatestRun | { [key: string]: any };
 };
 /**
  * @public
@@ -27,7 +27,7 @@ export type GetRuns = {
     orgName: string;
     workspaceNames: string;
   };
-  response: Array<RunInner>;
+  response: Array<RunInner> | { [key: string]: any };
 };
 /**
  * @public
@@ -37,7 +37,7 @@ export type GetWorkspaceAssessmentResults = {
     orgName: string;
     workspaceNames: string;
   };
-  response: Array<AssessmentResult>;
+  response: Array<AssessmentResult> | { [key: string]: any };
 };
 /**
  * @public

@@ -41,6 +41,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/run'
+        '500':
+          description: server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
   '/organizations/{orgName}/workspaces/{workspaceNames}/latestRun':
     get:
       description: Returns data about the most recent Terraform Run
@@ -65,6 +71,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/latestRun'
+        '500':
+          description: server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
   '/organizations/{orgName}/workspaces/{workspaceNames}/assessment-results':
     get:
       description: Returns data about the latest assessment results for one or more workspace
@@ -89,8 +101,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/assessmentResults'
+        '500':
+          description: server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
 components:
   schemas:
+    error:
+      title: Error
+      description: Generic error response
+      type: object
+      additionalProperties: true
     health:
       title: Healthcheck
       description: Healthcheck endpoint
@@ -195,29 +218,21 @@ components:
       properties:
         drifted:
           type: boolean
-          example: false
         resourcesDrifted:
           type: number
-          example: 0
         resourcesUndrifted:
           type: number
-          example: 163
     validationMetrics:
       title: Workspace Validation Metrics
       type: object
       properties:
         allChecksSucceeded:
           type: boolean
-          example: false
         checksErrored:
           type: number
-          example: 0
         checksFailed:
           type: number
-          example: 2
         checksPassed:
           type: number
-          example: 4
         checksUnknown:
           type: number
-          example: 0

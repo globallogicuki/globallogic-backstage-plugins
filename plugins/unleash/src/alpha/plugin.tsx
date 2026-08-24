@@ -7,17 +7,11 @@ import { rootRouteRef } from '../routes';
 import { unleashApi } from './api';
 import { unleashContent } from './entityContent';
 import { EntityUnleashCard } from './entityCards';
-import { unleashPage, unleashNavItem } from './page';
+import { unleashPage } from './page';
 
 const plugin: FrontendPlugin = createFrontendPlugin({
   pluginId: 'unleash',
-  extensions: [
-    unleashApi,
-    unleashPage,
-    unleashNavItem,
-    EntityUnleashCard,
-    unleashContent,
-  ],
+  extensions: [unleashApi, unleashPage, EntityUnleashCard, unleashContent],
   routes: convertLegacyRouteRefs({ root: rootRouteRef }),
   info: {
     packageJson: () => import('../../package.json'),
