@@ -29,7 +29,7 @@ export class UnleashPermissionPolicy implements PermissionPolicy {
       this.logger.debug('[Permission Policy] Unleash write permission check', {
         permission: request.permission.name,
         userEntityRef: user?.info.userEntityRef,
-        ownershipEntityRefs: user?.identity.ownershipEntityRefs,
+        ownershipEntityRefs: user?.info.ownershipEntityRefs,
         resourceRef:
           'resourceRef' in request
             ? (request as { resourceRef: string }).resourceRef
@@ -66,7 +66,7 @@ export class UnleashPermissionPolicy implements PermissionPolicy {
             rule: 'IS_ENTITY_OWNER',
             resourceType: 'catalog-entity',
             params: {
-              claims: user?.identity.ownershipEntityRefs ?? [],
+              claims: user?.info.ownershipEntityRefs ?? [],
             },
           },
         };

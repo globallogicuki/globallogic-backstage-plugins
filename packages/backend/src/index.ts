@@ -58,6 +58,9 @@ backend.add(import('@backstage/plugin-search-backend-module-techdocs'));
 // kubernetes
 backend.add(import('@backstage/plugin-kubernetes-backend'));
 
+// user settings plugin
+backend.add(import('@backstage/plugin-user-settings-backend'));
+
 // terraform plugin
 backend.add(import('@globallogicuki/backstage-plugin-terraform-backend'));
 
@@ -66,5 +69,8 @@ backend.add(import('@backstage/plugin-notifications-backend'));
 backend.add(import('@backstage/plugin-signals-backend'));
 
 backend.add(import('@globallogicuki/backstage-plugin-unleash-backend'));
+
+// mcp actions plugin
+backend.add(import('@backstage/plugin-mcp-actions-backend'));
 
 backend.start();

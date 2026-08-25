@@ -1,7 +1,4 @@
-import {
-  PageBlueprint,
-  NavItemBlueprint,
-} from '@backstage/frontend-plugin-api';
+import { PageBlueprint } from '@backstage/frontend-plugin-api';
 import {
   compatWrapper,
   convertLegacyRouteRef,
@@ -13,19 +10,12 @@ export const unleashPage = PageBlueprint.make({
   name: 'page',
   params: {
     path: '/unleash',
+    title: 'Feature Flags',
+    icon: <FlagIcon />,
     routeRef: convertLegacyRouteRef(rootRouteRef),
     loader: () =>
       import('../components/UnleashPage').then(m =>
         compatWrapper(<m.UnleashPage />),
       ),
-  },
-});
-
-export const unleashNavItem = NavItemBlueprint.make({
-  name: 'nav-item',
-  params: {
-    routeRef: convertLegacyRouteRef(rootRouteRef),
-    title: 'Feature Flags',
-    icon: FlagIcon,
   },
 });

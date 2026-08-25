@@ -40,25 +40,31 @@ export const TerraformWorkspaceHealthAssessments = ({
     refetch();
   }, [refetch]);
 
-  if (isLoading) {
-    return (
-      <InfoCard title={title}>
-        <CircularProgress aria-label="Getting health assessments" aria-busy />
-      </InfoCard>
-    );
-  }
-
   if (error) {
     return <ResponseErrorPanel error={error} />;
+  }
+
+  if (!data.length) {
+    return null;
   }
 
   return (
     <InfoCard
       title={title}
       action={
-        <IconButton onClick={refetch} aria-label="Refresh">
-          <RefreshIcon />
-        </IconButton>
+        isLoading ? (
+          <IconButton aria-label="Refresh" disabled>
+            <CircularProgress
+              size={24}
+              aria-label="Getting health assessments"
+              aria-busy
+            />
+          </IconButton>
+        ) : (
+          <IconButton onClick={refetch} aria-label="Refresh">
+            <RefreshIcon />
+          </IconButton>
+        )
       }
     >
       <Grid container>

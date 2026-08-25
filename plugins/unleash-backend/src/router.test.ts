@@ -69,7 +69,7 @@ describe('createRouter', () => {
     getLocationByEntity: jest.fn(),
     analyzeLocation: jest.fn(),
     streamEntities: jest.fn(),
-  } as jest.Mocked<CatalogService>;
+  } as unknown as jest.Mocked<CatalogService>;
 
   beforeEach(async () => {
     mockCatalogApi.getEntities.mockResolvedValue({ items: [] });

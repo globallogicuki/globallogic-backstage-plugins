@@ -1,4 +1,5 @@
 import { screen, waitFor } from '@testing-library/react';
+
 import userEvent from '@testing-library/user-event';
 import { EntityProvider } from '@backstage/plugin-catalog-react';
 import { TestApiProvider, renderInTestApp } from '@backstage/test-utils';
@@ -15,6 +16,10 @@ import {
   mockFeatureFlag,
   mockFeatureFlagsWithTags,
 } from '../../mocks/flags';
+
+// This suite renders heavy MUI dialogs; give it headroom over the 5s default
+// to avoid flaking under parallel jest workers.
+jest.setTimeout(15_000);
 
 describe('EntityUnleashContent', () => {
   const mockUnleashApi = {
