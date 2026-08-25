@@ -69,6 +69,12 @@ backend.add(
   import('@globallogicuki/backstage-plugin-skills-marketplace-backend'),
 );
 
+// tech insights plugin (feeds the estate-health page)
+backend.add(import('@backstage-community/plugin-tech-insights-backend'));
+backend.add(
+  import('@backstage-community/plugin-tech-insights-backend-module-jsonfc'),
+);
+
 // notifications and signals plugins
 backend.add(import('@backstage/plugin-notifications-backend'));
 backend.add(import('@backstage/plugin-signals-backend'));

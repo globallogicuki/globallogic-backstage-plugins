@@ -143,6 +143,56 @@ integrations:
     #   apiBaseUrl: https://ghe.example.net/api/v3
     #   token: ${GHE_TOKEN}
 
+# Demo tech-insights setup feeding the estate-health page: the built-in
+# metadata/ownership fact retrievers plus a few json-rules-engine checks.
+techInsights:
+  factRetrievers:
+    # Per-minute cadence so the demo app has facts right after startup.
+    entityMetadataFactRetriever:
+      cadence: '* * * * *'
+      lifecycle: { timeToLive: { weeks: 2 } }
+    entityOwnershipFactRetriever:
+      cadence: '* * * * *'
+      lifecycle: { timeToLive: { weeks: 2 } }
+  factChecker:
+    checks:
+      hasOwner:
+        type: json-rules-engine
+        name: Has owner
+        description: The entity declares a spec.owner
+        factIds:
+          - entityOwnershipFactRetriever
+        rule:
+          conditions:
+            all:
+              - fact: hasOwner
+                operator: equal
+                value: true
+      hasDescription:
+        type: json-rules-engine
+        name: Has description
+        description: The entity has a metadata.description
+        factIds:
+          - entityMetadataFactRetriever
+        rule:
+          conditions:
+            all:
+              - fact: hasDescription
+                operator: equal
+                value: true
+      hasTags:
+        type: json-rules-engine
+        name: Has tags
+        description: The entity declares metadata.tags
+        factIds:
+          - entityMetadataFactRetriever
+        rule:
+          conditions:
+            all:
+              - fact: hasTags
+                operator: equal
+                value: true
+
 proxy:
   {}
   ### Example for how to add a proxy endpoint for the frontend.
