@@ -13,7 +13,7 @@ import { rootRouteRef } from './routes';
 /**
  * @alpha
  */
-const skillsMarketplaceApi = ApiBlueprint.make({
+export const skillsMarketplaceApi = ApiBlueprint.make({
   params: defineParams =>
     defineParams({
       api: skillsMarketplaceApiRef,
@@ -26,7 +26,7 @@ const skillsMarketplaceApi = ApiBlueprint.make({
 /**
  * @alpha
  */
-const skillsMarketplacePage = PageBlueprint.make({
+export const skillsMarketplacePage = PageBlueprint.make({
   name: 'page',
   params: {
     path: '/skills',

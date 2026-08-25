@@ -65,7 +65,12 @@
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.36.5"
+    "@backstage/cli": "^0.36.5",
+    "@backstage/core-app-api": "^1.20.4",
+    "@backstage/frontend-test-utils": "^0.6.3",
+    "@backstage/test-utils": "^1.7.21",
+    "@testing-library/jest-dom": "^6.4.2",
+    "@testing-library/react": "^14.2.1"
   },
   "files": [
     "dist"

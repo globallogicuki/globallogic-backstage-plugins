@@ -6112,12 +6112,17 @@ __metadata:
   resolution: "@globallogicuki/backstage-plugin-skills-marketplace@workspace:plugins/skills-marketplace"
   dependencies:
     "@backstage/cli": "npm:^0.36.5"
+    "@backstage/core-app-api": "npm:^1.20.4"
     "@backstage/core-compat-api": "npm:^0.5.14"
     "@backstage/core-components": "npm:^0.18.13"
     "@backstage/core-plugin-api": "npm:^1.12.9"
     "@backstage/frontend-plugin-api": "npm:^0.18.0"
+    "@backstage/frontend-test-utils": "npm:^0.6.3"
+    "@backstage/test-utils": "npm:^1.7.21"
     "@material-ui/core": "npm:^4.12.2"
     "@material-ui/icons": "npm:^4.9.1"
+    "@testing-library/jest-dom": "npm:^6.4.2"
+    "@testing-library/react": "npm:^14.2.1"
     react-use: "npm:^17.2.4"
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
