@@ -1,5 +1,11 @@
 # @globallogicuki/backstage-plugin-terraform-backend
 
+## 0.10.6
+
+### Patch Changes
+
+- 8b7678c: Upgrade to Backstage 1.54.3. Replaces the removed NavItemBlueprint with PageBlueprint title/icon params in the Unleash alpha plugin, migrates PolicyQueryUser.identity to .info in the Unleash backend permission policy, and adds 500 error responses to the Terraform backend OpenAPI spec.
+
 ## 0.10.5
 
 ### Patch Changes

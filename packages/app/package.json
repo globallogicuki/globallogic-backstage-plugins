@@ -40,7 +40,7 @@
     "@backstage/plugin-techdocs-module-addons-contrib": "^1.1.39",
     "@backstage/plugin-user-settings": "^0.9.6",
     "@backstage/ui": "^0.17.1",
-    "@globallogicuki/backstage-plugin-terraform": "^0.11.6",
+    "@globallogicuki/backstage-plugin-terraform": "^0.11.7",
     "@globallogicuki/backstage-plugin-unleash": "workspace:^",
     "@material-ui/core": "^4.12.2",
     "@material-ui/icons": "^4.9.1",

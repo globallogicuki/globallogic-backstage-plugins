@@ -1,5 +1,12 @@
 # @globallogicuki/backstage-plugin-terraform
 
+## 0.11.7
+
+### Patch Changes
+
+- 8b7678c: Upgrade to Backstage 1.54.3. Replaces the removed NavItemBlueprint with PageBlueprint title/icon params in the Unleash alpha plugin, migrates PolicyQueryUser.identity to .info in the Unleash backend permission policy, and adds 500 error responses to the Terraform backend OpenAPI spec.
+- 8b7678c: Hide the Workspace Health card when no health assessments are available. The card no longer renders a loading shell that disappears; it only appears once assessment results are found, and stays populated with an inline spinner while refreshing.
+
 ## 0.11.6
 
 ### Patch Changes
