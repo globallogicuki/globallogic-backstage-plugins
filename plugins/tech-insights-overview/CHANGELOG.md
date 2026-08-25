@@ -1,5 +1,11 @@
 # @globallogicuki/backstage-plugin-tech-insights-overview
 
+## 0.1.1
+
+### Patch Changes
+
+- ed3d071: Internal cleanup: deduplicated the owner ranking comparator and removed an unused devDependency.
+
 ## 0.1.0
 
 ### Minor Changes
