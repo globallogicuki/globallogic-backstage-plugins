@@ -1,5 +1,11 @@
 # @globallogicuki/backstage-plugin-skills-marketplace-backend
 
+## 0.1.1
+
+### Patch Changes
+
+- ed3d071: Security fix: the `skill-doc` endpoint's source validation now rejects embedded `..` path segments, which previously allowed reading files outside the configured marketplace tree (including other repositories reachable by the integration credentials). Also: a marketplace manifest that is not valid JSON now returns 502 instead of 500.
+
 ## 0.1.0
 
 ### Minor Changes
