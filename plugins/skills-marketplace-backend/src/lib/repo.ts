@@ -1,10 +1,6 @@
 import { ScmIntegrations } from '@backstage/integration';
 
-/**
- * Resolve a path within the marketplace repo against the configured tree URL,
- * in a provider-aware way (via the same resolution the catalog uses for
- * relative locations).
- */
+/** Resolve a repo-relative path against the configured tree URL. */
 export function resolveFileUrl(
   integrations: ScmIntegrations,
   treeUrl: string,

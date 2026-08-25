@@ -1,12 +1,8 @@
 import { makeStyles } from '@material-ui/core/styles';
 
-/**
- * Layout-only styles shared by the page, the cards and the drawer. Colors,
- * fonts, radii and elevation all come from the host app's theme so the plugin
- * looks native in any Backstage instance.
- */
+/** Layout-only styles — colors, fonts, and radii come from the host theme. */
 export const useSkillsStyles = makeStyles(theme => ({
-  /* ── Filters row above the card grid ── */
+  /* Filters row */
   filters: {
     display: 'flex',
     flexWrap: 'wrap',
@@ -34,7 +30,7 @@ export const useSkillsStyles = makeStyles(theme => ({
     color: theme.palette.text.secondary,
   },
 
-  /* ── Skill card ── */
+  /* Skill card */
   card: {
     height: '100%',
     display: 'flex',
@@ -70,7 +66,7 @@ export const useSkillsStyles = makeStyles(theme => ({
     gap: theme.spacing(0.5),
   },
 
-  /* ── Detail drawer ── */
+  /* Detail drawer */
   drawerPaper: {
     width: 720,
     maxWidth: '100vw',

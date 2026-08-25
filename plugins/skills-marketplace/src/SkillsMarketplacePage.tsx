@@ -69,8 +69,7 @@ export const SkillsMarketplacePage = () => {
   const total = marketplace?.plugins.length ?? 0;
 
   return (
-    /* No <Page>/<Header>: in the new frontend system the app shell renders the
-       page title from the `title` on the PageBlueprint in alpha.tsx. */
+    /* No <Page>/<Header>: the app shell renders the PageBlueprint title. */
     <Content>
       {loading && <Progress />}
       {error && <ResponseErrorPanel error={error} />}

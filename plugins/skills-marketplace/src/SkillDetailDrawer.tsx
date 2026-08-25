@@ -25,11 +25,7 @@ const InstallCommand = ({ command }: { command: string }) => {
   );
 };
 
-/**
- * Skill detail as a right-hand drawer: name, description, category and
- * keywords up top, copy-able Claude Code install commands, then the skill's
- * rendered SKILL.md documentation.
- */
+/** Skill detail drawer: metadata, install commands, and SKILL.md docs. */
 export const SkillDetailDrawer = ({
   skill,
   marketplaceName,

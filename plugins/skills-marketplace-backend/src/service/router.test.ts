@@ -4,22 +4,23 @@ import { NotFoundError } from '@backstage/errors';
 import { mockServices } from '@backstage/backend-test-utils';
 import { createRouter } from './router';
 
-const TREE_URL = 'https://bitbucket.org/my-workspace/skills-marketplace/src/main';
+const TREE_URL =
+  'https://bitbucket.org/my-workspace/skills-marketplace/src/main';
 
 const manifest = {
   name: 'my-marketplace',
-  plugins: [
-    { name: 'foo', source: './skills/foo', description: 'Foo skill' },
-  ],
+  plugins: [{ name: 'foo', source: './skills/foo', description: 'Foo skill' }],
 };
 
 describe('createRouter', () => {
   const readUrl = jest.fn();
   let app: express.Express;
 
-  const buildApp = async (configData: object = {
-    skillsMarketplace: { url: TREE_URL },
-  }) => {
+  const buildApp = async (
+    configData: object = {
+      skillsMarketplace: { url: TREE_URL },
+    },
+  ) => {
     const router = await createRouter({
       logger: mockServices.logger.mock(),
       config: mockServices.rootConfig({ data: configData }),

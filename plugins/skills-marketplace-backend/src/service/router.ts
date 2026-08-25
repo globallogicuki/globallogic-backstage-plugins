@@ -97,7 +97,9 @@ export async function createRouter(
     }
     if (!Array.isArray(marketplace.plugins)) {
       res.status(502).json({
-        error: { message: 'Marketplace manifest is missing a "plugins" array.' },
+        error: {
+          message: 'Marketplace manifest is missing a "plugins" array.',
+        },
       });
       return;
     }

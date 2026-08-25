@@ -39,10 +39,7 @@ export type SkillDoc = {
 
 export interface SkillsMarketplaceApi {
   getMarketplace(): Promise<MarketplaceResponse>;
-  /**
-   * Fetch a skill's SKILL.md. Returns undefined when the skill has no
-   * SKILL.md (not every marketplace entry does).
-   */
+  /** Fetch a skill's SKILL.md; undefined when the skill has none. */
   getSkillDoc(source: string): Promise<SkillDoc | undefined>;
 }
 
@@ -99,9 +96,8 @@ export class SkillsMarketplaceClient implements SkillsMarketplaceApi {
 }
 
 /**
- * Minimal YAML-frontmatter splitter. Handles the flat `key: value` frontmatter
- * used by SKILL.md files (name / description / allowed-tools). Not a general
- * YAML parser — nested structures are kept as their raw string.
+ * Split a SKILL.md into flat `key: value` frontmatter and markdown body.
+ * Not a general YAML parser — nested structures are kept as raw strings.
  */
 export function parseFrontmatter(raw: string): SkillDoc {
   const match = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/.exec(raw);
@@ -115,8 +111,6 @@ export function parseFrontmatter(raw: string): SkillDoc {
       frontmatter[kv[1]] = kv[2].trim();
     }
   }
-  // Drop the blank separator line(s) that conventionally sit between the
-  // closing `---` and the body, so the rendered doc starts at real content.
   const body = raw.slice(match[0].length).replace(/^(?:[ \t]*\r?\n)+/, '');
   return { frontmatter, body };
 }

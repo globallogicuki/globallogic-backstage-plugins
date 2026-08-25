@@ -6,9 +6,7 @@ import Typography from '@material-ui/core/Typography';
 import { Skill } from './api';
 import { useSkillsStyles } from './styles';
 
-/**
- * One skill as a standard themed card. Clicking it opens the detail drawer.
- */
+/** One skill as a card; clicking it opens the detail drawer. */
 export const SkillCard = ({
   skill,
   onSelect,

@@ -2,19 +2,17 @@
 
 Backend for the
 [Skill Marketplace](https://github.com/globallogicuki/globallogic-backstage-plugins/tree/main/plugins/skills-marketplace)
-frontend plugin. It reads a Claude Code marketplace repo (a repo containing
-`.claude-plugin/marketplace.json`) through Backstage's `UrlReader` and the
-standard [`integrations`](https://backstage.io/docs/integrations/)
-configuration, so GitHub, GitLab, and Bitbucket — cloud or self-hosted,
-public or private — all work with no plugin-specific credentials. Responses
-are cached for five minutes to protect API rate limits.
+plugin. Reads the marketplace repo via Backstage's `UrlReader` and the standard
+[`integrations`](https://backstage.io/docs/integrations/) config — GitHub,
+GitLab, and Bitbucket, public or private, cloud or self-hosted. Responses are
+cached for five minutes.
 
 ## Endpoints
 
-- `GET /api/skills-marketplace/marketplace` — the parsed marketplace manifest
-  plus the repo's derived SSH clone URL.
+- `GET /api/skills-marketplace/marketplace` — the marketplace manifest plus
+  the derived git install URL.
 - `GET /api/skills-marketplace/skill-doc?source=./skills/foo` — the raw
-  `SKILL.md` for one skill (404 when the skill does not provide one).
+  `SKILL.md` for one skill (404 when the skill has none).
 
 ## Installation
 
@@ -22,9 +20,8 @@ are cached for five minutes to protect API rate limits.
 yarn --cwd packages/backend add @globallogicuki/backstage-plugin-skills-marketplace-backend
 ```
 
-Register it in `packages/backend/src/index.ts`:
-
 ```ts
+// packages/backend/src/index.ts
 backend.add(
   import('@globallogicuki/backstage-plugin-skills-marketplace-backend'),
 );
@@ -35,7 +32,8 @@ backend.add(
 ```yaml
 skillsMarketplace:
   url: https://github.com/my-org/skills-marketplace/tree/main
+  installUrlFormat: https # optional: ssh (default) | https
 ```
 
-See the frontend plugin's README for the full configuration reference,
-including private repos and self-hosted providers.
+See the frontend plugin's README for the full reference, including private
+repos.
