@@ -296,6 +296,97 @@ describe('lib/index', () => {
       );
     });
 
+    it('should attribute a VCS-triggered run (no confirmed-by) to the commit sender', async () => {
+      const vcsRun: TerraformRun = {
+        ...mockRun,
+        relationships: {
+          workspace: mockRun.relationships.workspace,
+          plan: mockRun.relationships.plan,
+          'configuration-version': {
+            data: { id: 'id-cv', type: 'configuration-versions' },
+            links: { related: '/api/v2/runs/id-1/configuration-version' },
+          },
+        },
+      };
+
+      (axios.get as jest.Mock).mockImplementation((url: string) => {
+        if (url.includes('/runs?')) {
+          return Promise.resolve({ data: { data: [vcsRun], included: [] } });
+        }
+        if (url.endsWith('/ingress-attributes')) {
+          return Promise.resolve({
+            data: {
+              data: {
+                id: 'id-ia',
+                type: 'ingress-attributes',
+                attributes: {
+                  'sender-username': 'commit-sender',
+                  'sender-avatar-url': 'sender-avatar',
+                },
+              },
+            },
+          });
+        }
+        if (url.endsWith('/configuration-version')) {
+          return Promise.resolve({
+            data: {
+              data: {
+                id: 'id-cv',
+                type: 'configuration-versions',
+                attributes: {},
+                relationships: {
+                  'ingress-attributes': {
+                    data: { id: 'id-ia', type: 'ingress-attributes' },
+                    links: {
+                      related:
+                        '/api/v2/configuration-versions/id-cv/ingress-attributes',
+                    },
+                  },
+                },
+              },
+            },
+          });
+        }
+        if (url.includes('/workspaces/')) {
+          return Promise.resolve({
+            data: { data: mockEntities.find(e => e.type === 'workspaces') },
+          });
+        }
+        return Promise.resolve({
+          data: { data: mockEntities.find(e => e.type === 'plans') },
+        });
+      });
+
+      const result = await listOrgRuns({
+        token,
+        baseUrl,
+        organization,
+        workspaces,
+      });
+
+      expect(result[0].confirmedBy).toEqual({
+        name: 'commit-sender',
+        avatar: 'sender-avatar',
+      });
+      expect(axios.get).toHaveBeenCalledWith(
+        'https://app.terraform.io/api/v2/runs/id-1/configuration-version',
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      expect(axios.get).toHaveBeenCalledWith(
+        'https://app.terraform.io/api/v2/configuration-versions/id-cv/ingress-attributes',
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+    });
+
+    it('should not fetch the configuration version when the run has a confirmed-by user', async () => {
+      await listOrgRuns({ token, baseUrl, organization, workspaces });
+
+      const calledUrls = (axios.get as jest.Mock).mock.calls.map(c => c[0]);
+      expect(
+        calledUrls.some((u: string) => u.includes('configuration-version')),
+      ).toBe(false);
+    });
+
     it('should return the correctly formatted data when a related entity errors', async () => {
       (axios.get as jest.Mock).mockResolvedValueOnce({
         data: {

@@ -26,6 +26,36 @@ const getUserDetails = (entities: TerraformEntity[], userId?: string) => {
   };
 };
 
+// VCS-triggered runs have no confirmed-by user; attribute them to the commit
+// sender from the configuration version's ingress attributes.
+const getVcsSenderDetails = (
+  entities: TerraformEntity[],
+  configurationVersionId?: string,
+) => {
+  if (!configurationVersionId) return null;
+
+  const configurationVersion = findEntityById(entities, configurationVersionId);
+  if (
+    !configurationVersion ||
+    configurationVersion.type !== 'configuration-versions'
+  ) {
+    return null;
+  }
+
+  const ingressId =
+    configurationVersion.relationships?.['ingress-attributes']?.data?.id;
+  if (!ingressId) return null;
+
+  const ingress = findEntityById(entities, ingressId);
+  if (!ingress || ingress.type !== 'ingress-attributes') return null;
+  if (!ingress.attributes['sender-username']) return null;
+
+  return {
+    name: ingress.attributes['sender-username'],
+    avatar: ingress.attributes['sender-avatar-url'],
+  };
+};
+
 const getWorkspaceDetails = (entities: TerraformEntity[], userId?: string) => {
   if (!userId) return null;
 
@@ -46,10 +76,15 @@ export const formatTerraformRun = (
   message: terraformRun.attributes.message,
   status: terraformRun.attributes.status,
   createdAt: terraformRun.attributes['created-at'],
-  confirmedBy: getUserDetails(
-    included,
-    terraformRun.relationships['confirmed-by']?.data.id,
-  ),
+  confirmedBy:
+    getUserDetails(
+      included,
+      terraformRun.relationships['confirmed-by']?.data.id,
+    ) ??
+    getVcsSenderDetails(
+      included,
+      terraformRun.relationships['configuration-version']?.data.id,
+    ),
   plan: getPlanDetails(included, terraformRun.relationships.plan?.data.id),
   workspace: getWorkspaceDetails(
     included,

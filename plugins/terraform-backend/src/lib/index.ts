@@ -2,7 +2,9 @@ import axios from 'axios';
 import { LoggerService } from '@backstage/backend-plugin-api';
 import {
   TerraformAssessmentResult,
+  TerraformConfigurationVersion,
   TerraformEntity,
+  TerraformIngressAttributes,
   TerraformPlan,
   TerraformResponse,
   TerraformRun,
@@ -28,13 +30,45 @@ const fetchRelatedEntity = async <EntityType>(
   return res.data.data;
 };
 
+// VCS-triggered runs carry no confirmed-by user; the commit sender lives on
+// the configuration version's ingress attributes instead.
+const fetchVcsSenderEntities = async (
+  baseUrl: string,
+  token: string,
+  run: TerraformRun,
+): Promise<TerraformEntity[]> => {
+  if (run.relationships['confirmed-by']?.links?.related) return [];
+
+  const configurationVersion =
+    await fetchRelatedEntity<TerraformConfigurationVersion>(
+      baseUrl,
+      token,
+      run.relationships['configuration-version']?.links?.related,
+    );
+  if (!configurationVersion) return [];
+
+  const ingressAttributes =
+    await fetchRelatedEntity<TerraformIngressAttributes>(
+      baseUrl,
+      token,
+      configurationVersion.relationships?.['ingress-attributes']?.links
+        ?.related,
+    );
+
+  return ingressAttributes
+    ? [configurationVersion, ingressAttributes]
+    : [configurationVersion];
+};
+
 // Need to do in series as will hit Terraform API rate limits
 const listRelatedEntities = async (
   baseUrl: string,
   token: string,
   runs: TerraformRun[],
 ): Promise<TerraformEntity[]> => {
-  let settled: PromiseSettledResult<TerraformEntity | null>[] = [];
+  let settled: PromiseSettledResult<
+    TerraformEntity | TerraformEntity[] | null
+  >[] = [];
 
   for (const run of runs) {
     // workspace doesn't contain links.related every time
@@ -52,12 +86,13 @@ const listRelatedEntities = async (
         fetchRelatedEntity<TerraformWorkspace>(baseUrl, token, workspaceUrl),
         fetchRelatedEntity<TerraformUser>(baseUrl, token, userUrl),
         fetchRelatedEntity<TerraformPlan>(baseUrl, token, planUrl),
+        fetchVcsSenderEntities(baseUrl, token, run),
       ])),
     ];
   }
 
   return settled
-    .map(p => (p.status === 'rejected' ? null : p.value))
+    .flatMap(p => (p.status === 'rejected' ? [null] : [p.value].flat()))
     .filter((e): e is TerraformEntity => !!e);
 };
 

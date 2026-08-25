@@ -130,6 +130,83 @@ describe('formatTerraformRun', () => {
     });
   });
 
+  it('should attribute a VCS-triggered run to the commit sender when there is no confirmed-by user', () => {
+    const vcsRun: TerraformRun = {
+      ...mockTerraformRun,
+      relationships: {
+        'configuration-version': {
+          data: { id: 'cv-id-01', type: 'configuration-versions' },
+        },
+      },
+    };
+    const included: TerraformEntity[] = [
+      {
+        id: 'cv-id-01',
+        type: 'configuration-versions',
+        attributes: {},
+        relationships: {
+          'ingress-attributes': {
+            data: { id: 'ia-id-01', type: 'ingress-attributes' },
+          },
+        },
+      },
+      {
+        id: 'ia-id-01',
+        type: 'ingress-attributes',
+        attributes: {
+          'sender-username': 'commit-sender',
+          'sender-avatar-url': 'sender-avatar',
+        },
+      },
+    ];
+
+    const responseRun = formatTerraformRun(vcsRun, included);
+    expect(responseRun).toEqual({
+      ...minExpectedResult,
+      confirmedBy: { name: 'commit-sender', avatar: 'sender-avatar' },
+    });
+  });
+
+  it('should prefer the confirmed-by user over the VCS commit sender', () => {
+    const runWithBoth: TerraformRun = {
+      ...mockTerraformRun,
+      relationships: {
+        ...mockTerraformRun.relationships,
+        'configuration-version': {
+          data: { id: 'cv-id-01', type: 'configuration-versions' },
+        },
+      },
+    };
+    const included: TerraformEntity[] = [
+      {
+        id: 'confirmedBy-id-01',
+        type: 'users',
+        attributes: { username: 'username-01', 'avatar-url': 'avatar-01' },
+      },
+      {
+        id: 'cv-id-01',
+        type: 'configuration-versions',
+        attributes: {},
+        relationships: {
+          'ingress-attributes': {
+            data: { id: 'ia-id-01', type: 'ingress-attributes' },
+          },
+        },
+      },
+      {
+        id: 'ia-id-01',
+        type: 'ingress-attributes',
+        attributes: { 'sender-username': 'commit-sender' },
+      },
+    ];
+
+    const responseRun = formatTerraformRun(runWithBoth, included);
+    expect(responseRun).toEqual({
+      ...minExpectedResult,
+      confirmedBy: { name: 'username-01', avatar: 'avatar-01' },
+    });
+  });
+
   it('should set workspace to null if undefined', () => {
     const included: TerraformEntity[] = [
       {
