@@ -46,6 +46,7 @@
     "@backstage/plugin-signals-backend": "^0.3.18",
     "@backstage/plugin-techdocs-backend": "^2.2.3",
     "@backstage/plugin-user-settings-backend": "^0.4.6",
+    "@globallogicuki/backstage-plugin-skills-marketplace-backend": "workspace:^",
     "@globallogicuki/backstage-plugin-terraform-backend": "^0.10.6",
     "@globallogicuki/backstage-plugin-unleash-backend": "workspace:^",
     "app": "link:../app",

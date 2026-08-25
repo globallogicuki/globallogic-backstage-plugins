@@ -64,6 +64,11 @@ backend.add(import('@backstage/plugin-user-settings-backend'));
 // terraform plugin
 backend.add(import('@globallogicuki/backstage-plugin-terraform-backend'));
 
+// skills marketplace plugin
+backend.add(
+  import('@globallogicuki/backstage-plugin-skills-marketplace-backend'),
+);
+
 // notifications and signals plugins
 backend.add(import('@backstage/plugin-notifications-backend'));
 backend.add(import('@backstage/plugin-signals-backend'));
