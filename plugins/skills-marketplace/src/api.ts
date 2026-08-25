@@ -22,14 +22,59 @@ export type Marketplace = {
   plugins: Skill[];
 };
 
-/** The marketplace manifest plus repo metadata derived by the backend. */
-export type MarketplaceResponse = {
-  marketplace: Marketplace;
+/** One marketplace repo: its manifest plus metadata derived by the backend. */
+export type MarketplaceEntry = {
+  /** Repo name, e.g. `skills-marketplace` — the id used to filter skills. */
+  repo: string;
+  /** Web URL of the repo tree the manifest was read from. */
+  url: string;
   /** Git URL of the marketplace repo shown in the install command. */
+  installUrl: string;
+  marketplace: Marketplace;
+};
+
+/** A configured marketplace the backend could not load. */
+export type MarketplaceError = {
+  repo: string;
+  url: string;
+  message: string;
+};
+
+/** Every configured marketplace, plus any that failed to load. */
+export type MarketplaceResponse = {
+  marketplaces: MarketplaceEntry[];
+  errors?: MarketplaceError[];
+};
+
+/** A skill paired with the marketplace it was declared in. */
+export type SkillListing = {
+  skill: Skill;
+  /** Repo name of the marketplace this skill came from. */
+  repo: string;
+  /** Manifest `name` of that marketplace, used in the install command. */
+  marketplaceName: string;
+  /** Git URL of that marketplace repo, used in the install command. */
   installUrl: string;
 };
 
-/** A skill's `SKILL.md` split into frontmatter fields and the markdown body. */
+/** Flatten every marketplace's plugins into one list tagged by source repo. */
+export function flattenSkills(
+  marketplaces: MarketplaceEntry[],
+): SkillListing[] {
+  return marketplaces.flatMap(entry =>
+    entry.marketplace.plugins.map(skill => ({
+      skill,
+      repo: entry.repo,
+      marketplaceName: entry.marketplace.name,
+      installUrl: entry.installUrl,
+    })),
+  );
+}
+
+/**
+ * A skill's docs — its `SKILL.md`, or its `README.md` where it has no
+ * `SKILL.md` — split into frontmatter fields and the markdown body.
+ */
 export type SkillDoc = {
   /** Raw key/value pairs from the YAML frontmatter block (values kept as strings). */
   frontmatter: Record<string, string>;
@@ -39,8 +84,12 @@ export type SkillDoc = {
 
 export interface SkillsMarketplaceApi {
   getMarketplace(): Promise<MarketplaceResponse>;
-  /** Fetch a skill's SKILL.md; undefined when the skill has none. */
-  getSkillDoc(source: string): Promise<SkillDoc | undefined>;
+  /**
+   * Fetch a skill's docs (`SKILL.md`, else `README.md`) from the given repo;
+   * undefined when it has neither. Without a repo the first configured
+   * marketplace is used.
+   */
+  getSkillDoc(source: string, repo?: string): Promise<SkillDoc | undefined>;
 }
 
 export const skillsMarketplaceApiRef = createApiRef<SkillsMarketplaceApi>({
@@ -67,10 +116,17 @@ export class SkillsMarketplaceClient implements SkillsMarketplaceApi {
     return (await response.json()) as MarketplaceResponse;
   }
 
-  async getSkillDoc(source: string): Promise<SkillDoc | undefined> {
+  async getSkillDoc(
+    source: string,
+    repo?: string,
+  ): Promise<SkillDoc | undefined> {
     const baseUrl = await this.discoveryApi.getBaseUrl('skills-marketplace');
+    const query = new URLSearchParams({ source });
+    if (repo) {
+      query.set('repo', repo);
+    }
     const response = await this.fetchApi.fetch(
-      `${baseUrl}/skill-doc?source=${encodeURIComponent(source)}`,
+      `${baseUrl}/skill-doc?${query}`,
       { credentials: 'include' },
     );
     if (response.status === 404) {
@@ -96,7 +152,8 @@ export class SkillsMarketplaceClient implements SkillsMarketplaceApi {
 }
 
 /**
- * Split a SKILL.md into flat `key: value` frontmatter and markdown body.
+ * Split a doc into flat `key: value` frontmatter and markdown body. A README
+ * with no frontmatter block comes back as body only.
  * Not a general YAML parser — nested structures are kept as raw strings.
  */
 export function parseFrontmatter(raw: string): SkillDoc {
