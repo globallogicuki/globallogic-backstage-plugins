@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { TestApiProvider, renderInTestApp } from '@backstage/test-utils';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import { techInsightsApiRef } from '@backstage-community/plugin-tech-insights-react';
@@ -81,8 +81,7 @@ describe('TechInsightsOverviewPage', () => {
     // The check appears as both a tile and a failing-check chip on the row.
     expect(screen.getAllByText('Has owner').length).toBeGreaterThan(0);
     expect(screen.getByText('api')).toBeInTheDocument();
-    expect(screen.getByText('Failing by owner')).toBeInTheDocument();
-    // The owner appears in both the table row and the owner bars.
+    // The owner appears in both the table row and the owner filter.
     expect(screen.getAllByText('team-a').length).toBeGreaterThan(0);
   });
 
@@ -147,6 +146,211 @@ describe('TechInsightsOverviewPage', () => {
 
     await waitFor(() => {
       expect(screen.getAllByText(/catalog down/).length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('categories', () => {
+    const categorised = (
+      id: string,
+      name: string,
+      failed: boolean,
+      category: string,
+    ) => ({
+      check: { id, name, metadata: { category } },
+      result: !failed,
+    });
+
+    /* Security fails for both components, Documentation only for web. */
+    beforeEach(() => {
+      runBulkChecks.mockResolvedValue([
+        {
+          entity: 'component:default/api',
+          results: [
+            categorised('scan', 'Has image scan', true, 'Security'),
+            categorised('readme', 'Has readme', false, 'Documentation'),
+          ],
+        },
+        {
+          entity: 'component:default/web',
+          results: [
+            categorised('scan', 'Has image scan', true, 'Security'),
+            categorised('readme', 'Has readme', true, 'Documentation'),
+          ],
+        },
+      ]);
+    });
+
+    it('starts at the category level only — one tile row, not two', async () => {
+      await render();
+
+      await waitFor(() => {
+        expect(screen.getByText('Weakest categories')).toBeInTheDocument();
+      });
+      const tiles = screen.getByRole('group', { name: 'Weakest categories' });
+      // Security fails 2 components, Documentation 1, so Security leads.
+      expect(
+        within(tiles)
+          .getAllByRole('button')
+          .map(b => b.textContent),
+      ).toEqual([
+        expect.stringContaining('Security'),
+        expect.stringContaining('Documentation'),
+      ]);
+      // The per-check tiles live one level down, not in a second row. (Check
+      // names still appear as chips in the table — it is the tile row that must
+      // be alone.)
+      expect(screen.queryByText('Weakest standards')).toBeNull();
+      expect(screen.getAllByRole('group')).toHaveLength(1);
+    });
+
+    it('makes the categories the matrix columns, one mark per cell', async () => {
+      await render();
+
+      await waitFor(() => {
+        expect(screen.getByText('api')).toBeInTheDocument();
+      });
+
+      // Standards are named once, in the header — not repeated per row.
+      const headers = screen
+        .getAllByRole('columnheader')
+        .map(h => h.textContent);
+      expect(headers).toEqual([
+        'Component',
+        'Owner',
+        'Security',
+        'Documentation',
+      ]);
+
+      // Both fail Security; api meets Documentation and web does not.
+      expect(
+        screen.getAllByRole('img', { name: 'Security: failed' }),
+      ).toHaveLength(2);
+      expect(
+        screen.getAllByRole('img', { name: 'Documentation: passed' }),
+      ).toHaveLength(1);
+      expect(
+        screen.getAllByRole('img', { name: 'Documentation: failed' }),
+      ).toHaveLength(1);
+
+      // The tile row is the only category control.
+      expect(screen.queryByText('Any category')).toBeNull();
+    });
+
+    it('drills into a category: its checks replace the row, table scopes to it', async () => {
+      await render();
+
+      await waitFor(() => {
+        expect(screen.getByText('api')).toBeInTheDocument();
+      });
+      expect(screen.getByText('web')).toBeInTheDocument();
+
+      const tiles = screen.getByRole('group', { name: 'Weakest categories' });
+      fireEvent.click(
+        within(tiles).getByRole('button', { name: /Documentation/ }),
+      );
+
+      await waitFor(() => {
+        expect(screen.queryByText('api')).toBeNull();
+      });
+      expect(screen.getByText('web')).toBeInTheDocument();
+      expect(screen.getByText('1 of 2')).toBeInTheDocument();
+      expect(screen.getByText(/scoped to documentation/)).toBeInTheDocument();
+
+      // The row is now that category's checks, under a breadcrumb.
+      const drilled = screen.getByRole('group', { name: 'Documentation' });
+      expect(
+        within(drilled)
+          .getAllByRole('button')
+          .map(b => b.textContent),
+      ).toEqual([expect.stringContaining('Has readme')]);
+      expect(
+        screen.getByRole('button', { name: 'Weakest categories' }),
+      ).toBeInTheDocument();
+      // Columns follow the drill level: that category's checks, not categories.
+      expect(
+        screen.getAllByRole('columnheader').map(h => h.textContent),
+      ).toEqual(['Component', 'Owner', 'Has readme']);
+    });
+
+    it('returns to the categories via the breadcrumb', async () => {
+      await render();
+
+      await waitFor(() => {
+        expect(screen.getByText('Weakest categories')).toBeInTheDocument();
+      });
+      const tiles = screen.getByRole('group', { name: 'Weakest categories' });
+      fireEvent.click(
+        within(tiles).getByRole('button', { name: /Documentation/ }),
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole('group', { name: 'Documentation' }),
+        ).toBeInTheDocument();
+      });
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Weakest categories' }),
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('api')).toBeInTheDocument();
+      });
+      expect(screen.getByText('web')).toBeInTheDocument();
+      expect(
+        screen.getByRole('group', { name: 'Weakest categories' }),
+      ).toBeInTheDocument();
+      // Back to category columns.
+      expect(
+        screen.getAllByRole('columnheader').map(h => h.textContent),
+      ).toEqual(['Component', 'Owner', 'Security', 'Documentation']);
+    });
+
+    it('gives an uncategorised check its own column rather than hiding it', async () => {
+      runBulkChecks.mockResolvedValue([
+        {
+          entity: 'component:default/api',
+          results: [
+            categorised('scan', 'Has image scan', true, 'Security'),
+            // Same shape, but with no metadata.category at all.
+            { check: { id: 'stray', name: 'Has stray' }, result: false },
+          ],
+        },
+      ]);
+
+      await render();
+
+      await waitFor(() => {
+        expect(screen.getByText('Weakest categories')).toBeInTheDocument();
+      });
+      expect(
+        screen.getAllByRole('columnheader').map(h => h.textContent),
+      ).toEqual(['Component', 'Owner', 'Security', 'Uncategorised']);
+      // And it is drillable like any other category.
+      const tiles = screen.getByRole('group', { name: 'Weakest categories' });
+      fireEvent.click(
+        within(tiles).getByRole('button', { name: /Uncategorised/ }),
+      );
+      await waitFor(() => {
+        expect(
+          screen.getAllByRole('columnheader').map(h => h.textContent),
+        ).toEqual(['Component', 'Owner', 'Has stray']);
+      });
+    });
+
+    it('keeps the flat layout when no check declares a category', async () => {
+      runBulkChecks.mockResolvedValue(bulk);
+
+      await render();
+
+      await waitFor(() => {
+        expect(screen.getByText('Weakest standards')).toBeInTheDocument();
+      });
+      expect(screen.queryByText('Weakest categories')).toBeNull();
+      expect(screen.queryByText('Any category')).toBeNull();
+      // Columns are the checks themselves when there is nothing to group by.
+      expect(
+        screen.getAllByRole('columnheader').map(h => h.textContent),
+      ).toEqual(['Component', 'Owner', 'Has owner', 'Has docs']);
     });
   });
 });

@@ -9,21 +9,28 @@ import type { CheckSummary } from '../useTechInsightsOverview';
 import { checkSeverity, useOverviewStyles } from '../styles';
 
 /**
- * One tile per check in a single scrollable row, doubling as the page's primary
- * filter. The arrows in the header page the row; trackpads and touch scroll it
- * directly, so the scrollbar itself is hidden. A tile is neutral unless the
- * check is actually being missed, so a healthy catalog is a page with no color.
+ * One tile per check (or per category) in a single scrollable row, doubling as
+ * the page's primary filter. The arrows in the header page the row; trackpads
+ * and touch scroll it directly, so the scrollbar itself is hidden. A tile is
+ * neutral unless the check is actually being missed, so a healthy catalog is a
+ * page with no color.
+ *
+ * `parent` turns the heading into a breadcrumb, for when this row is one level
+ * of a drill-down rather than the whole story.
  */
 export const CheckTiles = ({
   title,
   checks,
   selectedId,
   onSelect,
+  parent,
 }: {
   title: string;
   checks: CheckSummary[];
   selectedId: string | null;
   onSelect: (id: string | null) => void;
+  /** The level above this one — rendered as a clickable crumb before the title. */
+  parent?: { label: string; onSelect: () => void };
 }) => {
   const classes = useOverviewStyles();
   const scroller = useRef<HTMLDivElement | null>(null);
@@ -53,7 +60,23 @@ export const CheckTiles = ({
   return (
     <Box>
       <Box className={classes.tilesHeader}>
-        <Typography variant="h6">{title}</Typography>
+        <Typography variant="h6">
+          {parent && (
+            <>
+              <button
+                type="button"
+                className={classes.crumb}
+                onClick={parent.onSelect}
+              >
+                {parent.label}
+              </button>
+              <span className={classes.crumbSeparator} aria-hidden>
+                ›
+              </span>
+            </>
+          )}
+          {title}
+        </Typography>
         <Box className={classes.tilesArrows}>
           <IconButton
             size="small"
@@ -81,7 +104,7 @@ export const CheckTiles = ({
         ref={scroller}
         onScroll={updateArrows}
         role="group"
-        aria-label="Scorecard checks"
+        aria-label={title}
       >
         {checks.map(check => {
           const severity = checkSeverity(check.failing, check.total);
