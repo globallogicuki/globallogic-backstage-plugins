@@ -13,6 +13,11 @@ app:
     - page:catalog:
         config:
           path: /
+
+    # The tech-insights plugin is installed for its API, but its own entity
+    # card and tab are replaced by tech-insights-overview's scorecard views.
+    - entity-card:tech-insights/scorecards: false
+    - entity-content:tech-insights/scorecards-content: false
     # - page:home:
     #     config:
     #       path: /
@@ -160,6 +165,12 @@ techInsights:
         type: json-rules-engine
         name: Has owner
         description: The entity declares a spec.owner
+        # Groups this check on the scorecard views. A category passes only when
+        # every check in it passes, and the catalog-wide page rolls the same
+        # grouping up across components. Drop these `metadata` blocks and every
+        # view falls back to a flat list of checks.
+        metadata:
+          category: Ownership
         factIds:
           - entityOwnershipFactRetriever
         rule:
@@ -172,6 +183,8 @@ techInsights:
         type: json-rules-engine
         name: Has description
         description: The entity has a metadata.description
+        metadata:
+          category: Documentation
         factIds:
           - entityMetadataFactRetriever
         rule:
@@ -184,6 +197,8 @@ techInsights:
         type: json-rules-engine
         name: Has tags
         description: The entity declares metadata.tags
+        metadata:
+          category: Discoverability
         factIds:
           - entityMetadataFactRetriever
         rule:

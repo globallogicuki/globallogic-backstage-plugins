@@ -10,6 +10,7 @@ import {
   stringifyEntityRef,
   type Entity,
 } from '@backstage/catalog-model';
+import { hasCategories, readCheckCategory } from './categories';
 
 /** A component with at least one failing check. */
 export type FailingEntity = {
@@ -28,13 +29,27 @@ export type FailingEntity = {
   failing: number;
   /** Checks with results for this component, not all configured checks. */
   total: number;
+  /** Every check with a result for this component, failing or not. */
+  checkIds: string[];
   failedCheckIds: string[];
   failedCheckNames: string[];
+  /** Categories this component fails — one failing check in a category fails it. */
+  failedCategories: string[];
+  /**
+   * Categories with at least one result for this component.
+   *
+   * Kept alongside `failedCategories` so a matrix cell can tell "passed" from
+   * "no result yet": a component with no facts for a category must not be shown
+   * as meeting it.
+   */
+  scoredCategories: string[];
 };
 
 export type CheckSummary = {
   id: string;
   name: string;
+  /** From `metadata.category`, or the uncategorised bucket. */
+  category: string;
   failing: number;
   total: number;
 };
@@ -49,6 +64,25 @@ export type OwnerSummary = {
   components: number;
 };
 
+/**
+ * How the catalog fares against one category.
+ *
+ * The unit is components, not checks: a category is a single verdict per
+ * component (all-or-nothing, matching the entity views), so the catalog-wide
+ * question is how many components meet it.
+ */
+export type CategorySummary = {
+  name: string;
+  /** Components passing every check in this category. */
+  passing: number;
+  /** Components failing at least one check in this category. */
+  failing: number;
+  /** Components with at least one result in this category. */
+  scored: number;
+  /** The check ids that make up this category. */
+  checkIds: string[];
+};
+
 // Worst first; a name-sorted list is one nobody acts on.
 export const compareOwnersWorstFirst = (a: OwnerSummary, b: OwnerSummary) =>
   b.failing - a.failing || a.owner.localeCompare(b.owner);
@@ -57,6 +91,17 @@ export type Aggregate = {
   entities: FailingEntity[];
   checks: CheckSummary[];
   owners: OwnerSummary[];
+  /**
+   * One entry per category, worst first.
+   *
+   * Never empty when anything was scored: with no `metadata.category` anywhere
+   * this holds a single `Uncategorised` bucket covering every check. Check
+   * `categorised` before presenting these as categories — that bucket is a
+   * fallback, not a standard anyone named.
+   */
+  categories: CategorySummary[];
+  /** Whether any check declared a category. */
+  categorised: boolean;
   fullyPassing: number;
   /** Components with at least one check result. */
   scored: number;
@@ -102,6 +147,9 @@ const readOwner = (
   }
 };
 
+/** Per-category tallies while one component's results are being read. */
+type CategoryTally = { failed: number; total: number };
+
 /**
  * Turn a catalog page plus a bulk check response into the overview aggregate.
  *
@@ -119,9 +167,13 @@ export const aggregateInsights = (
 
   const checkTotals = new Map<
     string,
-    { name: string; failing: number; total: number }
+    { name: string; category: string; failing: number; total: number }
   >();
   const ownerTotals = new Map<string, OwnerSummary>();
+  const categoryTotals = new Map<
+    string,
+    Omit<CategorySummary, 'checkIds'> & { checkIds: Set<string> }
+  >();
   const entities: FailingEntity[] = [];
   let fullyPassing = 0;
   let scored = 0;
@@ -139,22 +191,60 @@ export const aggregateInsights = (
     let failing = 0;
     const failedCheckIds: string[] = [];
     const failedCheckNames: string[] = [];
+    // Per-component, so a category is judged once per component rather than once
+    // per check — the all-or-nothing verdict the entity views show.
+    const componentCategories = new Map<string, CategoryTally>();
 
     for (const result of results) {
       const failed = isFailed(result);
+      const category = readCheckCategory(result.check);
+
       if (failed) {
         failing += 1;
         failedCheckIds.push(result.check.id);
         failedCheckNames.push(result.check.name);
       }
+
       const existing = checkTotals.get(result.check.id) ?? {
         name: result.check.name,
+        category,
         failing: 0,
         total: 0,
       };
       existing.total += 1;
       if (failed) existing.failing += 1;
       checkTotals.set(result.check.id, existing);
+
+      const tally = componentCategories.get(category) ?? {
+        failed: 0,
+        total: 0,
+      };
+      tally.total += 1;
+      if (failed) tally.failed += 1;
+      componentCategories.set(category, tally);
+
+      const catalogCategory = categoryTotals.get(category) ?? {
+        name: category,
+        passing: 0,
+        failing: 0,
+        scored: 0,
+        checkIds: new Set<string>(),
+      };
+      catalogCategory.checkIds.add(result.check.id);
+      categoryTotals.set(category, catalogCategory);
+    }
+
+    const failedCategories: string[] = [];
+    for (const [category, tally] of componentCategories) {
+      // Present because the loop above created it for every category seen.
+      const catalogCategory = categoryTotals.get(category)!;
+      catalogCategory.scored += 1;
+      if (tally.failed > 0) {
+        catalogCategory.failing += 1;
+        failedCategories.push(category);
+      } else {
+        catalogCategory.passing += 1;
+      }
     }
 
     if (failing === 0) {
@@ -171,8 +261,11 @@ export const aggregateInsights = (
       ownerKind,
       failing,
       total: results.length,
+      checkIds: results.map(r => r.check.id),
       failedCheckIds,
       failedCheckNames,
+      failedCategories,
+      scoredCategories: [...componentCategories.keys()],
     });
 
     const tally = ownerTotals.get(ownerRef) ?? {
@@ -196,6 +289,10 @@ export const aggregateInsights = (
       .map(([id, v]) => ({ id, ...v }))
       .sort((a, b) => b.failing - a.failing || a.name.localeCompare(b.name)),
     owners: [...ownerTotals.values()].sort(compareOwnersWorstFirst),
+    categories: [...categoryTotals.values()]
+      .map(({ checkIds, ...rest }) => ({ ...rest, checkIds: [...checkIds] }))
+      .sort((a, b) => b.failing - a.failing || a.name.localeCompare(b.name)),
+    categorised: hasCategories(categoryTotals.keys()),
     fullyPassing,
     scored,
     unscored,
@@ -203,7 +300,7 @@ export const aggregateInsights = (
 };
 
 /**
- * Catalog-wide check results, aggregated by check and by owner.
+ * Catalog-wide check results, aggregated by check, by owner, and by category.
  *
  * Components only: scoring logical groupings like Systems double-counts the
  * components they contain while having no source location, image or docs of

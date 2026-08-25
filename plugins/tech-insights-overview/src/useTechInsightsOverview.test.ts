@@ -59,8 +59,20 @@ describe('aggregateInsights', () => {
     });
 
     expect(aggregate.checks).toEqual([
-      { id: 'hasOwner', name: 'Check hasOwner', failing: 2, total: 3 },
-      { id: 'hasDocs', name: 'Check hasDocs', failing: 1, total: 3 },
+      {
+        id: 'hasOwner',
+        name: 'Check hasOwner',
+        category: 'Uncategorised',
+        failing: 2,
+        total: 3,
+      },
+      {
+        id: 'hasDocs',
+        name: 'Check hasDocs',
+        category: 'Uncategorised',
+        failing: 1,
+        total: 3,
+      },
     ]);
 
     expect(aggregate.owners).toEqual([
@@ -159,5 +171,175 @@ describe('aggregateInsights', () => {
     const aggregate = aggregateInsights([], bulk, isFailed);
 
     expect(aggregate.entities[0].name).toBe('component:default/ghost');
+  });
+});
+
+describe('aggregateInsights categories', () => {
+  const categorised = (
+    id: string,
+    passed: boolean,
+    category?: string,
+  ): CheckResult =>
+    ({
+      check: {
+        id,
+        name: `Check ${id}`,
+        ...(category ? { metadata: { category } } : {}),
+      },
+      facts: {},
+      result: passed,
+    } as unknown as CheckResult);
+
+  const items = [component('api', 'team-a'), component('web', 'team-b')];
+
+  /* api fails Security only; web fails both. Documentation is scored for both. */
+  const bulk: BulkCheckResponse = [
+    {
+      entity: 'component:default/api',
+      results: [
+        categorised('scan', false, 'Security'),
+        categorised('vulns', true, 'Security'),
+        categorised('readme', true, 'Documentation'),
+      ],
+    },
+    {
+      entity: 'component:default/web',
+      results: [
+        categorised('scan', false, 'Security'),
+        categorised('vulns', true, 'Security'),
+        categorised('readme', false, 'Documentation'),
+      ],
+    },
+  ];
+
+  it('counts components per category, worst first', () => {
+    const aggregate = aggregateInsights(items, bulk, isFailed);
+
+    expect(aggregate.categorised).toBe(true);
+    expect(aggregate.categories).toEqual([
+      {
+        name: 'Security',
+        passing: 0,
+        failing: 2,
+        scored: 2,
+        checkIds: ['scan', 'vulns'],
+      },
+      {
+        name: 'Documentation',
+        passing: 1,
+        failing: 1,
+        scored: 2,
+        checkIds: ['readme'],
+      },
+    ]);
+  });
+
+  it('judges a category once per component, not once per check', () => {
+    const aggregate = aggregateInsights(items, bulk, isFailed);
+
+    // Security holds two checks but contributes one verdict per component, so
+    // scored is the component count rather than the check count.
+    const security = aggregate.categories.find(c => c.name === 'Security')!;
+    expect(security.scored).toBe(2);
+    expect(security.passing + security.failing).toBe(security.scored);
+  });
+
+  it('records which categories each failing component misses', () => {
+    const aggregate = aggregateInsights(items, bulk, isFailed);
+
+    expect(
+      aggregate.entities.map(e => ({
+        name: e.name,
+        failedCategories: e.failedCategories,
+      })),
+    ).toEqual([
+      // web is worst-first (2 failing checks), and misses both categories.
+      { name: 'web', failedCategories: ['Security', 'Documentation'] },
+      { name: 'api', failedCategories: ['Security'] },
+    ]);
+  });
+
+  it('carries each check’s category onto the check summaries', () => {
+    const aggregate = aggregateInsights(items, bulk, isFailed);
+
+    expect(
+      Object.fromEntries(aggregate.checks.map(c => [c.id, c.category])),
+    ).toEqual({
+      scan: 'Security',
+      vulns: 'Security',
+      readme: 'Documentation',
+    });
+  });
+
+  it('keeps an uncategorised check visible alongside real categories', () => {
+    const aggregate = aggregateInsights(
+      items,
+      [
+        {
+          entity: 'component:default/api',
+          results: [
+            categorised('scan', false, 'Security'),
+            // No category on this one.
+            categorised('stray', false),
+          ],
+        },
+      ],
+      isFailed,
+    );
+
+    // A mix still counts as categorised — the grouped views stay on.
+    expect(aggregate.categorised).toBe(true);
+    expect(
+      aggregate.categories.map(c => ({ name: c.name, failing: c.failing })),
+    ).toEqual([
+      { name: 'Security', failing: 1 },
+      { name: 'Uncategorised', failing: 1 },
+    ]);
+    expect(aggregate.entities[0].failedCategories).toEqual([
+      'Security',
+      'Uncategorised',
+    ]);
+  });
+
+  it('reports an uncategorised catalog as such, in one bucket', () => {
+    const aggregate = aggregateInsights(
+      items,
+      [
+        {
+          entity: 'component:default/api',
+          results: [categorised('scan', false)],
+        },
+      ],
+      isFailed,
+    );
+
+    expect(aggregate.categorised).toBe(false);
+    expect(aggregate.categories.map(c => c.name)).toEqual(['Uncategorised']);
+    expect(aggregate.entities[0].failedCategories).toEqual(['Uncategorised']);
+  });
+
+  it('excludes components with no results from category scoring', () => {
+    const aggregate = aggregateInsights(
+      items,
+      [
+        {
+          entity: 'component:default/api',
+          results: [categorised('scan', true, 'Security')],
+        },
+        { entity: 'component:default/web', results: [] },
+      ],
+      isFailed,
+    );
+
+    expect(aggregate.categories).toEqual([
+      {
+        name: 'Security',
+        passing: 1,
+        failing: 0,
+        scored: 1,
+        checkIds: ['scan'],
+      },
+    ]);
+    expect(aggregate.unscored).toBe(1);
   });
 });

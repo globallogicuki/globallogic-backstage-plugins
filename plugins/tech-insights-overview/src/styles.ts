@@ -1,26 +1,17 @@
 import { makeStyles } from '@material-ui/core/styles';
 
 /**
- * How red a check or a component is allowed to look. A quarter of the catalog
- * failing a check is a standard nobody is meeting; anything else failing is a
- * warning; zero stays neutral.
+ * How red a check tile is allowed to look. A quarter of the catalog failing a
+ * check is a standard nobody is meeting; anything else failing is a warning;
+ * zero stays neutral.
  */
 const CRITICAL_FAILURE_RATE = 0.25;
-/** A component failing this many checks reads as critical, not warning. */
-const CRITICAL_FAILING_CHECKS = 3;
-/** An owner over this many failing checks gets a red bar. */
-export const OWNER_BUDGET = 5;
 
 export type Severity = 'none' | 'warning' | 'critical';
 
 export const checkSeverity = (failing: number, total: number): Severity => {
   if (failing === 0 || total === 0) return 'none';
   return failing / total >= CRITICAL_FAILURE_RATE ? 'critical' : 'warning';
-};
-
-export const entitySeverity = (failing: number): Severity => {
-  if (failing === 0) return 'none';
-  return failing >= CRITICAL_FAILING_CHECKS ? 'critical' : 'warning';
 };
 
 /** Layout-only styles — colors, fonts, and radii come from the host theme. */
@@ -104,6 +95,23 @@ export const useOverviewStyles = makeStyles(theme => {
       display: 'flex',
       gap: theme.spacing(1),
     },
+    /* Breadcrumb back to the level above, inside the tile row's heading. A real
+       button because it is an in-page action, styled down to inherit the
+       heading's type so the crumb reads as part of the title. */
+    crumb: {
+      font: 'inherit',
+      color: theme.palette.text.secondary,
+      background: 'none',
+      border: 0,
+      padding: 0,
+      cursor: 'pointer',
+      textDecoration: 'underline',
+      '&:hover': { color: theme.palette.text.primary },
+    },
+    crumbSeparator: {
+      color: theme.palette.text.secondary,
+      margin: theme.spacing(0, 0.75),
+    },
     tilesScroller: {
       display: 'flex',
       gap: theme.spacing(1.5),
@@ -180,19 +188,53 @@ export const useOverviewStyles = makeStyles(theme => {
     /* Table */
     tableScroll: { overflowX: 'auto' },
     table: { minWidth: 680 },
-    componentCell: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: theme.spacing(1),
+    /* Matrix: the standard's name is in the header, so a cell is one mark. Rows
+       stay a single line however many checks a component has. */
+    /* With many standards the matrix scrolls sideways, so the identity column
+       is pinned — a row of marks means nothing once its name has scrolled off.
+       It inherits the row's background rather than setting its own, so hover and
+       any row tint run behind the component name instead of stopping at it. */
+    stickyCell: {
+      position: 'sticky',
+      left: 0,
+      zIndex: 1,
+      backgroundColor: 'inherit',
     },
-    stripe: {
-      width: 3,
-      height: 22,
-      flex: '0 0 3px',
-      backgroundColor: theme.palette.divider,
+    /* A sticky cell can only inherit an opaque colour if the row has one, and it
+       must be opaque or the scrolled marks show through underneath. */
+    matrixHeadRow: { backgroundColor: theme.palette.background.paper },
+    matrixRow: {
+      backgroundColor: theme.palette.background.paper,
+      '&:hover': { backgroundColor: theme.palette.action.hover },
     },
-    stripeWarning: { backgroundColor: theme.palette.warning.main },
-    stripeCritical: { backgroundColor: theme.palette.error.main },
+    matrixHeadCell: {
+      /* Narrow enough that a handful of standards fit without pushing the
+         component name off screen; the panel scrolls horizontally past that. */
+      maxWidth: 92,
+      whiteSpace: 'normal',
+      lineHeight: 1.2,
+      verticalAlign: 'bottom',
+    },
+    matrixHeadOn: { color: theme.palette.text.primary },
+    mark: {
+      display: 'inline-block',
+      width: 10,
+      height: 10,
+      borderRadius: theme.shape.borderRadius,
+    },
+    markFailed: { backgroundColor: theme.palette.error.main },
+    /* Red against green reads faster in a grid than red against blank: an empty
+       cell is ambiguous between "met" and "nothing ran", and the dash below is
+       what carries that difference. Marks, not ticks — and every cell still
+       names its state in a tooltip and an accessible label, so the grid does not
+       rely on telling the two hues apart. */
+    markPassed: { backgroundColor: theme.palette.success.main },
+    /* A dash, never a mark: no facts yet must not read as a pass. */
+    markUnscored: {
+      color: theme.palette.text.disabled,
+      fontVariantNumeric: 'tabular-nums',
+    },
+
     ownerCell: {
       display: 'inline-flex',
       alignItems: 'center',
@@ -208,46 +250,6 @@ export const useOverviewStyles = makeStyles(theme => {
       fontSize: '0.8rem',
       color: theme.palette.text.secondary,
     },
-    chips: { display: 'flex', flexWrap: 'wrap', gap: 4 },
-
-    /* Owner bars: one owner per row — bars answer "who's worst" by length
-       comparison down a single column, so they never flow into columns. */
-    bars: {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 2,
-      padding: theme.spacing(1.5, 2),
-    },
-    barRow: {
-      display: 'grid',
-      gridTemplateColumns: 'minmax(0, 10.5rem) minmax(0, 1fr) 2.5rem',
-      alignItems: 'center',
-      gap: theme.spacing(1.25),
-    },
-    barLabel: {
-      fontSize: '0.8rem',
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      whiteSpace: 'nowrap',
-    },
-    barTrack: { height: 14, position: 'relative' },
-    barFill: {
-      height: 14,
-      borderRadius: '0 4px 4px 0',
-      minWidth: 2,
-      backgroundColor:
-        theme.palette.type === 'light'
-          ? theme.palette.grey[400]
-          : theme.palette.grey[700],
-    },
-    barFillBreach: { backgroundColor: theme.palette.error.main },
-    barValue: {
-      textAlign: 'right',
-      fontSize: '0.8rem',
-      fontVariantNumeric: 'tabular-nums',
-      color: theme.palette.text.secondary,
-    },
-
     empty: {
       padding: theme.spacing(4, 2),
       textAlign: 'center',
