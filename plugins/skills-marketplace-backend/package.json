@@ -1,7 +1,7 @@
 {
   "name": "@globallogicuki/backstage-plugin-skills-marketplace-backend",
   "description": "Backend for the Skills Marketplace plugin: reads Claude Code marketplace repos via Backstage integrations, including private repos.",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "license": "Apache-2.0",
