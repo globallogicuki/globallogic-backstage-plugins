@@ -1,6 +1,6 @@
 {
   "name": "@globallogicuki/backstage-plugin-terraform-backend",
-  "version": "0.10.6",
+  "version": "0.12.0",
   "description": "Backstage backend plugin proxying the Terraform Cloud/Enterprise API for the terraform frontend plugin",
   "main": "src/index.ts",
   "types": "src/index.ts",

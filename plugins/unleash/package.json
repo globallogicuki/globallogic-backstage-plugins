@@ -1,6 +1,6 @@
 {
   "name": "@globallogicuki/backstage-plugin-unleash",
-  "version": "0.3.3",
+  "version": "0.4.0",
   "description": "Backstage frontend plugin for viewing and managing Unleash feature flags on catalog entities",
   "license": "Apache-2.0",
   "main": "src/index.ts",
@@ -59,7 +59,7 @@
     "@backstage/frontend-plugin-api": "^0.18.0",
     "@backstage/plugin-catalog-react": "^3.2.1",
     "@backstage/ui": "^0.17.1",
-    "@globallogicuki/backstage-plugin-unleash-common": "^0.3.3",
+    "@globallogicuki/backstage-plugin-unleash-common": "^0.4.0",
     "@material-ui/core": "^4.12.2",
     "@material-ui/icons": "^4.9.1",
     "@material-ui/lab": "^4.0.0-alpha.61",

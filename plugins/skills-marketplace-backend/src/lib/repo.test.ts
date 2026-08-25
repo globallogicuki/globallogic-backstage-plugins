@@ -1,4 +1,4 @@
-import { deriveInstallUrl } from './repo';
+import { deriveInstallUrl, deriveRepoName } from './repo';
 
 describe('deriveInstallUrl', () => {
   it.each([
@@ -37,6 +37,29 @@ describe('deriveInstallUrl', () => {
 
   it('throws when the URL has no repo path', () => {
     expect(() => deriveInstallUrl('https://github.com/only-org')).toThrow(
+      /Cannot derive a repo path/,
+    );
+  });
+});
+
+describe('deriveRepoName', () => {
+  it.each([
+    [
+      'https://github.com/my-org/skills-marketplace/tree/main',
+      'skills-marketplace',
+    ],
+    [
+      'https://gitlab.com/my-group/sub-group/team-skills/-/tree/main',
+      'team-skills',
+    ],
+    ['https://bitbucket.org/my-workspace/skills/src/main', 'skills'],
+    ['https://github.com/my-org/skills-marketplace', 'skills-marketplace'],
+  ])('derives the repo name from %s', (treeUrl, expected) => {
+    expect(deriveRepoName(treeUrl)).toBe(expected);
+  });
+
+  it('throws when the URL has no repo path', () => {
+    expect(() => deriveRepoName('https://github.com/only-org')).toThrow(
       /Cannot derive a repo path/,
     );
   });

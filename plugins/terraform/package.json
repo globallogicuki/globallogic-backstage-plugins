@@ -1,6 +1,6 @@
 {
   "name": "@globallogicuki/backstage-plugin-terraform",
-  "version": "0.11.7",
+  "version": "0.12.0",
   "description": "Backstage frontend plugin showing Terraform runs, health assessments, and validation checks for catalog entities",
   "main": "src/index.ts",
   "types": "src/index.ts",

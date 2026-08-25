@@ -1,4 +1,9 @@
-import { SkillsMarketplaceClient, parseFrontmatter } from './api';
+import {
+  MarketplaceEntry,
+  SkillsMarketplaceClient,
+  flattenSkills,
+  parseFrontmatter,
+} from './api';
 
 const mockClient = (response: Partial<Response>) => {
   const fetch = jest.fn().mockResolvedValue({
@@ -20,8 +25,15 @@ describe('SkillsMarketplaceClient', () => {
   describe('getMarketplace', () => {
     it('fetches the marketplace from the backend', async () => {
       const payload = {
-        marketplace: { name: 'my-marketplace', plugins: [] },
-        installUrl: 'git@github.com:my-org/my-repo.git',
+        marketplaces: [
+          {
+            repo: 'my-repo',
+            url: 'https://github.com/my-org/my-repo/tree/main',
+            installUrl: 'git@github.com:my-org/my-repo.git',
+            marketplace: { name: 'my-marketplace', plugins: [] },
+          },
+        ],
+        errors: [],
       };
       const { client, fetch } = mockClient({ json: async () => payload });
 
@@ -55,6 +67,17 @@ describe('SkillsMarketplaceClient', () => {
       });
       expect(fetch).toHaveBeenCalledWith(
         'http://backend/api/skills-marketplace/skill-doc?source=.%2Fskills%2Ffoo',
+        expect.anything(),
+      );
+    });
+
+    it('passes the repo through when given', async () => {
+      const { client, fetch } = mockClient({ text: async () => 'body' });
+
+      await client.getSkillDoc('./skills/foo', 'team-skills');
+
+      expect(fetch).toHaveBeenCalledWith(
+        'http://backend/api/skills-marketplace/skill-doc?source=.%2Fskills%2Ffoo&repo=team-skills',
         expect.anything(),
       );
     });
@@ -121,5 +144,59 @@ describe('parseFrontmatter', () => {
 
     expect(frontmatter).toEqual({ name: 'x' });
     expect(body).toBe('body line');
+  });
+});
+
+describe('flattenSkills', () => {
+  const entry = (
+    repo: string,
+    name: string,
+    skillNames: string[],
+  ): MarketplaceEntry => ({
+    repo,
+    url: `https://github.com/my-org/${repo}/tree/main`,
+    installUrl: `git@github.com:my-org/${repo}.git`,
+    marketplace: {
+      name,
+      plugins: skillNames.map(skill => ({
+        name: skill,
+        source: `./skills/${skill}`,
+        description: `${skill} skill`,
+      })),
+    },
+  });
+
+  it('tags every skill with the marketplace it came from', () => {
+    const listings = flattenSkills([
+      entry('repo-a', 'marketplace-a', ['foo', 'bar']),
+      entry('repo-b', 'marketplace-b', ['baz']),
+    ]);
+
+    expect(
+      listings.map(l => [
+        l.skill.name,
+        l.repo,
+        l.marketplaceName,
+        l.installUrl,
+      ]),
+    ).toEqual([
+      ['foo', 'repo-a', 'marketplace-a', 'git@github.com:my-org/repo-a.git'],
+      ['bar', 'repo-a', 'marketplace-a', 'git@github.com:my-org/repo-a.git'],
+      ['baz', 'repo-b', 'marketplace-b', 'git@github.com:my-org/repo-b.git'],
+    ]);
+  });
+
+  it('keeps same-named skills from different repos apart', () => {
+    const listings = flattenSkills([
+      entry('repo-a', 'marketplace-a', ['foo']),
+      entry('repo-b', 'marketplace-b', ['foo']),
+    ]);
+
+    expect(listings).toHaveLength(2);
+    expect(listings.map(l => l.repo)).toEqual(['repo-a', 'repo-b']);
+  });
+
+  it('returns nothing for no marketplaces', () => {
+    expect(flattenSkills([])).toEqual([]);
   });
 });
