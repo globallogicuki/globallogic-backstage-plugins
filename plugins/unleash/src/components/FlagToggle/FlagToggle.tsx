@@ -53,21 +53,19 @@ export const FlagToggle = ({
       });
       onToggled();
     } catch (e: any) {
-      // Extract user-friendly error message
+      // Extract user-friendly error message based on the structured error
+      // info (statusCode/name) attached by the Unleash API client
       let errorMessage = 'Failed to toggle flag';
 
-      // Check if it's a permission denied error
-      if (e.message?.includes('Permission denied')) {
-        errorMessage =
-          "You don't have permission to modify this flag. Only component owners can toggle flags.";
-      } else if (e.message?.includes('Forbidden')) {
-        errorMessage = "You don't have permission to modify this flag.";
-      } else if (e.message?.includes('not editable')) {
-        errorMessage = e.message; // Use the backend's message about editable environments
-      } else if (e.message) {
-        // For other errors, try to extract a clean message
-        const match = e.message.match(/Unleash API error: (.+)/);
-        errorMessage = match ? match[1] : e.message;
+      if (e?.statusCode === 403 || e?.name === 'NotAllowedError') {
+        // Non-editable-environment rejections (also 403) carry a
+        // descriptive message about editable environments - surface it
+        // as-is. Plain permission denials get a friendlier ownership hint.
+        errorMessage = e.message?.includes('not editable')
+          ? e.message
+          : "You don't have permission to modify this flag. Only component owners can toggle flags.";
+      } else if (e?.message) {
+        errorMessage = e.message;
       }
 
       alertApi.post({

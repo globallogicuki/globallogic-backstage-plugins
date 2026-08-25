@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { LoggerService } from '@backstage/backend-plugin-api';
 import {
   TerraformAssessmentResult,
   TerraformEntity,
@@ -55,18 +56,9 @@ const listRelatedEntities = async (
     ];
   }
 
-  return (
-    settled
-      .map(p => {
-        if (p.status === 'rejected') {
-          return null;
-        }
-
-        return p.value;
-      })
-      // Need to cast as TS can't figure out .filter removes null values
-      .filter(e => !!e) as unknown as TerraformEntity[]
-  );
+  return settled
+    .map(p => (p.status === 'rejected' ? null : p.value))
+    .filter((e): e is TerraformEntity => !!e);
 };
 
 type ListOrgRunsArgs = {
@@ -84,19 +76,18 @@ export const listOrgRuns = async ({
   workspaces,
   pageSize = 20,
 }: ListOrgRunsArgs) => {
-  const url = new URL(
-    `/api/v2/organizations/${organization}/runs?filter[workspace_names]=${workspaces.join(
-      ',',
-    )}${`&page[number]=1&page[size]=${pageSize}`}`,
-    baseUrl,
-  );
+  const query = new URLSearchParams({
+    'filter[workspace_names]': workspaces.join(','),
+    'page[number]': '1',
+    'page[size]': String(pageSize),
+  });
+  const url = `${baseUrl}/organizations/${encodeURIComponent(
+    organization,
+  )}/runs?${query}`;
 
-  const res = await axios.get<TerraformResponse<TerraformRun[]>>(
-    url.toString(),
-    {
-      headers: { Authorization: `Bearer ${token}` },
-    },
-  );
+  const res = await axios.get<TerraformResponse<TerraformRun[]>>(url, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
   const relatedEntities = await listRelatedEntities(
     baseUrl,
     token,
@@ -120,7 +111,7 @@ export const getLatestRunForWorkspaces = async (
     pageSize: 1,
   });
 
-  return latestRun[0];
+  return latestRun[0] ?? null;
 };
 
 const fetchHealthAssessmentForWorkspace = async (
@@ -146,11 +137,29 @@ const fetchHealthAssessmentForWorkspace = async (
   );
 };
 
+const fetchWorkspace = async (
+  baseUrl: string,
+  token: string,
+  organization: string,
+  workspaceName: string,
+): Promise<TerraformWorkspace> => {
+  const url = `${baseUrl}/organizations/${encodeURIComponent(
+    organization,
+  )}/workspaces/${encodeURIComponent(workspaceName)}`;
+
+  const res = await axios.get<TerraformResponse<TerraformWorkspace>>(url, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  return res.data.data;
+};
+
 type ListOrgWorkspacesArgs = {
   baseUrl: string;
   token: string;
   organization: string;
   workspaces: string[];
+  logger?: LoggerService;
 };
 
 export const getAssessmentResultsForWorkspaces = async ({
@@ -158,25 +167,25 @@ export const getAssessmentResultsForWorkspaces = async ({
   token,
   organization,
   workspaces,
+  logger,
 }: ListOrgWorkspacesArgs): Promise<AssessmentResult[]> => {
-  const getWorkspacesUrl = new URL(
-    `/api/v2/organizations/${organization}/workspaces`,
-    baseUrl,
+  // Look each annotated workspace up individually rather than listing the
+  // organization's workspaces, which is paginated and would silently miss
+  // workspaces beyond the first page.
+  const settled = await Promise.allSettled(
+    workspaces.map(workspace =>
+      fetchWorkspace(baseUrl, token, organization, workspace),
+    ),
   );
 
-  const allWorkspacesForOrg = await axios.get<
-    TerraformResponse<TerraformWorkspace[]>
-  >(getWorkspacesUrl.toString(), {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-
   const terraformWorkspaces: TerraformWorkspace[] = [];
-  workspaces.forEach(w => {
-    const matchingWorkspace = allWorkspacesForOrg.data.data.find(
-      f => f.attributes.name.toLowerCase() === w.toString().toLowerCase(),
-    );
-    if (matchingWorkspace) {
-      terraformWorkspaces.push(matchingWorkspace);
+  settled.forEach((result, index) => {
+    if (result.status === 'fulfilled') {
+      terraformWorkspaces.push(result.value);
+    } else {
+      logger?.warn(
+        `Skipping workspace "${workspaces[index]}" as it could not be fetched: ${result.reason}`,
+      );
     }
   });
 

@@ -49,7 +49,7 @@ describe('FlagDetailsModal', () => {
         ],
       },
     ],
-    variants: [{ name: 'flag-variant', weight: 50, weightType: 'variable' }],
+    variants: [{ name: 'flag-variant', weight: 500, weightType: 'variable' }],
   };
 
   beforeEach(() => {
@@ -241,6 +241,68 @@ describe('FlagDetailsModal', () => {
           severity: 'error',
         }),
       );
+    });
+  });
+
+  it('renders flag-level variant weights as percentages of per-mille values', async () => {
+    const flagWithVariants = {
+      ...mockFeatureFlag,
+      variants: [
+        { name: 'variant-half', weight: 500, weightType: 'variable' },
+        { name: 'variant-quarter', weight: 250, weightType: 'fix' },
+      ],
+    };
+    mockUnleashApi.getFlag.mockResolvedValue(flagWithVariants);
+
+    await renderInTestApp(
+      <TestApiProvider
+        apis={[
+          [unleashApiRef, mockUnleashApi],
+          [alertApiRef, mockAlertApi],
+        ]}
+      >
+        <FlagDetailsModal
+          projectId="test-project"
+          flagName="test-flag"
+          environment="development"
+          open
+          onClose={jest.fn()}
+        />
+      </TestApiProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('variant-half')).toBeInTheDocument();
+    });
+
+    expect(screen.getByText('50%')).toBeInTheDocument();
+    expect(screen.getByText('25%')).toBeInTheDocument();
+  });
+
+  it('renders an error panel when the flag fetch fails', async () => {
+    mockUnleashApi.getFlag.mockRejectedValue(new Error('Failed to fetch flag'));
+
+    await renderInTestApp(
+      <TestApiProvider
+        apis={[
+          [unleashApiRef, mockUnleashApi],
+          [alertApiRef, mockAlertApi],
+        ]}
+      >
+        <FlagDetailsModal
+          projectId="test-project"
+          flagName="test-flag"
+          environment="development"
+          open
+          onClose={jest.fn()}
+        />
+      </TestApiProvider>,
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getAllByText(/Failed to fetch flag/).length,
+      ).toBeGreaterThan(0);
     });
   });
 

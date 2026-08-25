@@ -301,9 +301,11 @@ describe('DenseTable', () => {
     expect(user).toBeInTheDocument();
     expect(unknownUser).toBeInTheDocument();
     expect(user.compareDocumentPosition(unknownUser)).toBe(4);
-    fireEvent.click(userColumn);
-    expect(user.compareDocumentPosition(unknownUser)).toBe(2);
+    // first click sorts ascending: ABC before Unknown
     fireEvent.click(userColumn);
     expect(user.compareDocumentPosition(unknownUser)).toBe(4);
+    // second click sorts descending: Unknown before ABC
+    fireEvent.click(userColumn);
+    expect(user.compareDocumentPosition(unknownUser)).toBe(2);
   });
 });

@@ -1,6 +1,10 @@
 import type { FeatureFlag } from './types';
 import type { TagFilter } from './annotations';
-import { filterFlagsByTags } from './utils';
+import {
+  DEFAULT_NUM_ENVS,
+  filterFlagsByTags,
+  isEnvironmentEditable,
+} from './utils';
 
 const createFlag = (
   name: string,
@@ -79,5 +83,29 @@ describe('filterFlagsByTags', () => {
   it('handles empty flags array', () => {
     const filters: TagFilter[] = [{ type: 'component', value: 'service-a' }];
     expect(filterFlagsByTags([], filters)).toEqual([]);
+  });
+});
+
+describe('isEnvironmentEditable', () => {
+  it('returns true when the environment is in the editable list', () => {
+    expect(
+      isEnvironmentEditable('development', ['development', 'staging']),
+    ).toBe(true);
+  });
+
+  it('returns false when the environment is not in the editable list', () => {
+    expect(
+      isEnvironmentEditable('production', ['development', 'staging']),
+    ).toBe(false);
+  });
+
+  it('returns false when no environments are editable', () => {
+    expect(isEnvironmentEditable('development', [])).toBe(false);
+  });
+});
+
+describe('DEFAULT_NUM_ENVS', () => {
+  it('is 4', () => {
+    expect(DEFAULT_NUM_ENVS).toBe(4);
   });
 });

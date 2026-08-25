@@ -9,7 +9,6 @@ export const mockEntity: Entity = {
     namespace: 'default',
     annotations: {
       'unleash.io/project-id': 'test-project',
-      'unleash.io/environment': 'development',
     },
   },
   spec: {
@@ -33,7 +32,6 @@ export const mockEntityWithFilterTags: Entity = {
     ...mockEntity.metadata,
     annotations: {
       'unleash.io/project-id': 'test-project',
-      'unleash.io/environment': 'development',
       'unleash.io/filter-tags': 'component:service-a',
     },
   },

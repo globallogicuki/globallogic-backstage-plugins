@@ -1,8 +1,5 @@
-import { AssessmentResult } from '../../hooks/types.ts';
-import {
-  createDriftUrl,
-  createValidationChecksUrl,
-} from '../../utils/index.ts';
+import { AssessmentResult } from '../../hooks/types';
+import { createDriftUrl, createValidationChecksUrl } from '../../utils';
 import { TerraformDrift } from '../TerraformDrift';
 import { TerraformValidationChecks } from '../TerraformValidationChecks';
 import { InfoCard } from '@backstage/core-components';

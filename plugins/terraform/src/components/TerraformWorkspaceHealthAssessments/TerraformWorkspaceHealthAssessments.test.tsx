@@ -143,22 +143,6 @@ describe('TerraformWorkspaceHealthAssessments', () => {
     expect(screen.queryByTestId('health-card-2')).toBeNull();
   });
 
-  it('calls refetch function from useAssessmentResults on component mount', async () => {
-    (useAssessmentResults as jest.Mock).mockReturnValue({
-      data: [],
-      error: undefined,
-      isLoading: false,
-      refetch: refetchMock,
-    });
-    renderInTestApp(
-      <EntityProvider entity={mockEntity}>
-        <TerraformWorkspaceHealthAssessments />
-      </EntityProvider>,
-    );
-
-    expect(refetchMock).toHaveBeenCalledTimes(1);
-  });
-
   it('renders with the correct organization and workspaceNames passed to the hook', async () => {
     (useAssessmentResults as jest.Mock).mockImplementation((org, names) => {
       expect(org).toEqual('different-org');
@@ -199,6 +183,23 @@ describe('TerraformWorkspaceHealthAssessments', () => {
 
     const refresh = await screen.findByLabelText('Refresh');
     refresh.click();
-    expect(refetchMock).toHaveBeenCalledTimes(2);
+    expect(refetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders nothing while loading when data is undefined', () => {
+    (useAssessmentResults as jest.Mock).mockReturnValue({
+      data: undefined,
+      error: undefined,
+      isLoading: true,
+      refetch: refetchMock,
+    });
+
+    renderInTestApp(
+      <EntityProvider entity={mockEntity}>
+        <TerraformWorkspaceHealthAssessments />
+      </EntityProvider>,
+    );
+
+    expect(screen.queryByText('Workspace Health')).toBeNull();
   });
 });

@@ -8,6 +8,6 @@
  * @public
  */
 export type RunInnerConfirmedBy = {
-  user?: string;
+  name?: string;
   avatar?: string;
 } | null;

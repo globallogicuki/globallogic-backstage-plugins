@@ -49,6 +49,10 @@ export type OwnerSummary = {
   components: number;
 };
 
+// Worst first; a name-sorted list is one nobody acts on.
+export const compareOwnersWorstFirst = (a: OwnerSummary, b: OwnerSummary) =>
+  b.failing - a.failing || a.owner.localeCompare(b.owner);
+
 export type Aggregate = {
   entities: FailingEntity[];
   checks: CheckSummary[];
@@ -191,9 +195,7 @@ export const aggregateInsights = (
     checks: [...checkTotals.entries()]
       .map(([id, v]) => ({ id, ...v }))
       .sort((a, b) => b.failing - a.failing || a.name.localeCompare(b.name)),
-    owners: [...ownerTotals.values()].sort(
-      (a, b) => b.failing - a.failing || a.owner.localeCompare(b.owner),
-    ),
+    owners: [...ownerTotals.values()].sort(compareOwnersWorstFirst),
     fullyPassing,
     scored,
     unscored,

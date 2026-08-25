@@ -62,6 +62,28 @@ describe('UnleashPermissionPolicy', () => {
     expect(result).toEqual({ result: AuthorizeResult.DENY });
   });
 
+  it('denies Unleash write for guest users in any namespace', async () => {
+    const policy = new UnleashPermissionPolicy(createLoggerMock());
+    const guest = makeUser('user:development/guest');
+    const result = await policy.handle(
+      makeQuery('unleash.flag.toggle', 'component:default/example'),
+      guest,
+    );
+    expect(result).toEqual({ result: AuthorizeResult.DENY });
+  });
+
+  it('does not treat users whose name merely contains guest as guests', async () => {
+    const policy = new UnleashPermissionPolicy(createLoggerMock());
+    const user = makeUser('user:default/guesta', ['group:default/owners']);
+    const result = await policy.handle(
+      makeQuery('unleash.flag.toggle', 'component:default/example'),
+      user,
+    );
+    expect(result).toEqual(
+      expect.objectContaining({ result: AuthorizeResult.CONDITIONAL }),
+    );
+  });
+
   it('returns conditional authorization for resourceRef writes', async () => {
     const policy = new UnleashPermissionPolicy(createLoggerMock());
     const user = makeUser('user:default/alice', ['group:default/owners']);

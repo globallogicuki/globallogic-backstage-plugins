@@ -12,78 +12,88 @@ describe('useAssessmentResults', () => {
     { id: 'assessmentResult1' },
     { id: 'assessmentResult2' },
   ];
+  let getAssessmentResultsForWorkspaces: jest.Mock;
 
   beforeEach(() => {
+    getAssessmentResultsForWorkspaces = jest
+      .fn()
+      .mockResolvedValue(mockAssessmentResults);
     (useApi as jest.Mock).mockReturnValue({
-      getAssessmentResultsForWorkspaces: jest
-        .fn()
-        .mockResolvedValue(mockAssessmentResults),
+      getAssessmentResultsForWorkspaces,
     });
   });
 
-  it('initial state is correct', () => {
-    expect.assertions(5);
-
-    const { result } = renderHook(() =>
-      useAssessmentResults('org1', ['workspace1']),
-    );
-
-    expect(result.current.data).toEqual([]);
-    expect(result.current.isLoading).toBeFalsy();
-    expect(result.current.isError).toBeFalsy();
-    expect(result.current.error).toBeUndefined();
-    expect(typeof result.current.refetch).toBe('function');
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
-  it('sets correct state when refetch is called', async () => {
-    expect.assertions(1);
+  it('fetches on mount and sets the correct state', async () => {
     const { result } = renderHook(() =>
       useAssessmentResults('org1', ['workspace1']),
     );
+
+    expect(result.current.data).toBeUndefined();
+    expect(result.current.isLoading).toBeTruthy();
+    expect(typeof result.current.refetch).toBe('function');
+
+    await waitFor(() => expect(result.current.isLoading).toBeFalsy());
+
+    expect(getAssessmentResultsForWorkspaces).toHaveBeenCalledTimes(1);
+    expect(getAssessmentResultsForWorkspaces).toHaveBeenCalledWith('org1', [
+      'workspace1',
+    ]);
+    expect(result.current.data).toEqual(mockAssessmentResults);
+    expect(result.current.error).toBeUndefined();
+  });
+
+  it('sets correct state when the fetch is not successful', async () => {
+    const error = new Error('Oops!');
+    getAssessmentResultsForWorkspaces.mockRejectedValue(error);
+
+    const { result } = renderHook(() =>
+      useAssessmentResults('org1', ['workspace1']),
+    );
+
+    await waitFor(() => expect(result.current.error).toEqual(error));
+
+    expect(result.current.isLoading).toBeFalsy();
+    expect(result.current.data).toBeUndefined();
+  });
+
+  it('fetches again when refetch is called', async () => {
+    const { result } = renderHook(() =>
+      useAssessmentResults('org1', ['workspace1']),
+    );
+
+    await waitFor(() => expect(result.current.isLoading).toBeFalsy());
 
     act(() => {
       result.current.refetch();
     });
 
-    await waitFor(() => expect(result.current.isLoading).toBeTruthy());
+    await waitFor(() =>
+      expect(getAssessmentResultsForWorkspaces).toHaveBeenCalledTimes(2),
+    );
   });
 
-  it('sets correct state when refetch is successful', async () => {
-    expect.assertions(4);
-
-    const { result } = renderHook(() =>
-      useAssessmentResults('org1', ['workspace1']),
+  it('fetches again when the organization changes', async () => {
+    const { rerender } = renderHook(
+      ({ organization }: { organization: string }) =>
+        useAssessmentResults(organization, ['workspace1']),
+      { initialProps: { organization: 'org1' } },
     );
 
-    await act(async () => {
-      await result.current.refetch();
-    });
-
-    expect(result.current.isLoading).toBeFalsy();
-    expect(result.current.data).toEqual(mockAssessmentResults);
-    expect(result.current.isError).toBeFalsy();
-    expect(result.current.error).toBeUndefined();
-  });
-
-  it('sets correct state when refetch is not successful', async () => {
-    expect.assertions(4);
-
-    const error = new Error('Oops!');
-    (useApi as jest.Mock).mockReturnValue({
-      getAssessmentResultsForWorkspaces: jest.fn().mockRejectedValue(error),
-    });
-
-    const { result } = renderHook(() =>
-      useAssessmentResults('org1', ['workspace1']),
+    await waitFor(() =>
+      expect(getAssessmentResultsForWorkspaces).toHaveBeenCalledTimes(1),
     );
 
-    await act(async () => {
-      await result.current.refetch();
-    });
+    rerender({ organization: 'org2' });
 
-    expect(result.current.isLoading).toBeFalsy();
-    expect(result.current.data).toEqual([]);
-    expect(result.current.isError).toBeTruthy();
-    expect(result.current.error).toEqual(error);
+    await waitFor(() =>
+      expect(getAssessmentResultsForWorkspaces).toHaveBeenCalledTimes(2),
+    );
+    expect(getAssessmentResultsForWorkspaces).toHaveBeenLastCalledWith('org2', [
+      'workspace1',
+    ]);
   });
 });

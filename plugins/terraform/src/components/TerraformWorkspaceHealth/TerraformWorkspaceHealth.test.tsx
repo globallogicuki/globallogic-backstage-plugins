@@ -1,10 +1,7 @@
 import { screen } from '@testing-library/react';
 import { renderInTestApp } from '@backstage/frontend-test-utils';
-import { AssessmentResult } from '../../hooks/types.ts';
-import {
-  createDriftUrl,
-  createValidationChecksUrl,
-} from '../../utils/index.ts';
+import { AssessmentResult } from '../../hooks/types';
+import { createDriftUrl, createValidationChecksUrl } from '../../utils';
 import { TerraformWorkspaceHealth } from './TerraformWorkspaceHealth';
 
 jest.mock('../../utils', () => ({

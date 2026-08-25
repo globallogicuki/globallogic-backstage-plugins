@@ -95,6 +95,15 @@ describe('createRouter', () => {
       expect(response.body.error.message).toMatch(/No .*marketplace.json/);
     });
 
+    it('returns 502 when the manifest is not valid JSON', async () => {
+      readUrl.mockResolvedValue(readUrlResponse('not json {'));
+
+      const response = await request(app).get('/marketplace');
+
+      expect(response.status).toEqual(502);
+      expect(response.body.error.message).toMatch(/not valid JSON/);
+    });
+
     it('returns 502 when the manifest has no plugins array', async () => {
       readUrl.mockResolvedValue(readUrlResponse(JSON.stringify({ name: 'x' })));
 
@@ -152,6 +161,19 @@ describe('createRouter', () => {
         .get('/skill-doc')
         .query({ source: 'https://evil.example/x' });
       expect(absolute.status).toEqual(400);
+      expect(readUrl).not.toHaveBeenCalled();
+    });
+
+    it('rejects embedded parent-traversal segments', async () => {
+      for (const source of [
+        'skills/../../../secrets',
+        './skills/../../other-repo/src/main/secret',
+        'a/../../../../other-org/other-repo/blob/main/secret',
+        'skills/./../foo',
+      ]) {
+        const response = await request(app).get('/skill-doc').query({ source });
+        expect(response.status).toEqual(400);
+      }
       expect(readUrl).not.toHaveBeenCalled();
     });
   });

@@ -1,6 +1,8 @@
 import { LoggerService } from '@backstage/backend-plugin-api';
+import { parseEntityRef } from '@backstage/catalog-model';
 import {
   AuthorizeResult,
+  isPermission,
   PolicyDecision,
 } from '@backstage/plugin-permission-common';
 import {
@@ -8,6 +10,23 @@ import {
   PolicyQuery,
   PolicyQueryUser,
 } from '@backstage/plugin-permission-node';
+import {
+  unleashFlagReadPermission,
+  unleashFlagTogglePermission,
+  unleashVariantManagePermission,
+} from '@globallogicuki/backstage-plugin-unleash-common';
+
+const isGuestUser = (userEntityRef?: string): boolean => {
+  if (!userEntityRef) {
+    return false;
+  }
+  try {
+    const { name } = parseEntityRef(userEntityRef);
+    return name.toLowerCase() === 'guest';
+  } catch {
+    return false;
+  }
+};
 
 export class UnleashPermissionPolicy implements PermissionPolicy {
   constructor(private readonly logger: LoggerService) {}
@@ -17,14 +36,14 @@ export class UnleashPermissionPolicy implements PermissionPolicy {
     user?: PolicyQueryUser,
   ): Promise<PolicyDecision> {
     // Allow read permissions for all authenticated users (including Guest for viewing)
-    if (request.permission.name === 'unleash.flag.read') {
+    if (isPermission(request.permission, unleashFlagReadPermission)) {
       return { result: AuthorizeResult.ALLOW };
     }
 
     // For Unleash write permissions (toggle, manage variants/strategies)
     if (
-      request.permission.name === 'unleash.flag.toggle' ||
-      request.permission.name === 'unleash.variant.manage'
+      isPermission(request.permission, unleashFlagTogglePermission) ||
+      isPermission(request.permission, unleashVariantManagePermission)
     ) {
       this.logger.debug('[Permission Policy] Unleash write permission check', {
         permission: request.permission.name,
@@ -43,11 +62,7 @@ export class UnleashPermissionPolicy implements PermissionPolicy {
       }
 
       // Deny Guest users explicitly
-      if (
-        user.info.userEntityRef === 'user:development/guest' ||
-        user.info.userEntityRef === 'user:default/guest' ||
-        user.info.userEntityRef?.toLowerCase().includes('/guest')
-      ) {
+      if (isGuestUser(user.info.userEntityRef)) {
         this.logger.warn('[Permission Policy] DENY - Guest user detected');
         return { result: AuthorizeResult.DENY };
       }

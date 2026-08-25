@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import {
   Box,
   TextField,
@@ -51,7 +50,6 @@ interface StrategyEditorProps {
 
 export const StrategyEditor = ({ strategy, onChange }: StrategyEditorProps) => {
   const classes = useStyles();
-  const [localStrategy, setLocalStrategy] = useState<Strategy>(strategy);
 
   // Variant weight management following Unleash's logic
   const recalculateVariantWeights = (variants: Variant[]): Variant[] => {
@@ -101,25 +99,8 @@ export const StrategyEditor = ({ strategy, onChange }: StrategyEditorProps) => {
     });
   };
 
-  useEffect(() => {
-    setLocalStrategy(strategy);
-  }, [strategy]);
-
-  // Recalculate variant weights on mount to ensure proper distribution
-  useEffect(() => {
-    if (strategy.variants && strategy.variants.length > 0) {
-      const recalculated = recalculateVariantWeights(strategy.variants);
-      const updated = { ...strategy, variants: recalculated };
-      setLocalStrategy(updated);
-      onChange(updated);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const updateStrategy = (updates: Partial<Strategy>) => {
-    const updated = { ...localStrategy, ...updates };
-    setLocalStrategy(updated);
-    onChange(updated);
+    onChange({ ...strategy, ...updates });
   };
 
   const handleVariantChange = (
@@ -127,7 +108,7 @@ export const StrategyEditor = ({ strategy, onChange }: StrategyEditorProps) => {
     field: keyof Variant,
     value: any,
   ) => {
-    const newVariants = [...(localStrategy.variants || [])];
+    const newVariants = [...(strategy.variants || [])];
     newVariants[index] = { ...newVariants[index], [field]: value };
 
     const recalculated = recalculateVariantWeights(newVariants);
@@ -138,7 +119,7 @@ export const StrategyEditor = ({ strategy, onChange }: StrategyEditorProps) => {
     index: number,
     weightType: 'fix' | 'variable',
   ) => {
-    const newVariants = [...(localStrategy.variants || [])];
+    const newVariants = [...(strategy.variants || [])];
     newVariants[index] = { ...newVariants[index], weightType };
 
     const recalculated = recalculateVariantWeights(newVariants);
@@ -147,22 +128,20 @@ export const StrategyEditor = ({ strategy, onChange }: StrategyEditorProps) => {
 
   const addVariant = () => {
     const newVariant: Variant = {
-      name: `Variant ${(localStrategy.variants?.length || 0) + 1}`,
+      name: `Variant ${(strategy.variants?.length || 0) + 1}`,
       weight: 0,
       weightType: 'variable',
       stickiness: 'default',
       payload: { type: 'string', value: '' },
     };
 
-    const newVariants = [...(localStrategy.variants || []), newVariant];
+    const newVariants = [...(strategy.variants || []), newVariant];
     const recalculated = recalculateVariantWeights(newVariants);
     updateStrategy({ variants: recalculated });
   };
 
   const removeVariant = (index: number) => {
-    const newVariants = (localStrategy.variants || []).filter(
-      (_, i) => i !== index,
-    );
+    const newVariants = (strategy.variants || []).filter((_, i) => i !== index);
     const recalculated = recalculateVariantWeights(newVariants);
     updateStrategy({ variants: recalculated });
   };
@@ -177,29 +156,27 @@ export const StrategyEditor = ({ strategy, onChange }: StrategyEditorProps) => {
     };
 
     updateStrategy({
-      constraints: [...(localStrategy.constraints || []), newConstraint],
+      constraints: [...(strategy.constraints || []), newConstraint],
     });
   };
 
   const updateConstraint = (index: number, updates: Partial<Constraint>) => {
-    const newConstraints = [...(localStrategy.constraints || [])];
+    const newConstraints = [...(strategy.constraints || [])];
     newConstraints[index] = { ...newConstraints[index], ...updates };
     updateStrategy({ constraints: newConstraints });
   };
 
   const removeConstraint = (index: number) => {
     updateStrategy({
-      constraints: (localStrategy.constraints || []).filter(
-        (_, i) => i !== index,
-      ),
+      constraints: (strategy.constraints || []).filter((_, i) => i !== index),
     });
   };
 
-  const totalWeight = (localStrategy.variants || []).reduce(
+  const totalWeight = (strategy.variants || []).reduce(
     (sum, v) => sum + v.weight,
     0,
   );
-  const variableCount = (localStrategy.variants || []).filter(
+  const variableCount = (strategy.variants || []).filter(
     v => v.weightType === 'variable',
   ).length;
 
@@ -209,32 +186,32 @@ export const StrategyEditor = ({ strategy, onChange }: StrategyEditorProps) => {
     'remoteAddress',
     'applicationHostname',
   ];
-  const isSupported = supportedStrategies.includes(localStrategy.name);
+  const isSupported = supportedStrategies.includes(strategy.name);
 
   if (!isSupported) {
     return (
       <Box p={2}>
         <Typography variant="body2" color="textSecondary">
-          Strategy type "{localStrategy.name}" is not editable in this
-          interface. Use the Unleash console to edit this strategy type.
+          Strategy type "{strategy.name}" is not editable in this interface. Use
+          the Unleash console to edit this strategy type.
         </Typography>
       </Box>
     );
   }
 
   const renderParametersSection = () => {
-    switch (localStrategy.name) {
+    switch (strategy.name) {
       case 'flexibleRollout':
         return (
           <>
             <TextField
               label="Rollout %"
               type="number"
-              value={localStrategy.parameters?.rollout || '100'}
+              value={strategy.parameters?.rollout || '100'}
               onChange={e =>
                 updateStrategy({
                   parameters: {
-                    ...localStrategy.parameters,
+                    ...strategy.parameters,
                     rollout: e.target.value,
                   },
                 })
@@ -245,11 +222,11 @@ export const StrategyEditor = ({ strategy, onChange }: StrategyEditorProps) => {
             <FormControl style={{ width: 150 }}>
               <InputLabel>Stickiness</InputLabel>
               <Select
-                value={localStrategy.parameters?.stickiness || 'default'}
+                value={strategy.parameters?.stickiness || 'default'}
                 onChange={e =>
                   updateStrategy({
                     parameters: {
-                      ...localStrategy.parameters,
+                      ...strategy.parameters,
                       stickiness: e.target.value as string,
                     },
                   })
@@ -263,11 +240,11 @@ export const StrategyEditor = ({ strategy, onChange }: StrategyEditorProps) => {
             </FormControl>
             <TextField
               label="Group ID"
-              value={localStrategy.parameters?.groupId || ''}
+              value={strategy.parameters?.groupId || ''}
               onChange={e =>
                 updateStrategy({
                   parameters: {
-                    ...localStrategy.parameters,
+                    ...strategy.parameters,
                     groupId: e.target.value,
                   },
                 })
@@ -281,7 +258,7 @@ export const StrategyEditor = ({ strategy, onChange }: StrategyEditorProps) => {
         return (
           <TextField
             label="IP Addresses (comma separated)"
-            value={localStrategy.parameters?.IPs || ''}
+            value={strategy.parameters?.IPs || ''}
             onChange={e =>
               updateStrategy({
                 parameters: { IPs: e.target.value },
@@ -297,7 +274,7 @@ export const StrategyEditor = ({ strategy, onChange }: StrategyEditorProps) => {
         return (
           <TextField
             label="Hostnames (comma separated)"
-            value={localStrategy.parameters?.hostNames || ''}
+            value={strategy.parameters?.hostNames || ''}
             onChange={e =>
               updateStrategy({
                 parameters: { hostNames: e.target.value },
@@ -333,7 +310,7 @@ export const StrategyEditor = ({ strategy, onChange }: StrategyEditorProps) => {
         <Typography variant="subtitle2" gutterBottom>
           Constraints
         </Typography>
-        {(localStrategy.constraints || []).map((constraint, index) => (
+        {(strategy.constraints || []).map((constraint, index) => (
           <Box key={index} display="flex" alignItems="center" mb={1}>
             <TextField
               label="Context"
@@ -391,7 +368,7 @@ export const StrategyEditor = ({ strategy, onChange }: StrategyEditorProps) => {
       <Divider />
 
       {/* Variants - only for flexibleRollout */}
-      {localStrategy.name === 'flexibleRollout' && (
+      {strategy.name === 'flexibleRollout' && (
         <Box className={classes.section}>
           <Box
             display="flex"
@@ -423,7 +400,7 @@ export const StrategyEditor = ({ strategy, onChange }: StrategyEditorProps) => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {(localStrategy.variants || []).map((variant, index) => (
+              {(strategy.variants || []).map((variant, index) => (
                 <TableRow key={index}>
                   <TableCell>
                     <TextField

@@ -7,6 +7,14 @@
       "@globallogicuki/backstage-plugin-unleash",
       "@globallogicuki/backstage-plugin-unleash-backend",
       "@globallogicuki/backstage-plugin-unleash-common"
+    ],
+    [
+      "@globallogicuki/backstage-plugin-terraform",
+      "@globallogicuki/backstage-plugin-terraform-backend"
+    ],
+    [
+      "@globallogicuki/backstage-plugin-skills-marketplace",
+      "@globallogicuki/backstage-plugin-skills-marketplace-backend"
     ]
   ],
   "linked": [],

@@ -62,9 +62,7 @@ describe('UnleashApiClient', () => {
         text: jest.fn().mockResolvedValue('Server error occurred'),
       } as unknown as Response);
 
-      await expect(client.getConfig()).rejects.toThrow(
-        'Unleash API error: 500 Internal Server Error - Server error occurred',
-      );
+      await expect(client.getConfig()).rejects.toThrow('Server error occurred');
     });
   });
 
@@ -113,7 +111,7 @@ describe('UnleashApiClient', () => {
       } as unknown as Response);
 
       await expect(client.getFlags('nonexistent-project')).rejects.toThrow(
-        'Unleash API error: 404 Not Found - Project not found',
+        'Project not found',
       );
     });
   });
@@ -161,9 +159,7 @@ describe('UnleashApiClient', () => {
 
       await expect(
         client.getFlag('test-project', 'nonexistent-flag'),
-      ).rejects.toThrow(
-        'Unleash API error: 404 Not Found - Feature flag not found',
-      );
+      ).rejects.toThrow('Feature flag not found');
     });
   });
 
@@ -206,7 +202,7 @@ describe('UnleashApiClient', () => {
 
       await expect(
         client.toggleFlag('test-project', 'test-flag', 'production', true),
-      ).rejects.toThrow('Unleash API error: 403 Forbidden - Permission denied');
+      ).rejects.toThrow('Permission denied');
     });
 
     it('handles non-editable environment errors', async () => {
@@ -221,9 +217,7 @@ describe('UnleashApiClient', () => {
 
       await expect(
         client.toggleFlag('test-project', 'test-flag', 'production', true),
-      ).rejects.toThrow(
-        'Unleash API error: 400 Bad Request - Environment production is not editable',
-      );
+      ).rejects.toThrow('Environment production is not editable');
     });
   });
 
@@ -270,9 +264,7 @@ describe('UnleashApiClient', () => {
 
       await expect(
         client.updateVariants('test-project', 'test-flag', []),
-      ).rejects.toThrow(
-        'Unleash API error: 400 Bad Request - Invalid variant configuration',
-      );
+      ).rejects.toThrow('Invalid variant configuration');
     });
   });
 
@@ -317,9 +309,7 @@ describe('UnleashApiClient', () => {
 
       await expect(
         client.getMetrics('test-project', 'test-flag'),
-      ).rejects.toThrow(
-        'Unleash API error: 404 Not Found - Metrics not available',
-      );
+      ).rejects.toThrow('Metrics not available');
     });
   });
 
@@ -380,9 +370,7 @@ describe('UnleashApiClient', () => {
           'strategy-1',
           { name: 'invalid' },
         ),
-      ).rejects.toThrow(
-        'Unleash API error: 400 Bad Request - Invalid strategy configuration',
-      );
+      ).rejects.toThrow('Invalid strategy configuration');
     });
 
     it('handles permission errors for protected environments', async () => {
@@ -403,9 +391,7 @@ describe('UnleashApiClient', () => {
           'strategy-1',
           {},
         ),
-      ).rejects.toThrow(
-        'Unleash API error: 403 Forbidden - Cannot modify protected environment',
-      );
+      ).rejects.toThrow('Cannot modify protected environment');
     });
   });
 
@@ -472,7 +458,7 @@ describe('UnleashApiClient', () => {
       } as unknown as Response);
 
       await expect(client.getProjects()).rejects.toThrow(
-        'Unleash API error: 500 Internal Server Error - Failed to fetch projects',
+        'Failed to fetch projects',
       );
     });
 
@@ -543,7 +529,7 @@ describe('UnleashApiClient', () => {
       } as unknown as Response);
 
       await expect(client.getEnvironments()).rejects.toThrow(
-        'Unleash API error: 500 Internal Server Error - Failed to fetch environments',
+        'Failed to fetch environments',
       );
     });
 
@@ -562,6 +548,56 @@ describe('UnleashApiClient', () => {
   });
 
   describe('error handling', () => {
+    it('parses the standardized backend error body', async () => {
+      mockFetchApi.fetch.mockResolvedValue({
+        ok: false,
+        status: 403,
+        statusText: 'Forbidden',
+        text: jest.fn().mockResolvedValue(
+          JSON.stringify({
+            error: {
+              name: 'NotAllowedError',
+              message: 'Permission denied for toggle action',
+            },
+          }),
+        ),
+      } as unknown as Response);
+
+      await expect(client.getConfig()).rejects.toMatchObject({
+        name: 'NotAllowedError',
+        message: 'Permission denied for toggle action',
+        statusCode: 403,
+      });
+    });
+
+    it('attaches the status code for non-JSON error bodies', async () => {
+      mockFetchApi.fetch.mockResolvedValue({
+        ok: false,
+        status: 500,
+        statusText: 'Internal Server Error',
+        text: jest.fn().mockResolvedValue('plain text failure'),
+      } as unknown as Response);
+
+      await expect(client.getConfig()).rejects.toMatchObject({
+        message: 'plain text failure',
+        statusCode: 500,
+      });
+    });
+
+    it('falls back to the status text when the error body is empty', async () => {
+      mockFetchApi.fetch.mockResolvedValue({
+        ok: false,
+        status: 502,
+        statusText: 'Bad Gateway',
+        text: jest.fn().mockResolvedValue(''),
+      } as unknown as Response);
+
+      await expect(client.getConfig()).rejects.toMatchObject({
+        message: '502 Bad Gateway',
+        statusCode: 502,
+      });
+    });
+
     it('handles network errors', async () => {
       mockFetchApi.fetch.mockRejectedValue(new Error('Network error'));
 
@@ -590,7 +626,7 @@ describe('UnleashApiClient', () => {
       } as unknown as Response);
 
       await expect(client.getConfig()).rejects.toThrow(
-        'Unleash API error: 400 Bad Request - Validation failed: flag name must be alphanumeric',
+        'Validation failed: flag name must be alphanumeric',
       );
     });
   });

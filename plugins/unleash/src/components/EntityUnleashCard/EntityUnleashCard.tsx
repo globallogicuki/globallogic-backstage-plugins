@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useAsync } from 'react-use';
 import {
   InfoCard,
   Progress,
@@ -8,7 +7,6 @@ import {
   StatusAborted,
   Link,
 } from '@backstage/core-components';
-import { useApi } from '@backstage/core-plugin-api';
 import { useEntity } from '@backstage/plugin-catalog-react';
 import {
   Table,
@@ -21,12 +19,12 @@ import {
   Tooltip,
   makeStyles,
 } from '@material-ui/core';
-import { unleashApiRef } from '../../api';
 import {
   getUnleashProjectId,
   UNLEASH_PROJECT_ANNOTATION,
 } from '@globallogicuki/backstage-plugin-unleash-common';
 import { MissingAnnotationEmptyState } from '@backstage/plugin-catalog-react';
+import { useUnleashFlags } from '../../hooks';
 import { FlagDetailsModal } from '../FlagDetailsModal';
 
 const useStyles = makeStyles(theme => ({
@@ -45,18 +43,11 @@ const useStyles = makeStyles(theme => ({
 export const EntityUnleashCard = () => {
   const classes = useStyles();
   const { entity } = useEntity();
-  const unleashApi = useApi(unleashApiRef);
   const projectId = getUnleashProjectId(entity);
   const [detailsModal, setDetailsModal] = useState<string | null>(null);
 
-  const { value, loading, error } = useAsync(async () => {
-    if (!projectId) return null;
-    const [flagsData, config] = await Promise.all([
-      unleashApi.getFlags(projectId),
-      unleashApi.getConfig(),
-    ]);
-    return { flagsData, config };
-  }, [projectId]);
+  const { flags, numEnvs, envNames, loading, error } =
+    useUnleashFlags(projectId);
 
   if (!projectId) {
     return (
@@ -67,18 +58,12 @@ export const EntityUnleashCard = () => {
   if (loading) return <Progress />;
   if (error) return <ResponseErrorPanel error={error} />;
 
-  const flags = value?.flagsData?.features ?? [];
-  const numEnvs = value?.config?.numEnvs ?? 4;
   const enabledCount = flags.filter(f =>
     f.environments.some(e => e.enabled),
   ).length;
 
   // Get environment names based on numEnvs config
-  const allEnvs = new Set<string>();
-  flags.forEach(flag => {
-    flag.environments.forEach(env => allEnvs.add(env.name));
-  });
-  const displayEnvs = Array.from(allEnvs).slice(0, numEnvs);
+  const displayEnvs = envNames.slice(0, numEnvs);
 
   return (
     <InfoCard

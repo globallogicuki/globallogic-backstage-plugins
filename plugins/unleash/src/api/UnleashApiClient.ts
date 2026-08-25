@@ -10,7 +10,24 @@ import type {
   ProjectSummary,
   EnvironmentSummary,
 } from '@globallogicuki/backstage-plugin-unleash-common';
-import type { UnleashApi } from './UnleashApi';
+import type { UnleashApi, UnleashConfig } from './UnleashApi';
+
+/**
+ * Error thrown when the Unleash backend responds with a non-ok status.
+ * Carries the error `name` and `statusCode` from the standardized
+ * `{ error: { name, message } }` backend error body so callers can branch
+ * on structured information instead of message substrings.
+ */
+export class UnleashApiError extends Error {
+  constructor(
+    message: string,
+    public readonly statusCode: number,
+    name?: string,
+  ) {
+    super(message);
+    this.name = name ?? 'UnleashApiError';
+  }
+}
 
 export class UnleashApiClient implements UnleashApi {
   constructor(
@@ -24,16 +41,29 @@ export class UnleashApiClient implements UnleashApi {
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(
-        `Unleash API error: ${response.status} ${response.statusText} - ${errorText}`,
-      );
+      let errorName: string | undefined;
+      let message = errorText || `${response.status} ${response.statusText}`;
+
+      // The backend responds with the standard Backstage error body:
+      // { error: { name, message } }
+      try {
+        const parsed = JSON.parse(errorText);
+        if (parsed?.error) {
+          errorName = parsed.error.name;
+          message = parsed.error.message ?? message;
+        }
+      } catch {
+        // Not a JSON body, fall back to the raw text
+      }
+
+      throw new UnleashApiError(message, response.status, errorName);
     }
 
     return response.json() as Promise<T>;
   }
 
   async getConfig() {
-    return this.fetch<{ editableEnvs: string[]; numEnvs?: number }>('/config');
+    return this.fetch<UnleashConfig>('/config');
   }
 
   async getFlags(projectId: string): Promise<{ features: FeatureFlag[] }> {

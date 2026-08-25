@@ -13,6 +13,7 @@ jest.mock('@mui/x-charts', () => {
 describe('TerraformValidationChecks Component', () => {
   const defaultProps = {
     allChecksSucceeded: false,
+    checksErrored: 0,
     checksFailed: 1,
     checksUnknown: 2,
     checksPassed: 3,
@@ -80,6 +81,7 @@ describe('TerraformValidationChecks Component', () => {
       <TerraformValidationChecks
         {...defaultProps}
         allChecksSucceeded={false}
+        checksErrored={0}
         checksFailed={0}
         checksUnknown={0}
         checksPassed={0}
@@ -91,6 +93,23 @@ describe('TerraformValidationChecks Component', () => {
     expect(screen.queryByText('Failed')).toBeNull();
     expect(screen.queryByText('Unknown')).toBeNull();
     expect(screen.queryByText('Passed')).toBeNull();
+  });
+
+  it('renders the Pie Chart and warning icon when only errored checks exist', () => {
+    renderInTestApp(
+      <TerraformValidationChecks
+        {...defaultProps}
+        allChecksSucceeded={false}
+        checksErrored={2}
+        checksFailed={0}
+        checksUnknown={0}
+        checksPassed={0}
+      />,
+    );
+
+    expect(screen.getByTestId('pie-chart')).toBeInTheDocument();
+    expect(screen.queryByText('No checks found.')).toBeNull();
+    expect(screen.getByTestId('warning-icon')).toBeInTheDocument();
   });
 
   it('renders the view details link in the actions slot with correct text and URL', () => {

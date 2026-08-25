@@ -1,16 +1,21 @@
 import {
   AuditorService,
   AuditorServiceEvent,
+  BackstageCredentials,
+  BackstageUserPrincipal,
   HttpAuthService,
   LoggerService,
   PermissionsService,
 } from '@backstage/backend-plugin-api';
-import { InputError } from '@backstage/errors';
+import { InputError, NotAllowedError, NotFoundError } from '@backstage/errors';
 import {
   AuthorizeResult,
   ResourcePermission,
 } from '@backstage/plugin-permission-common';
 import {
+  DEFAULT_NUM_ENVS,
+  isEnvironmentEditable,
+  UNLEASH_PROJECT_ANNOTATION,
   unleashFlagReadPermission,
   unleashFlagTogglePermission,
   unleashVariantManagePermission,
@@ -42,6 +47,28 @@ export interface RouterOptions {
   catalog: CatalogService;
 }
 
+/**
+ * Map an upstream Unleash API error (a plain Error with a `statusCode`
+ * property, see lib/unleash.ts) to a typed \@backstage/errors error so the
+ * default error middleware responds with the right status and the standard
+ * `{ error: { name, message } }` body.
+ */
+function toBackstageError(error: any, forbiddenMessage?: string): Error {
+  const statusCode = error?.statusCode;
+  const message = error?.message || 'Unknown error';
+
+  if (statusCode === 403 || message.includes('Forbidden')) {
+    return new NotAllowedError(forbiddenMessage ?? message);
+  }
+  if (statusCode === 404) {
+    return new NotFoundError(message);
+  }
+  if (statusCode === 400) {
+    return new InputError(message);
+  }
+  return error instanceof Error ? error : new Error(message);
+}
+
 export async function createRouter(
   options: RouterOptions,
 ): Promise<express.Router> {
@@ -51,7 +78,7 @@ export async function createRouter(
     unleashUrl,
     unleashToken,
     editableEnvs,
-    numEnvs = 4,
+    numEnvs = DEFAULT_NUM_ENVS,
     httpAuth,
     permissions,
     catalog,
@@ -59,38 +86,22 @@ export async function createRouter(
   const router = Router();
   router.use(express.json());
 
-  // Log ALL requests to unleash backend
-  router.use((req, _res, next) => {
-    logger.info(`[Unleash Router] ${req.method} ${req.path}`);
-    next();
-  });
-
   const unleashClientOptions = {
     baseUrl: unleashUrl,
     token: unleashToken,
     logger,
   };
 
-  // Helper to check permissions against a component
+  // Helper to check permissions against the components linked to a project
   const checkPermission = async (
-    req: express.Request,
+    credentials: BackstageCredentials,
+    projectId: string,
     permission: ResourcePermission<string>,
   ): Promise<{ result: AuthorizeResult }> => {
-    const { projectId } = req.params;
-    logger.warn(
-      `[checkPermission] Starting: ${permission.name} for project ${projectId}`,
-    );
-    const credentials = await httpAuth.credentials(req, { allow: ['user'] });
-    logger.warn(
-      `[checkPermission] User: ${
-        credentials.principal.userEntityRef || 'unknown'
-      }`,
-    );
-
     const { items } = await catalog.getEntities(
       {
         filter: {
-          'metadata.annotations.unleash.io/project-id': projectId,
+          [`metadata.annotations.${UNLEASH_PROJECT_ANNOTATION}`]: projectId,
         },
         fields: ['kind', 'metadata.namespace', 'metadata.name'],
       },
@@ -99,8 +110,8 @@ export async function createRouter(
 
     if (items.length === 0) {
       // No component linked to this project ID, so deny permission.
-      logger.warn(
-        `Permission denied: No component found with unleash.io/project-id annotation matching '${projectId}'`,
+      logger.debug(
+        `Permission denied: No component found with ${UNLEASH_PROJECT_ANNOTATION} annotation matching '${projectId}'`,
       );
       return { result: AuthorizeResult.DENY };
     }
@@ -118,15 +129,9 @@ export async function createRouter(
       permission,
       resourceRef: stringifyEntityRef(entity),
     }));
-    logger.warn(
-      `[checkPermission] Authorizing against ${items.length} entities`,
-    );
     const decisions = await permissions.authorize(authRequests, {
       credentials,
     });
-    logger.warn(
-      `[checkPermission] Decisions: ${decisions.map(d => d.result).join(', ')}`,
-    );
 
     // If any of the checks result in ALLOW, then grant access.
     if (decisions.some(d => d.result === AuthorizeResult.ALLOW)) {
@@ -137,26 +142,21 @@ export async function createRouter(
     }
 
     // Otherwise, deny.
-    logger.warn(
+    logger.debug(
       `Permission denied for '${permission.name}' on project '${projectId}'. User does not have permission on any linked components.`,
     );
     return { result: AuthorizeResult.DENY };
   };
 
-  // Helper to check if an environment is editable
-  const isEnvironmentEditable = (environment: string): boolean => {
-    return editableEnvs.length > 0 && editableEnvs.includes(environment);
-  };
-
-  // Helper to resolve the calling user and create an audit event for a
-  // mutating operation. Returns the audit event (call success()/fail() on it)
-  // and the resolved userEntityRef for log enrichment.
+  // Helper to create an audit event for a mutating operation. Returns the
+  // audit event (call success()/fail() on it) and the resolved userEntityRef
+  // for log enrichment.
   const createAuditEvent = async (
     req: express.Request,
+    credentials: BackstageCredentials<BackstageUserPrincipal>,
     eventId: string,
     meta: Record<string, string>,
   ): Promise<{ auditEvent: AuditorServiceEvent; userEntityRef: string }> => {
-    const credentials = await httpAuth.credentials(req, { allow: ['user'] });
     const userEntityRef = credentials.principal.userEntityRef || 'unknown';
 
     const auditEvent = await auditor.createEvent({
@@ -169,8 +169,20 @@ export async function createRouter(
     return { auditEvent, userEntityRef };
   };
 
+  // Helper to mark the audit event as failed and rethrow the upstream error
+  // as a typed error for the default error middleware.
+  const failAuditAndThrow = async (
+    auditEvent: AuditorServiceEvent,
+    error: any,
+    forbiddenMessage: string,
+  ): Promise<never> => {
+    await auditEvent.fail({ error });
+    throw toBackstageError(error, forbiddenMessage);
+  };
+
   // Get configuration (including editable environments and numEnvs)
-  router.get('/config', async (_req, res) => {
+  router.get('/config', async (req, res) => {
+    await httpAuth.credentials(req, { allow: ['user'] });
     return res.json({ editableEnvs, numEnvs });
   });
 
@@ -178,46 +190,72 @@ export async function createRouter(
   // No permission check needed - returns all projects (filtering happens client-side)
   router.get('/projects', async (req, res) => {
     await httpAuth.credentials(req, { allow: ['user'] });
-    const data = await getAllProjects(unleashClientOptions);
-    return res.json(data);
+    try {
+      const data = await getAllProjects(unleashClientOptions);
+      return res.json(data);
+    } catch (error) {
+      throw toBackstageError(error);
+    }
   });
 
   // Get all environments summary
   // No permission check needed - returns all environments
   router.get('/environments', async (req, res) => {
     await httpAuth.credentials(req, { allow: ['user'] });
-    const data = await getAllEnvironments(unleashClientOptions);
-    return res.json(data);
+    try {
+      const data = await getAllEnvironments(unleashClientOptions);
+      return res.json(data);
+    } catch (error) {
+      throw toBackstageError(error);
+    }
   });
 
   // List flags for a project
   router.get('/projects/:projectId/features', async (req, res) => {
-    const decision = await checkPermission(req, unleashFlagReadPermission);
+    const { projectId } = req.params;
+    const credentials = await httpAuth.credentials(req, { allow: ['user'] });
+    const decision = await checkPermission(
+      credentials,
+      projectId,
+      unleashFlagReadPermission,
+    );
 
     if (decision.result !== AuthorizeResult.ALLOW) {
-      return res.status(403).json({ error: 'Permission denied' });
+      throw new NotAllowedError('Permission denied');
     }
 
-    const { projectId } = req.params;
-    const data = await getProjectFeatures(unleashClientOptions, projectId);
-    return res.json(data);
+    try {
+      const data = await getProjectFeatures(unleashClientOptions, projectId);
+      return res.json(data);
+    } catch (error) {
+      throw toBackstageError(error);
+    }
   });
 
   // Get single flag details with variants
   router.get('/projects/:projectId/features/:featureName', async (req, res) => {
-    const decision = await checkPermission(req, unleashFlagReadPermission);
+    const { projectId, featureName } = req.params;
+    const credentials = await httpAuth.credentials(req, { allow: ['user'] });
+    const decision = await checkPermission(
+      credentials,
+      projectId,
+      unleashFlagReadPermission,
+    );
 
     if (decision.result !== AuthorizeResult.ALLOW) {
-      return res.status(403).json({ error: 'Permission denied' });
+      throw new NotAllowedError('Permission denied');
     }
 
-    const { projectId, featureName } = req.params;
-    const data = await getFeatureFlag(
-      unleashClientOptions,
-      projectId,
-      featureName,
-    );
-    return res.json(data);
+    try {
+      const data = await getFeatureFlag(
+        unleashClientOptions,
+        projectId,
+        featureName,
+      );
+      return res.json(data);
+    } catch (error) {
+      throw toBackstageError(error);
+    }
   });
 
   // Toggle flag in environment
@@ -225,37 +263,33 @@ export async function createRouter(
     '/projects/:projectId/features/:featureName/environments/:environment/:action',
     async (req, res) => {
       const { projectId, featureName, environment, action } = req.params;
-      logger.warn(
-        `[TOGGLE] Endpoint hit: ${featureName} -> ${action} in ${environment}`,
-      );
 
       if (action !== 'on' && action !== 'off') {
         throw new InputError('Action must be "on" or "off"');
       }
 
-      if (!isEnvironmentEditable(environment)) {
-        return res.status(403).json({
-          error: `Environment '${environment}' is not editable. Editable environments: ${
+      if (!isEnvironmentEditable(environment, editableEnvs)) {
+        throw new NotAllowedError(
+          `Environment '${environment}' is not editable. Editable environments: ${
             editableEnvs.join(', ') || 'none'
           }`,
-        });
+        );
       }
 
-      logger.warn('[TOGGLE] About to check permission');
-      const decision = await checkPermission(req, unleashFlagTogglePermission);
-      logger.warn(`[TOGGLE] Permission decision: ${decision.result}`);
+      const credentials = await httpAuth.credentials(req, { allow: ['user'] });
+      const decision = await checkPermission(
+        credentials,
+        projectId,
+        unleashFlagTogglePermission,
+      );
 
       if (decision.result !== AuthorizeResult.ALLOW) {
-        logger.warn('[TOGGLE] DENYING - permission check failed');
-        return res
-          .status(403)
-          .json({ error: 'Permission denied for toggle action' });
+        throw new NotAllowedError('Permission denied for toggle action');
       }
-
-      logger.warn('[TOGGLE] ALLOWING - permission check passed');
 
       const { auditEvent, userEntityRef } = await createAuditEvent(
         req,
+        credentials,
         'flag-toggle',
         { featureName, action, environment, projectId },
       );
@@ -268,32 +302,20 @@ export async function createRouter(
           environment,
           action as 'on' | 'off',
         );
-
-        await auditEvent.success();
-
-        logger.info(
-          `User ${userEntityRef} toggled flag ${featureName} ${action} in ${environment} (project: ${projectId})`,
+      } catch (error) {
+        return failAuditAndThrow(
+          auditEvent,
+          error,
+          'Permission denied. You may not have access to modify this flag in Unleash.',
         );
-        return res.json({ success: true });
-      } catch (error: any) {
-        await auditEvent.fail({ error });
-
-        // Pass through the status code from Unleash API if available
-        const statusCode = error.statusCode || 500;
-        const message = error.message || 'Unknown error';
-
-        // Return proper status code based on error type
-        if (statusCode === 403 || message.includes('Forbidden')) {
-          return res.status(403).json({
-            error:
-              'Permission denied. You may not have access to modify this flag in Unleash.',
-          });
-        }
-
-        return res.status(statusCode).json({
-          error: message,
-        });
       }
+
+      await auditEvent.success();
+
+      logger.info(
+        `User ${userEntityRef} toggled flag ${featureName} ${action} in ${environment} (project: ${projectId})`,
+      );
+      return res.json({ success: true });
     },
   );
 
@@ -304,62 +326,52 @@ export async function createRouter(
       // Variants are global, not environment-specific
       // Only allow if at least one environment is editable
       if (editableEnvs.length === 0) {
-        return res.status(403).json({
-          error:
-            'No environments are editable. Configure editableEnvs to enable variant editing.',
-        });
+        throw new NotAllowedError(
+          'No environments are editable. Configure editableEnvs to enable variant editing.',
+        );
       }
 
+      const { projectId, featureName } = req.params;
+      const credentials = await httpAuth.credentials(req, { allow: ['user'] });
       const decision = await checkPermission(
-        req,
+        credentials,
+        projectId,
         unleashVariantManagePermission,
       );
 
       if (decision.result !== AuthorizeResult.ALLOW) {
-        return res
-          .status(403)
-          .json({ error: 'Permission denied for variant management' });
+        throw new NotAllowedError('Permission denied for variant management');
       }
-
-      const { projectId, featureName } = req.params;
 
       const { auditEvent, userEntityRef } = await createAuditEvent(
         req,
+        credentials,
         'variant-update',
         { featureName, projectId },
       );
 
+      let data;
       try {
-        const data = await updateFeatureVariants(
+        data = await updateFeatureVariants(
           unleashClientOptions,
           projectId,
           featureName,
           req.body,
         );
-
-        await auditEvent.success();
-
-        logger.info(
-          `User ${userEntityRef} updated variants for flag ${featureName} (project: ${projectId})`,
+      } catch (error) {
+        return failAuditAndThrow(
+          auditEvent,
+          error,
+          'Permission denied. You may not have access to modify variants in Unleash.',
         );
-        return res.json(data);
-      } catch (error: any) {
-        await auditEvent.fail({ error });
-
-        const statusCode = error.statusCode || 500;
-        const message = error.message || 'Unknown error';
-
-        if (statusCode === 403 || message.includes('Forbidden')) {
-          return res.status(403).json({
-            error:
-              'Permission denied. You may not have access to modify variants in Unleash.',
-          });
-        }
-
-        return res.status(statusCode).json({
-          error: message,
-        });
       }
+
+      await auditEvent.success();
+
+      logger.info(
+        `User ${userEntityRef} updated variants for flag ${featureName} (project: ${projectId})`,
+      );
+      return res.json(data);
     },
   );
 
@@ -367,19 +379,28 @@ export async function createRouter(
   router.get(
     '/projects/:projectId/features/:featureName/metrics',
     async (req, res) => {
-      const decision = await checkPermission(req, unleashFlagReadPermission);
+      const { projectId, featureName } = req.params;
+      const credentials = await httpAuth.credentials(req, { allow: ['user'] });
+      const decision = await checkPermission(
+        credentials,
+        projectId,
+        unleashFlagReadPermission,
+      );
 
       if (decision.result !== AuthorizeResult.ALLOW) {
-        return res.status(403).json({ error: 'Permission denied' });
+        throw new NotAllowedError('Permission denied');
       }
 
-      const { projectId, featureName } = req.params;
-      const data = await getFeatureMetrics(
-        unleashClientOptions,
-        projectId,
-        featureName,
-      );
-      return res.json(data);
+      try {
+        const data = await getFeatureMetrics(
+          unleashClientOptions,
+          projectId,
+          featureName,
+        );
+        return res.json(data);
+      } catch (error) {
+        throw toBackstageError(error);
+      }
     },
   );
 
@@ -389,33 +410,35 @@ export async function createRouter(
     async (req, res) => {
       const { projectId, featureName, environment, strategyId } = req.params;
 
-      if (!isEnvironmentEditable(environment)) {
-        return res.status(403).json({
-          error: `Environment '${environment}' is not editable. Editable environments: ${
+      if (!isEnvironmentEditable(environment, editableEnvs)) {
+        throw new NotAllowedError(
+          `Environment '${environment}' is not editable. Editable environments: ${
             editableEnvs.join(', ') || 'none'
           }`,
-        });
+        );
       }
 
+      const credentials = await httpAuth.credentials(req, { allow: ['user'] });
       const decision = await checkPermission(
-        req,
+        credentials,
+        projectId,
         unleashVariantManagePermission,
       );
 
       if (decision.result !== AuthorizeResult.ALLOW) {
-        return res
-          .status(403)
-          .json({ error: 'Permission denied for strategy management' });
+        throw new NotAllowedError('Permission denied for strategy management');
       }
 
       const { auditEvent, userEntityRef } = await createAuditEvent(
         req,
+        credentials,
         'strategy-update',
         { featureName, strategyId, environment, projectId },
       );
 
+      let data;
       try {
-        const data = await updateStrategy(
+        data = await updateStrategy(
           unleashClientOptions,
           projectId,
           featureName,
@@ -423,30 +446,20 @@ export async function createRouter(
           strategyId,
           req.body,
         );
-
-        await auditEvent.success();
-
-        logger.info(
-          `User ${userEntityRef} updated strategy ${strategyId} for flag ${featureName} in ${environment} (project: ${projectId})`,
+      } catch (error) {
+        return failAuditAndThrow(
+          auditEvent,
+          error,
+          'Permission denied. You may not have access to modify strategies in Unleash.',
         );
-        return res.json(data);
-      } catch (error: any) {
-        await auditEvent.fail({ error });
-
-        const statusCode = error.statusCode || 500;
-        const message = error.message || 'Unknown error';
-
-        if (statusCode === 403 || message.includes('Forbidden')) {
-          return res.status(403).json({
-            error:
-              'Permission denied. You may not have access to modify strategies in Unleash.',
-          });
-        }
-
-        return res.status(statusCode).json({
-          error: message,
-        });
       }
+
+      await auditEvent.success();
+
+      logger.info(
+        `User ${userEntityRef} updated strategy ${strategyId} for flag ${featureName} in ${environment} (project: ${projectId})`,
+      );
+      return res.json(data);
     },
   );
 

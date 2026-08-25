@@ -93,7 +93,7 @@ export const DenseTable = ({
         );
       },
       customSort: (row1, row2) =>
-        row1.createdBy.name < row2.createdBy.name ? 1 : -1,
+        row1.createdBy.name.localeCompare(row2.createdBy.name),
       field: 'createdBy',
     },
     {
@@ -160,7 +160,7 @@ export const DenseTable = ({
         name: run.confirmedBy?.name || 'Unknown',
         avatar: run.confirmedBy?.avatar,
       },
-      message: run.message,
+      message: run.message ?? '',
       createdAt: formatTimeToWords(run.createdAt, { strict: true }),
       status: run.status,
       workspaceName: run.workspace?.name || 'Unknown',
@@ -178,7 +178,6 @@ export const DenseTable = ({
         columns={columns}
         data={formattedData}
         isLoading={isLoading}
-        page={10}
       />
       <Drawer
         variant="temporary"

@@ -8,7 +8,7 @@ import { RunInnerPlan } from '../models/RunInnerPlan.model';
 import { RunInnerWorkspace } from '../models/RunInnerWorkspace.model';
 
 /**
- * Description of the latest terraform run
+ * Description of the latest terraform run, or null when the workspaces have no runs
  * @public
  */
 export interface LatestRun {
