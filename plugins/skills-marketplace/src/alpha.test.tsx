@@ -19,17 +19,24 @@ describe('alpha plugin', () => {
   it('renders the skills marketplace page', async () => {
     const mockApi = {
       getMarketplace: jest.fn().mockResolvedValue({
-        marketplace: {
-          name: 'my-marketplace',
-          plugins: [
-            {
-              name: 'deck-gl',
-              source: './skills/deck-gl',
-              description: 'Build PowerPoint decks',
+        marketplaces: [
+          {
+            repo: 'my-repo',
+            url: 'https://github.com/my-org/my-repo/tree/main',
+            installUrl: 'git@github.com:my-org/my-repo.git',
+            marketplace: {
+              name: 'my-marketplace',
+              plugins: [
+                {
+                  name: 'deck-gl',
+                  source: './skills/deck-gl',
+                  description: 'Build PowerPoint decks',
+                },
+              ],
             },
-          ],
-        },
-        installUrl: 'git@github.com:my-org/my-repo.git',
+          },
+        ],
+        errors: [],
       }),
       getSkillDoc: jest.fn().mockResolvedValue(undefined),
     } as unknown as SkillsMarketplaceApi;

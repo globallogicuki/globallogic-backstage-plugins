@@ -8,11 +8,8 @@ import {
   RootConfigService,
   UrlReaderService,
 } from '@backstage/backend-plugin-api';
-import {
-  InstallUrlFormat,
-  deriveInstallUrl,
-  resolveFileUrl,
-} from '../lib/repo';
+import { MarketplaceConfig, readMarketplaceConfigs } from '../lib/config';
+import { deriveInstallUrl, resolveFileUrl } from '../lib/repo';
 
 export interface RouterOptions {
   logger: LoggerService;
@@ -36,9 +33,21 @@ const isSafeSource = (source: string): boolean =>
     .split('/')
     .every(segment => segment !== '..' && segment !== '.');
 
+// Docs for a skill, in the order they are tried: plugins written as Claude Code
+// skills carry a SKILL.md, while plainer ones only have a README.
+const DOC_FILES = ['SKILL.md', 'README.md'];
+
 const isNotFound = (error: unknown): boolean =>
   error instanceof NotFoundError ||
   (error instanceof Error && error.name === 'NotFoundError');
+
+/** One marketplace that failed to load, reported alongside the ones that did. */
+type MarketplaceFailure = {
+  repo: string;
+  url: string;
+  message: string;
+  status: number;
+};
 
 export async function createRouter(
   options: RouterOptions,
@@ -58,94 +67,134 @@ export async function createRouter(
     return content;
   };
 
-  const getTreeUrl = (): string => {
-    const treeUrl = config.getOptionalString('skillsMarketplace.url');
-    if (!treeUrl) {
-      throw new Error(
-        'Skills Marketplace is not configured: set skillsMarketplace.url in ' +
-          'app-config.yaml to the web URL of the repo tree that hosts your ' +
-          'Claude Code marketplace, e.g. ' +
-          'https://github.com/my-org/skills-marketplace/tree/main',
+  const loadMarketplace = async (marketplace: MarketplaceConfig) => {
+    const { repo, url } = marketplace;
+    const fail = (message: string, status: number): MarketplaceFailure => ({
+      repo,
+      url,
+      message,
+      status,
+    });
+
+    let raw;
+    try {
+      raw = await readFile(url, '.claude-plugin/marketplace.json');
+    } catch (error) {
+      if (isNotFound(error)) {
+        return fail(`No .claude-plugin/marketplace.json found at ${url}.`, 404);
+      }
+      throw error;
+    }
+    let manifest;
+    try {
+      manifest = JSON.parse(raw);
+    } catch {
+      return fail(`Marketplace manifest at ${url} is not valid JSON.`, 502);
+    }
+    if (!Array.isArray(manifest.plugins)) {
+      return fail(
+        `Marketplace manifest at ${url} is missing a "plugins" array.`,
+        502,
       );
     }
-    return treeUrl;
+    return {
+      repo,
+      url,
+      installUrl: deriveInstallUrl(url, marketplace.installUrlFormat),
+      marketplace: manifest,
+    };
   };
 
-  const getInstallUrlFormat = (): InstallUrlFormat => {
-    const format =
-      config.getOptionalString('skillsMarketplace.installUrlFormat') ?? 'ssh';
-    if (format !== 'ssh' && format !== 'https') {
-      throw new Error(
-        `Skills Marketplace: invalid installUrlFormat '${format}'. ` +
-          `Supported values: ssh, https.`,
-      );
-    }
-    return format;
-  };
+  const isFailure = (
+    result: Awaited<ReturnType<typeof loadMarketplace>>,
+  ): result is MarketplaceFailure => 'status' in result;
 
   const router = Router();
   router.use(express.json());
 
   router.get('/marketplace', async (_req, res) => {
-    const treeUrl = getTreeUrl();
-    let raw;
-    try {
-      raw = await readFile(treeUrl, '.claude-plugin/marketplace.json');
-    } catch (error) {
-      if (isNotFound(error)) {
-        res.status(404).json({
-          error: {
-            message: `No .claude-plugin/marketplace.json found at ${treeUrl}.`,
-          },
-        });
-        return;
-      }
-      throw error;
+    const configured = readMarketplaceConfigs(config);
+    const results = await Promise.all(configured.map(loadMarketplace));
+    const failures = results.filter(isFailure);
+    const marketplaces = results.filter(result => !isFailure(result));
+
+    for (const failure of failures) {
+      logger.warn(
+        `Skills Marketplace: skipping '${failure.repo}' — ${failure.message}`,
+      );
     }
-    let marketplace;
-    try {
-      marketplace = JSON.parse(raw);
-    } catch {
-      res.status(502).json({
-        error: { message: 'Marketplace manifest is not valid JSON.' },
-      });
-      return;
-    }
-    if (!Array.isArray(marketplace.plugins)) {
-      res.status(502).json({
+
+    if (marketplaces.length === 0) {
+      // A single marketplace reports its own failure verbatim; with several,
+      // no one status fits, so report them together.
+      const [first] = failures;
+      res.status(failures.length === 1 ? first.status : 502).json({
         error: {
-          message: 'Marketplace manifest is missing a "plugins" array.',
+          message:
+            failures.length === 1
+              ? first.message
+              : `No configured marketplace could be loaded: ${failures
+                  .map(failure => failure.message)
+                  .join(' ')}`,
         },
       });
       return;
     }
+
     res.json({
-      marketplace,
-      installUrl: deriveInstallUrl(treeUrl, getInstallUrlFormat()),
+      marketplaces,
+      errors: failures.map(({ repo, url, message }) => ({
+        repo,
+        url,
+        message,
+      })),
     });
   });
 
   router.get('/skill-doc', async (req, res) => {
-    const source = req.query.source;
+    const { source, repo } = req.query;
     if (typeof source !== 'string' || !isSafeSource(source)) {
       res.status(400).json({
         error: { message: 'Invalid "source" query parameter.' },
       });
       return;
     }
-    const treeUrl = getTreeUrl();
-    try {
-      const content = await readFile(treeUrl, `${source}/SKILL.md`);
-      res.type('text/markdown').send(content);
-    } catch (error) {
-      if (isNotFound(error)) {
-        res.status(404).json({
-          error: { message: `No SKILL.md found for ${source}.` },
-        });
-        return;
-      }
-      throw error;
+    if (repo !== undefined && typeof repo !== 'string') {
+      res.status(400).json({
+        error: { message: 'Invalid "repo" query parameter.' },
+      });
+      return;
     }
+
+    const configured = readMarketplaceConfigs(config);
+    // Without a repo the first configured marketplace is the only sensible
+    // target — the common single-marketplace case.
+    const marketplace = repo
+      ? configured.find(candidate => candidate.repo === repo)
+      : configured[0];
+    if (!marketplace) {
+      res.status(404).json({
+        error: { message: `No configured marketplace named '${repo}'.` },
+      });
+      return;
+    }
+
+    for (const file of DOC_FILES) {
+      try {
+        const content = await readFile(marketplace.url, `${source}/${file}`);
+        res.type('text/markdown').send(content);
+        return;
+      } catch (error) {
+        if (!isNotFound(error)) {
+          throw error;
+        }
+      }
+    }
+    res.status(404).json({
+      error: {
+        message: `No ${DOC_FILES.join(' or ')} found for ${source}.`,
+      },
+    });
   });
 
   router.use(

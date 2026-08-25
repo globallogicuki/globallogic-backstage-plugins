@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import Box from '@material-ui/core/Box';
 import Chip from '@material-ui/core/Chip';
 import Grid from '@material-ui/core/Grid';
+import MenuItem from '@material-ui/core/MenuItem';
 import TextField from '@material-ui/core/TextField';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import Typography from '@material-ui/core/Typography';
@@ -12,20 +13,23 @@ import {
   Content,
   Progress,
   ResponseErrorPanel,
+  WarningPanel,
 } from '@backstage/core-components';
-import { Skill, skillsMarketplaceApiRef } from './api';
+import { SkillListing, flattenSkills, skillsMarketplaceApiRef } from './api';
 import { SkillCard } from './SkillCard';
 import { SkillDetailDrawer } from './SkillDetailDrawer';
 import { useSkillsStyles } from './styles';
 
 const ALL = '__all__';
 
-const matches = (skill: Skill, query: string): boolean => {
+const matches = (listing: SkillListing, query: string): boolean => {
   if (!query) return true;
+  const { skill } = listing;
   const haystack = [
     skill.name,
     skill.description,
     skill.category ?? '',
+    listing.repo,
     ...(skill.keywords ?? []),
   ]
     .join(' ')
@@ -43,30 +47,46 @@ export const SkillsMarketplacePage = () => {
 
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<string>(ALL);
-  const [selected, setSelected] = useState<Skill | null>(null);
+  const [repo, setRepo] = useState<string>(ALL);
+  const [selected, setSelected] = useState<SkillListing | null>(null);
 
   const { value, loading, error } = useAsync(
     () => skillsMarketplaceApi.getMarketplace(),
     [skillsMarketplaceApi],
   );
 
-  const marketplace = value?.marketplace;
+  const marketplaces = value?.marketplaces;
+  const failures = value?.errors ?? [];
+
+  const listings = useMemo(
+    () => flattenSkills(marketplaces ?? []),
+    [marketplaces],
+  );
 
   const categories = useMemo(() => {
     const set = new Set<string>();
-    marketplace?.plugins.forEach(p => p.category && set.add(p.category));
+    listings.forEach(l => l.skill.category && set.add(l.skill.category));
     return Array.from(set).sort();
-  }, [marketplace]);
+  }, [listings]);
 
-  const visible = useMemo(() => {
-    const plugins = marketplace?.plugins ?? [];
-    return plugins
-      .filter(p => category === ALL || p.category === category)
-      .filter(p => matches(p, query))
-      .sort((a, b) => a.name.localeCompare(b.name));
-  }, [marketplace, category, query]);
+  const repos = useMemo(
+    () => (marketplaces ?? []).map(entry => entry.repo).sort(),
+    [marketplaces],
+  );
 
-  const total = marketplace?.plugins.length ?? 0;
+  const visible = useMemo(
+    () =>
+      listings
+        .filter(l => repo === ALL || l.repo === repo)
+        .filter(l => category === ALL || l.skill.category === category)
+        .filter(l => matches(l, query))
+        .sort(
+          (a, b) =>
+            a.skill.name.localeCompare(b.skill.name) ||
+            a.repo.localeCompare(b.repo),
+        ),
+    [listings, repo, category, query],
+  );
 
   return (
     /* No <Page>/<Header>: the app shell renders the PageBlueprint title. */
@@ -74,7 +94,26 @@ export const SkillsMarketplacePage = () => {
       {loading && <Progress />}
       {error && <ResponseErrorPanel error={error} />}
 
-      {marketplace && (
+      {failures.length > 0 && (
+        <Box mb={2}>
+          <WarningPanel
+            severity="warning"
+            title={`${failures.length} marketplace${
+              failures.length === 1 ? '' : 's'
+            } could not be loaded`}
+          >
+            <ul className={classes.failureList}>
+              {failures.map(failure => (
+                <li key={failure.url}>
+                  <strong>{failure.repo}</strong> — {failure.message}
+                </li>
+              ))}
+            </ul>
+          </WarningPanel>
+        </Box>
+      )}
+
+      {marketplaces && (
         <>
           <Box className={classes.filters}>
             <TextField
@@ -92,6 +131,26 @@ export const SkillsMarketplacePage = () => {
                 ),
               }}
             />
+            {/* Repo filtering only earns its space with more than one repo. */}
+            {repos.length > 1 && (
+              <TextField
+                className={classes.repoFilter}
+                select
+                variant="outlined"
+                size="small"
+                label="Repo"
+                value={repo}
+                onChange={e => setRepo(e.target.value)}
+                inputProps={{ 'aria-label': 'Filter by repo' }}
+              >
+                <MenuItem value={ALL}>All repos</MenuItem>
+                {repos.map(name => (
+                  <MenuItem key={name} value={name}>
+                    {name}
+                  </MenuItem>
+                ))}
+              </TextField>
+            )}
             {categories.length > 0 && (
               <div className={classes.categories}>
                 <Chip
@@ -118,7 +177,7 @@ export const SkillsMarketplacePage = () => {
               variant="body2"
               className={classes.resultCount}
             >
-              {visible.length} of {total}
+              {visible.length} of {listings.length}
             </Typography>
           </Box>
 
@@ -128,9 +187,20 @@ export const SkillsMarketplacePage = () => {
             </Typography>
           ) : (
             <Grid container spacing={2}>
-              {visible.map(skill => (
-                <Grid item key={skill.name} xs={12} sm={6} md={4} lg={3}>
-                  <SkillCard skill={skill} onSelect={setSelected} />
+              {visible.map(listing => (
+                <Grid
+                  item
+                  key={`${listing.repo}/${listing.skill.name}`}
+                  xs={12}
+                  sm={6}
+                  md={4}
+                  lg={3}
+                >
+                  <SkillCard
+                    listing={listing}
+                    showRepo={repos.length > 1}
+                    onSelect={setSelected}
+                  />
                 </Grid>
               ))}
             </Grid>
@@ -138,14 +208,11 @@ export const SkillsMarketplacePage = () => {
         </>
       )}
 
-      {value && (
-        <SkillDetailDrawer
-          skill={selected}
-          marketplaceName={value.marketplace.name}
-          installUrl={value.installUrl}
-          onClose={() => setSelected(null)}
-        />
-      )}
+      <SkillDetailDrawer
+        listing={selected}
+        showRepo={repos.length > 1}
+        onClose={() => setSelected(null)}
+      />
     </Content>
   );
 };

@@ -35,8 +35,15 @@ describe('skillsMarketplacePlugin', () => {
 
     expect(response.status).toEqual(200);
     expect(response.body).toEqual({
-      marketplace: manifest,
-      installUrl: 'git@github.com:my-org/skills-marketplace.git',
+      marketplaces: [
+        {
+          repo: 'skills-marketplace',
+          url: 'https://github.com/my-org/skills-marketplace/tree/main',
+          installUrl: 'git@github.com:my-org/skills-marketplace.git',
+          marketplace: manifest,
+        },
+      ],
+      errors: [],
     });
   });
 });

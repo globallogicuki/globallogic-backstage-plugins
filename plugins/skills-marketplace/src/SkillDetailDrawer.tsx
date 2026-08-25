@@ -12,7 +12,7 @@ import {
   CopyTextButton,
   ResponseErrorPanel,
 } from '@backstage/core-components';
-import { Skill, skillsMarketplaceApiRef } from './api';
+import { SkillListing, skillsMarketplaceApiRef } from './api';
 import { useSkillsStyles } from './styles';
 
 const InstallCommand = ({ command }: { command: string }) => {
@@ -25,27 +25,29 @@ const InstallCommand = ({ command }: { command: string }) => {
   );
 };
 
-/** Skill detail drawer: metadata, install commands, and SKILL.md docs. */
+/** Skill detail drawer: metadata, install commands, and the skill's docs. */
 export const SkillDetailDrawer = ({
-  skill,
-  marketplaceName,
-  installUrl,
+  listing,
+  showRepo,
   onClose,
 }: {
-  skill: Skill | null;
-  marketplaceName: string;
-  installUrl: string;
+  listing: SkillListing | null;
+  /** Show the source repo — only useful with more than one marketplace. */
+  showRepo?: boolean;
   onClose: () => void;
 }) => {
   const classes = useSkillsStyles();
   const skillsMarketplaceApi = useApi(skillsMarketplaceApiRef);
 
-  const { value, loading, error } = useAsync(async () => {
-    if (!skill) return undefined;
-    return skillsMarketplaceApi.getSkillDoc(skill.source);
-  }, [skill?.source]);
+  const skill = listing?.skill;
 
-  const addCommand = `/plugin marketplace add ${installUrl}`;
+  const { value, loading, error } = useAsync(async () => {
+    if (!listing) return undefined;
+    return skillsMarketplaceApi.getSkillDoc(listing.skill.source, listing.repo);
+  }, [listing?.repo, listing?.skill.source]);
+
+  const marketplaceName = listing?.marketplaceName ?? '';
+  const addCommand = `/plugin marketplace add ${listing?.installUrl ?? ''}`;
   const installCommand = skill
     ? `/plugin install ${skill.name}@${marketplaceName}`
     : '';
@@ -53,11 +55,11 @@ export const SkillDetailDrawer = ({
   return (
     <Drawer
       anchor="right"
-      open={Boolean(skill)}
+      open={Boolean(listing)}
       onClose={onClose}
       classes={{ paper: classes.drawerPaper }}
     >
-      {skill && (
+      {listing && skill && (
         <>
           <div className={classes.drawerHeader}>
             <div className={classes.drawerTitleBlock}>
@@ -72,6 +74,14 @@ export const SkillDetailDrawer = ({
                 {skill.description}
               </Typography>
               <div className={classes.drawerMeta}>
+                {showRepo && (
+                  <Chip
+                    label={listing.repo}
+                    size="small"
+                    variant="outlined"
+                    color="primary"
+                  />
+                )}
                 {skill.category && (
                   <Chip
                     label={skill.category}
@@ -119,7 +129,7 @@ export const SkillDetailDrawer = ({
             {error && <ResponseErrorPanel error={error} />}
             {!loading && !error && !value && (
               <Typography variant="body2" color="textSecondary">
-                This skill does not provide SKILL.md documentation.
+                This skill does not provide a SKILL.md or README.md.
               </Typography>
             )}
             {value && <MarkdownContent content={value.body} dialect="gfm" />}

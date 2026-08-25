@@ -18,6 +18,30 @@ const BRANCH_MARKER = /\/(?:-\/)?(?:tree|blob|src)\/.*$/;
 /** URL format for the marketplace install command. */
 export type InstallUrlFormat = 'ssh' | 'https';
 
+/** `owner/repo` (or `group/sub-group/repo`) from a repo web URL. */
+function repoPath(treeUrl: string): string {
+  const path = new URL(treeUrl).pathname
+    .replace(BRANCH_MARKER, '')
+    .replace(/^\/+|\/+$/g, '')
+    .replace(/\.git$/, '');
+  if (!path || !path.includes('/')) {
+    throw new Error(
+      `Cannot derive a repo path from skillsMarketplace.url '${treeUrl}'`,
+    );
+  }
+  return path;
+}
+
+/**
+ * The repo name from a tree URL, e.g.
+ * `https://github.com/my-org/skills-marketplace/tree/main` →
+ * `skills-marketplace`. Used to label and filter skills by their source repo.
+ */
+export function deriveRepoName(treeUrl: string): string {
+  const segments = repoPath(treeUrl).split('/');
+  return segments[segments.length - 1];
+}
+
 /**
  * Derive the git URL for the install command from the configured tree URL,
  * e.g. `https://github.com/my-org/repo/tree/main` →
@@ -28,17 +52,9 @@ export function deriveInstallUrl(
   treeUrl: string,
   format: InstallUrlFormat = 'ssh',
 ): string {
-  const { host, pathname } = new URL(treeUrl);
-  const repoPath = pathname
-    .replace(BRANCH_MARKER, '')
-    .replace(/^\/+|\/+$/g, '')
-    .replace(/\.git$/, '');
-  if (!repoPath || !repoPath.includes('/')) {
-    throw new Error(
-      `Cannot derive a repo path from skillsMarketplace.url '${treeUrl}'`,
-    );
-  }
+  const { host } = new URL(treeUrl);
+  const path = repoPath(treeUrl);
   return format === 'https'
-    ? `https://${host}/${repoPath}.git`
-    : `git@${host}:${repoPath}.git`;
+    ? `https://${host}/${path}.git`
+    : `git@${host}:${path}.git`;
 }

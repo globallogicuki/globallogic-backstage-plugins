@@ -5,9 +5,12 @@ Browse and install shared **Claude Code skills** from a
 (a repo containing `.claude-plugin/marketplace.json`) inside Backstage.
 
 - Skill cards with name, description, category, and keywords; full-text search
-  and category filtering.
-- A detail drawer with the skill's rendered `SKILL.md` and copy-able Claude
-  Code install commands.
+  plus category and repo filtering.
+- One marketplace repo, or several — skills from every configured repo are
+  listed together and filterable by repo name.
+- A detail drawer with the skill's rendered docs — its `SKILL.md`, or its
+  `README.md` where it has no `SKILL.md` — and copy-able Claude Code install
+  commands.
 - The repo is read server-side by
   `@globallogicuki/backstage-plugin-skills-marketplace-backend` via Backstage's
   `UrlReader`, so GitHub, GitLab, and Bitbucket all work — public or private,
@@ -86,6 +89,34 @@ https://bitbucket.org/my-workspace/skills-marketplace/src/main
 
 `installUrlFormat` sets the git URL shown in the `/plugin marketplace add`
 command: `git@host:owner/repo.git` (ssh) or `https://host/owner/repo.git`.
+
+### Multiple marketplaces
+
+Add a `marketplaces` list to pull skills in from more than one repo. Each entry
+takes the same `url`, and may override `installUrlFormat`; hosts can be mixed
+freely:
+
+```yaml
+skillsMarketplace:
+  installUrlFormat: https
+  marketplaces:
+    - url: https://github.com/my-org/skills-marketplace/tree/main
+    - url: https://gitlab.com/my-group/team-skills/-/tree/main
+      installUrlFormat: ssh
+    - url: https://bitbucket.org/my-workspace/platform-skills/src/main
+```
+
+`url` and `marketplaces` can be used together — the single `url` is simply
+listed first. Every skill is shown with the repo it came from, and a **Repo**
+filter appears once more than one marketplace is configured; the repo name is
+searchable too. Each skill's install commands use its own repo's git URL and
+marketplace name, so installing from a mixed listing always points at the right
+place.
+
+Repo names must be unique across all configured marketplaces — two repos with
+the same name (in different orgs, say) cannot be told apart in the UI, and the
+plugin reports a config error rather than guessing. If one marketplace fails to
+load, the page still lists the others and warns about the one it skipped.
 
 ### Private repos
 

@@ -14,6 +14,9 @@ export const useSkillsStyles = makeStyles(theme => ({
     flex: '1 1 260px',
     maxWidth: 480,
   },
+  repoFilter: {
+    minWidth: 180,
+  },
   categories: {
     display: 'flex',
     flexWrap: 'wrap',
@@ -60,10 +63,18 @@ export const useSkillsStyles = makeStyles(theme => ({
   cardDescription: {
     flex: 1,
   },
+  cardRepo: {
+    marginTop: 'auto',
+  },
   chips: {
     display: 'flex',
     flexWrap: 'wrap',
     gap: theme.spacing(0.5),
+  },
+
+  failureList: {
+    margin: 0,
+    paddingLeft: theme.spacing(2.5),
   },
 
   /* Detail drawer */

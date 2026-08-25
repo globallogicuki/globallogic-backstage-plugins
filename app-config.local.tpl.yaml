@@ -26,6 +26,11 @@ skillsMarketplace:
   url: MARKETPLACE_TREE_URL
   # URL format for the /plugin marketplace add install command shown to users.
   # installUrlFormat: https # ssh (default) | https
+  # Optional: pull skills in from more repos too. Skills from every marketplace
+  # are listed together and filterable by repo name, which must be unique.
+  # marketplaces:
+  #   - url: OTHER_MARKETPLACE_TREE_URL
+  #     installUrlFormat: ssh # optional per-entry override
 
 unleash:
   url: UNLEASH_URL
