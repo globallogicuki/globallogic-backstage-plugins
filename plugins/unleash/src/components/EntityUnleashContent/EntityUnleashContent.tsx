@@ -1,5 +1,4 @@
 import { useState, useMemo, useEffect } from 'react';
-import { useAsync } from 'react-use';
 import {
   Progress,
   ResponseErrorPanel,
@@ -8,7 +7,6 @@ import {
   Table,
   TableColumn,
 } from '@backstage/core-components';
-import { useApi } from '@backstage/core-plugin-api';
 import { useEntity } from '@backstage/plugin-catalog-react';
 import {
   Box,
@@ -23,17 +21,18 @@ import type { Key } from 'react-aria-components';
 import WarningIcon from '@material-ui/icons/Warning';
 import InfoIcon from '@material-ui/icons/Info';
 import { Alert } from '@material-ui/lab';
-import { unleashApiRef } from '../../api';
 import { FlagDetailsModal } from '../FlagDetailsModal';
 import {
   getUnleashProjectId,
   getUnleashFilterTags,
   formatTagFilter,
   filterFlagsByTags,
+  isEnvironmentEditable,
   UNLEASH_PROJECT_ANNOTATION,
   FeatureFlag,
   TagFilter,
 } from '@globallogicuki/backstage-plugin-unleash-common';
+import { useUnleashFlags } from '../../hooks';
 import { FlagToggle } from '../FlagToggle';
 
 const useStyles = makeStyles(theme => ({
@@ -64,7 +63,6 @@ type FlagTableRow = FeatureFlag & {
 export const EntityUnleashContent = () => {
   const classes = useStyles();
   const { entity } = useEntity();
-  const unleashApi = useApi(unleashApiRef);
   const projectId = getUnleashProjectId(entity);
   const defaultFilterTags = useMemo(
     () => getUnleashFilterTags(entity),
@@ -84,23 +82,13 @@ export const EntityUnleashContent = () => {
     setActiveFilters(defaultFilterTags);
   }, [defaultFilterTags]);
 
-  const { value, loading, error } = useAsync(async () => {
-    if (!projectId) return null;
-    const [flagsData, config] = await Promise.all([
-      unleashApi.getFlags(projectId),
-      unleashApi.getConfig(),
-    ]);
-    return { flagsData, config };
-  }, [projectId, refreshKey]);
-
-  const allFlags = useMemo(
-    () => value?.flagsData?.features ?? [],
-    [value?.flagsData?.features],
-  );
-  const editableEnvs = useMemo(
-    () => value?.config?.editableEnvs ?? [],
-    [value?.config?.editableEnvs],
-  );
+  const {
+    flags: allFlags,
+    editableEnvs,
+    envNames: allEnvs,
+    loading,
+    error,
+  } = useUnleashFlags(projectId, refreshKey);
 
   const filteredFlags = useMemo(() => {
     return filterFlagsByTags(allFlags, activeFilters);
@@ -133,16 +121,6 @@ export const EntityUnleashContent = () => {
     );
   };
 
-  const allEnvs = useMemo(() => {
-    const envs = new Set<string>();
-    allFlags.forEach(flag => {
-      flag.environments?.forEach(env => {
-        if (env?.name) envs.add(env.name);
-      });
-    });
-    return Array.from(envs);
-  }, [allFlags]);
-
   const currentEnv = selectedEnv || allEnvs[0] || '';
 
   const tableData: FlagTableRow[] = useMemo(() => {
@@ -156,10 +134,6 @@ export const EntityUnleashContent = () => {
       };
     });
   }, [filteredFlags, currentEnv]);
-
-  const isEnvironmentEditable = (environment: string) => {
-    return editableEnvs.length > 0 && editableEnvs.includes(environment);
-  };
 
   const handleRefresh = () => {
     setRefreshKey(prev => prev + 1);
@@ -289,7 +263,7 @@ export const EntityUnleashContent = () => {
             flagName={row.name}
             environment={currentEnv}
             enabled={row.currentEnvEnabled}
-            readonly={!isEnvironmentEditable(currentEnv)}
+            readonly={!isEnvironmentEditable(currentEnv, editableEnvs)}
             onToggled={handleRefresh}
           />
         ),
@@ -420,7 +394,9 @@ export const EntityUnleashContent = () => {
           projectId={projectId}
           flagName={detailsModal.flagName}
           environment={detailsModal.environment}
-          readonly={!isEnvironmentEditable(detailsModal.environment)}
+          readonly={
+            !isEnvironmentEditable(detailsModal.environment, editableEnvs)
+          }
           open={!!detailsModal}
           onClose={() => setDetailsModal(null)}
         />

@@ -1,4 +1,4 @@
-# unleash
+# Unleash Backend
 
 Backend plugin for the Unleash integration. It provides the API proxy for communicating with your Unleash instance.
 

@@ -230,7 +230,7 @@ export const spec = {
               type: 'object',
               nullable: true,
               properties: {
-                user: {
+                name: {
                   type: 'string',
                 },
                 avatar: {
@@ -261,8 +261,10 @@ export const spec = {
       },
       latestRun: {
         title: 'Terraform Latest Run',
-        description: 'Description of the latest terraform run',
+        description:
+          'Description of the latest terraform run, or null when the workspaces have no runs',
         type: 'object',
+        nullable: true,
         properties: {
           id: {
             type: 'string',
@@ -281,7 +283,7 @@ export const spec = {
             type: 'object',
             nullable: true,
             properties: {
-              user: {
+              name: {
                 type: 'string',
               },
               avatar: {

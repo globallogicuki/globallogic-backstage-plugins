@@ -130,7 +130,7 @@ describe('StrategyEditor', () => {
       expect(totalWeight).toBe(1000); // Should always total 100%
     });
 
-    it('auto-corrects weights on mount when total is not 100%', async () => {
+    it('does not call onChange before any user edit', async () => {
       const invalidWeightStrategy: Strategy = {
         ...flexibleRolloutStrategy,
         variants: [
@@ -158,9 +158,45 @@ describe('StrategyEditor', () => {
         />,
       );
 
-      // Component should auto-recalculate weights on mount
-      const call = mockOnChange.mock.calls[0]?.[0];
-      expect(call).toBeDefined();
+      // The editor is fully controlled and must not rewrite weights (or call
+      // onChange at all) until the user actually edits something.
+      expect(mockOnChange).not.toHaveBeenCalled();
+    });
+
+    it('recalculates weights when the user edits a variant', async () => {
+      const invalidWeightStrategy: Strategy = {
+        ...flexibleRolloutStrategy,
+        variants: [
+          {
+            name: 'Variant A',
+            weight: 300,
+            weightType: 'fix',
+            stickiness: 'default',
+            payload: { type: 'string', value: 'valueA' },
+          },
+          {
+            name: 'Variant B',
+            weight: 200,
+            weightType: 'variable',
+            stickiness: 'default',
+            payload: { type: 'string', value: 'valueB' },
+          },
+        ],
+      };
+
+      await renderInTestApp(
+        <StrategyEditor
+          strategy={invalidWeightStrategy}
+          onChange={mockOnChange}
+        />,
+      );
+
+      // Trigger a user edit on one of the variants
+      const variantNameInput = screen.getByDisplayValue('Variant B');
+      fireEvent.change(variantNameInput, { target: { value: 'Variant B2' } });
+
+      const call =
+        mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
       const totalWeight = call.variants.reduce(
         (sum: number, v: any) => sum + v.weight,
         0,
@@ -231,8 +267,7 @@ describe('StrategyEditor', () => {
       );
 
       const ipInput = screen.getByDisplayValue('10.1.1.17, 192.168.1.0/24');
-      await userEvent.clear(ipInput);
-      await userEvent.type(ipInput, '192.168.1.1');
+      fireEvent.change(ipInput, { target: { value: '192.168.1.1' } });
 
       expect(mockOnChange).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -294,8 +329,9 @@ describe('StrategyEditor', () => {
       const hostnameInput = screen.getByDisplayValue(
         'app1.example.com, app2.example.com',
       );
-      await userEvent.clear(hostnameInput);
-      await userEvent.type(hostnameInput, 'newhost.example.com');
+      fireEvent.change(hostnameInput, {
+        target: { value: 'newhost.example.com' },
+      });
 
       expect(mockOnChange).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -405,8 +441,7 @@ describe('StrategyEditor', () => {
       );
 
       const contextInput = screen.getByDisplayValue('userId');
-      await userEvent.clear(contextInput);
-      await userEvent.type(contextInput, 'email');
+      fireEvent.change(contextInput, { target: { value: 'email' } });
 
       expect(mockOnChange).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -424,8 +459,7 @@ describe('StrategyEditor', () => {
       );
 
       const valuesInput = screen.getByDisplayValue('user1, user2');
-      await userEvent.clear(valuesInput);
-      await userEvent.type(valuesInput, 'user3, user4');
+      fireEvent.change(valuesInput, { target: { value: 'user3, user4' } });
 
       expect(mockOnChange).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -475,10 +509,13 @@ describe('StrategyEditor', () => {
         />,
       );
 
-      // The component should recalculate weights on mount
-      // All 3 variants should be variable and total 1000
-      const call = mockOnChange.mock.calls[0]?.[0];
-      expect(call).toBeDefined();
+      // A user edit should trigger a recalculation:
+      // all 3 variants should be variable and total 1000
+      const variantNameInput = screen.getByDisplayValue('Variant A');
+      fireEvent.change(variantNameInput, { target: { value: 'Variant A2' } });
+
+      const call =
+        mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
       const totalWeight = call.variants.reduce(
         (sum: number, v: any) => sum + v.weight,
         0,
@@ -526,9 +563,14 @@ describe('StrategyEditor', () => {
         />,
       );
 
-      // Fixed variant should keep 300
-      // Remaining 700 should be split between the 2 variable variants
-      const call = mockOnChange.mock.calls[0]?.[0];
+      // A user edit should trigger a recalculation:
+      // the fixed variant should keep 300 and the remaining 700 should be
+      // split between the 2 variable variants
+      const variantNameInput = screen.getByDisplayValue('Variant B');
+      fireEvent.change(variantNameInput, { target: { value: 'Variant B2' } });
+
+      const call =
+        mockOnChange.mock.calls[mockOnChange.mock.calls.length - 1][0];
       expect(call).toBeDefined();
       const totalWeight = call.variants.reduce(
         (sum: number, v: any) => sum + v.weight,
@@ -619,8 +661,9 @@ describe('StrategyEditor', () => {
       );
 
       const variantNameInput = screen.getByDisplayValue('Variant A');
-      await userEvent.clear(variantNameInput);
-      await userEvent.type(variantNameInput, 'Updated Name');
+      fireEvent.change(variantNameInput, {
+        target: { value: 'Updated Name' },
+      });
 
       expect(mockOnChange).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -640,8 +683,7 @@ describe('StrategyEditor', () => {
       );
 
       const payloadValueInput = screen.getByDisplayValue('valueA');
-      await userEvent.clear(payloadValueInput);
-      await userEvent.type(payloadValueInput, 'newValue');
+      fireEvent.change(payloadValueInput, { target: { value: 'newValue' } });
 
       expect(mockOnChange).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -778,8 +820,7 @@ describe('StrategyEditor', () => {
       );
 
       const groupIdInput = screen.getByDisplayValue('test-group');
-      await userEvent.clear(groupIdInput);
-      await userEvent.type(groupIdInput, 'new-group');
+      fireEvent.change(groupIdInput, { target: { value: 'new-group' } });
 
       expect(mockOnChange).toHaveBeenCalledWith(
         expect.objectContaining({

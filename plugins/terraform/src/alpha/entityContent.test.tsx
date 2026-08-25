@@ -25,11 +25,12 @@ describe('entityContent extension', () => {
       </TestApiProvider>,
     );
 
+    // Generous budget: this render is slow under full-suite parallel load.
     await waitFor(
       () => {
         expect(screen.getByText('Runs for 2 workspaces')).toBeInTheDocument();
       },
-      { timeout: 5000 },
+      { timeout: 15000 },
     );
-  });
+  }, 20000);
 });

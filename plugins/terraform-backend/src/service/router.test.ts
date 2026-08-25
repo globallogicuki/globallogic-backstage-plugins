@@ -3,7 +3,7 @@ import { ConfigReader } from '@backstage/config';
 import { Server } from 'http';
 import express from 'express';
 import request from 'supertest';
-import { createRouter, DEFAULT_TF_BASE_URL } from './router';
+import { createRouter, DEFAULT_TF_BASE_URL, getApiBaseUrl } from './router';
 import { mockConfig } from '../mocks/config';
 import {
   getAssessmentResultsForWorkspaces,
@@ -19,9 +19,36 @@ import {
 
 jest.mock('../lib');
 
+describe('getApiBaseUrl', () => {
+  it('appends /api/v2 to a web origin', () => {
+    expect(getApiBaseUrl('https://tfe.enterprise.com')).toEqual(
+      'https://tfe.enterprise.com/api/v2',
+    );
+  });
+
+  it('appends /api/v2 to the default base URL', () => {
+    expect(getApiBaseUrl(DEFAULT_TF_BASE_URL)).toEqual(
+      'https://app.terraform.io/api/v2',
+    );
+  });
+
+  it('handles trailing slashes', () => {
+    expect(getApiBaseUrl('https://tfe.enterprise.com/')).toEqual(
+      'https://tfe.enterprise.com/api/v2',
+    );
+  });
+
+  it('uses a base URL already ending in /api/v2 as-is for backwards compatibility', () => {
+    expect(getApiBaseUrl('https://tfe.enterprise.com/api/v2')).toEqual(
+      'https://tfe.enterprise.com/api/v2',
+    );
+  });
+});
+
 describe('createRouter', () => {
   let app: express.Express | Server;
   const config = new ConfigReader(mockConfig);
+  const apiBaseUrl = getApiBaseUrl(DEFAULT_TF_BASE_URL);
 
   beforeAll(async () => {
     const router = await createRouter({
@@ -64,7 +91,7 @@ describe('createRouter', () => {
       );
 
       expect(listOrgRuns).toHaveBeenCalledWith({
-        baseUrl: DEFAULT_TF_BASE_URL,
+        baseUrl: apiBaseUrl,
         organization: 'testOrg',
         token: 'fakeToken',
         workspaces: ['testWorkspace1'],
@@ -79,7 +106,7 @@ describe('createRouter', () => {
       );
 
       expect(listOrgRuns).toHaveBeenCalledWith({
-        baseUrl: DEFAULT_TF_BASE_URL,
+        baseUrl: apiBaseUrl,
         organization: 'testOrg',
         token: 'fakeToken',
         workspaces: ['testWorkspace1', 'testWorkspace2'],
@@ -118,7 +145,7 @@ describe('createRouter', () => {
       );
 
       expect(getLatestRunForWorkspaces).toHaveBeenCalledWith(
-        DEFAULT_TF_BASE_URL,
+        apiBaseUrl,
         'fakeToken',
         'testOrg',
         ['testWorkspace1'],
@@ -131,11 +158,21 @@ describe('createRouter', () => {
       await request(app).get(TEST_URL);
 
       expect(getLatestRunForWorkspaces).toHaveBeenCalledWith(
-        DEFAULT_TF_BASE_URL,
+        apiBaseUrl,
         'fakeToken',
         'testOrg',
         ['testWorkspace1', 'testWorkspace2'],
       );
+    });
+
+    it('returns null with status 200 when the workspaces have no runs', async () => {
+      (getLatestRunForWorkspaces as jest.Mock).mockResolvedValue(null);
+
+      const response = await request(app).get(TEST_URL);
+
+      expect(response.status).toEqual(200);
+      expect(response.text).toEqual('null');
+      expect(response.body).toBeNull();
     });
 
     it('returns error if getLatestRunForWorkspaces throws', async () => {
@@ -174,10 +211,11 @@ describe('createRouter', () => {
       );
 
       expect(getAssessmentResultsForWorkspaces).toHaveBeenCalledWith({
-        baseUrl: DEFAULT_TF_BASE_URL,
+        baseUrl: apiBaseUrl,
         token: 'fakeToken',
         organization: 'testOrg',
         workspaces: ['testWorkspace1'],
+        logger: expect.anything(),
       });
     });
 
@@ -189,10 +227,11 @@ describe('createRouter', () => {
       await request(app).get(TEST_URL);
 
       expect(getAssessmentResultsForWorkspaces).toHaveBeenCalledWith({
-        baseUrl: DEFAULT_TF_BASE_URL,
+        baseUrl: apiBaseUrl,
         token: 'fakeToken',
         organization: 'testOrg',
         workspaces: ['testWorkspace1', 'testWorkspace2'],
+        logger: expect.anything(),
       });
     });
 

@@ -27,6 +27,15 @@ const CACHE_TTL_MS = 5 * 60 * 1000;
 // `./skills/deck-gl`. No absolute URLs, no parent traversal.
 const SAFE_SOURCE = /^\.?\/?[A-Za-z0-9][A-Za-z0-9._/-]*$/;
 
+// SAFE_SOURCE alone still admits `..` mid-path (`a/../b`), which URL
+// resolution collapses into parent traversal — reject dot-only segments.
+const isSafeSource = (source: string): boolean =>
+  SAFE_SOURCE.test(source) &&
+  source
+    .replace(/^\.\//, '')
+    .split('/')
+    .every(segment => segment !== '..' && segment !== '.');
+
 const isNotFound = (error: unknown): boolean =>
   error instanceof NotFoundError ||
   (error instanceof Error && error.name === 'NotFoundError');
@@ -79,11 +88,9 @@ export async function createRouter(
 
   router.get('/marketplace', async (_req, res) => {
     const treeUrl = getTreeUrl();
-    let marketplace;
+    let raw;
     try {
-      marketplace = JSON.parse(
-        await readFile(treeUrl, '.claude-plugin/marketplace.json'),
-      );
+      raw = await readFile(treeUrl, '.claude-plugin/marketplace.json');
     } catch (error) {
       if (isNotFound(error)) {
         res.status(404).json({
@@ -94,6 +101,15 @@ export async function createRouter(
         return;
       }
       throw error;
+    }
+    let marketplace;
+    try {
+      marketplace = JSON.parse(raw);
+    } catch {
+      res.status(502).json({
+        error: { message: 'Marketplace manifest is not valid JSON.' },
+      });
+      return;
     }
     if (!Array.isArray(marketplace.plugins)) {
       res.status(502).json({
@@ -111,7 +127,7 @@ export async function createRouter(
 
   router.get('/skill-doc', async (req, res) => {
     const source = req.query.source;
-    if (typeof source !== 'string' || !SAFE_SOURCE.test(source)) {
+    if (typeof source !== 'string' || !isSafeSource(source)) {
       res.status(400).json({
         error: { message: 'Invalid "source" query parameter.' },
       });

@@ -2,6 +2,7 @@
  * Annotation constants for linking catalog entities to Unleash projects
  */
 import type { Entity } from '@backstage/catalog-model';
+import type { Tag } from './types';
 
 export const UNLEASH_PROJECT_ANNOTATION = 'unleash.io/project-id';
 export const UNLEASH_FILTER_TAGS_ANNOTATION = 'unleash.io/filter-tags';
@@ -18,10 +19,7 @@ export const isUnleashAvailable = (entity: Entity): boolean =>
 export const getUnleashProjectId = (entity: Entity): string | undefined =>
   entity.metadata.annotations?.[UNLEASH_PROJECT_ANNOTATION];
 
-export interface TagFilter {
-  type: string;
-  value: string;
-}
+export type TagFilter = Tag;
 
 export const parseTagFilter = (tag: string): TagFilter => {
   const colonIndex = tag.indexOf(':');

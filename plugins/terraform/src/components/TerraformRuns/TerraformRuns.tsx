@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { Grid, IconButton, Typography } from '@material-ui/core';
 import RefreshIcon from '@material-ui/icons/Refresh';
 import { ResponseErrorPanel } from '@backstage/core-components';
@@ -27,10 +26,6 @@ export const TerraformRuns = ({
       ? `${workspaceNames.length} workspaces`
       : workspaceNames[0]
   }`;
-
-  useEffect(() => {
-    refetch();
-  }, [refetch]);
 
   if (error) {
     return <ResponseErrorPanel error={error} />;

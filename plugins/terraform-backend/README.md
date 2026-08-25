@@ -16,9 +16,11 @@ To use the terraform backend, you will need to configure the following in your `
 integrations:
   terraform:
     token: tokenGoesHere
-    baseUrl: https://tfe.enterprise.com/api/v2 # Optional, for self-hosted TFE
+    baseUrl: https://tfe.enterprise.com # Optional, for self-hosted TFE. Defaults to https://app.terraform.io
     pageSize: 20 # Optional, override default TF API page size
 ```
+
+`baseUrl` is the web origin of your Terraform instance (it is also used by the frontend plugin to build links to the Terraform UI). The backend derives the API root by appending `/api/v2`. For backwards compatibility, a `baseUrl` that already ends in `/api/v2` is used as-is by the backend.
 
 ### New Backstage backend system
 

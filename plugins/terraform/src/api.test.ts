@@ -55,6 +55,15 @@ describe('TerraformApiClient', () => {
       );
     });
 
+    it('encodes the organization and workspace names', async () => {
+      await client.getRuns('org 1/2', ['work space', 'workspace?2']);
+
+      expect(fetchApiMock.fetch).toHaveBeenCalledWith(
+        'http://mock-api.com/organizations/org%201%2F2/workspaces/work%20space,workspace%3F2/runs',
+        { credentials: 'include' },
+      );
+    });
+
     it('returns runs when successful', async () => {
       const runs = await client.getRuns('org1', ['workspace1', 'workspace2']);
 
@@ -79,6 +88,36 @@ describe('TerraformApiClient', () => {
       const response = {
         ok: false,
         json: jest.fn().mockResolvedValue({ error: undefined }),
+      };
+      (fetchApiMock.fetch as jest.Mock).mockResolvedValue(response);
+
+      await expect(
+        client.getRuns('org1', ['workspace1', 'workspace2']),
+      ).rejects.toThrow('Error fetching runs!');
+    });
+
+    it('should fall back to the status text when the error body is not JSON', async () => {
+      const response = {
+        ok: false,
+        statusText: 'Bad Gateway',
+        json: jest
+          .fn()
+          .mockRejectedValue(new SyntaxError('Unexpected token < in JSON')),
+      };
+      (fetchApiMock.fetch as jest.Mock).mockResolvedValue(response);
+
+      await expect(
+        client.getRuns('org1', ['workspace1', 'workspace2']),
+      ).rejects.toThrow('Bad Gateway');
+    });
+
+    it('should fall back to the default message when the error body is not JSON and there is no status text', async () => {
+      const response = {
+        ok: false,
+        statusText: '',
+        json: jest
+          .fn()
+          .mockRejectedValue(new SyntaxError('Unexpected token < in JSON')),
       };
       (fetchApiMock.fetch as jest.Mock).mockResolvedValue(response);
 
@@ -144,6 +183,20 @@ describe('TerraformApiClient', () => {
       expect(latestRunResult).toEqual(mockLatestRun);
     });
 
+    it('returns null when there are no runs for the workspaces', async () => {
+      (fetchApiMock.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(null),
+      });
+
+      const latestRunResult = await client.getLatestRun('org1', [
+        'workspace1',
+        'workspace2',
+      ]);
+
+      expect(latestRunResult).toBeNull();
+    });
+
     it('should throw an error when the FetchApi call is unsuccessful', async () => {
       const response = {
         ok: false,
@@ -166,8 +219,8 @@ describe('TerraformApiClient', () => {
       (fetchApiMock.fetch as jest.Mock).mockResolvedValue(response);
 
       await expect(
-        client.getRuns('org1', ['workspace1', 'workspace2']),
-      ).rejects.toThrow('Error fetching runs!');
+        client.getLatestRun('org1', ['workspace1', 'workspace2']),
+      ).rejects.toThrow('Error fetching latest run!');
     });
   });
 

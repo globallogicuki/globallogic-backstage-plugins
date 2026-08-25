@@ -64,14 +64,6 @@ export interface Constraint {
   inverted?: boolean;
 }
 
-export interface UnleashProject {
-  id: string;
-  name: string;
-  description?: string;
-  health?: number;
-  favorite?: boolean;
-}
-
 export interface ProjectSummary {
   name: string;
   id: string;

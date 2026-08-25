@@ -1,6 +1,21 @@
 import type { FeatureFlag } from './types';
 import type { TagFilter } from './annotations';
 
+/**
+ * Default number of environments to display in the UI
+ */
+export const DEFAULT_NUM_ENVS = 4;
+
+/**
+ * Check if an environment can be modified via the UI
+ */
+export function isEnvironmentEditable(
+  env: string,
+  editableEnvs: string[],
+): boolean {
+  return editableEnvs.length > 0 && editableEnvs.includes(env);
+}
+
 export function filterFlagsByTags(
   flags: FeatureFlag[],
   filters: TagFilter[],

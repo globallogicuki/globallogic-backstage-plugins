@@ -24,7 +24,7 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import EditIcon from '@material-ui/icons/Edit';
 import SaveIcon from '@material-ui/icons/Save';
 import CancelIcon from '@material-ui/icons/Cancel';
-import { Progress } from '@backstage/core-components';
+import { Progress, ResponseErrorPanel } from '@backstage/core-components';
 import { useApi, alertApiRef } from '@backstage/core-plugin-api';
 import { unleashApiRef } from '../../api';
 import { StrategyEditor } from '../StrategyEditor';
@@ -79,7 +79,11 @@ export const FlagDetailsModal = ({
   const [saving, setSaving] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const { value: flag, loading } = useAsync(async () => {
+  const {
+    value: flag,
+    loading,
+    error,
+  } = useAsync(async () => {
     if (!open) return null;
     return unleashApi.getFlag(projectId, flagName);
   }, [projectId, flagName, open, refreshKey]);
@@ -135,6 +139,9 @@ export const FlagDetailsModal = ({
         {(() => {
           if (loading) {
             return <Progress />;
+          }
+          if (error) {
+            return <ResponseErrorPanel error={error} />;
           }
           if (!flag) {
             return <Typography>Failed to load flag details</Typography>;
@@ -409,7 +416,7 @@ export const FlagDetailsModal = ({
                       {flag.variants.map((variant, idx) => (
                         <TableRow key={idx}>
                           <TableCell>{variant.name}</TableCell>
-                          <TableCell>{variant.weight}%</TableCell>
+                          <TableCell>{variant.weight / 10}%</TableCell>
                           <TableCell>{variant.weightType}</TableCell>
                         </TableRow>
                       ))}

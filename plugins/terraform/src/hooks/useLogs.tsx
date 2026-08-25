@@ -5,9 +5,16 @@ const useLogs = (logsUrl: string) => {
   const fetchApi = useApi(fetchApiRef);
 
   const { value, loading, error } = useAsync(async (): Promise<string> => {
-    const res = fetchApi.fetch(logsUrl);
-    return (await res).text();
-  }, undefined);
+    const res = await fetchApi.fetch(logsUrl);
+
+    if (!res.ok) {
+      throw new Error(
+        `Error fetching logs: ${res.status} ${res.statusText}`.trim(),
+      );
+    }
+
+    return res.text();
+  }, [fetchApi, logsUrl]);
 
   return {
     data: value,

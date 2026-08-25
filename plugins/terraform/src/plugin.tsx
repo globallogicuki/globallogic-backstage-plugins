@@ -1,12 +1,11 @@
-/* eslint-disable new-cap */
 import {
   createPlugin,
   createRoutableExtension,
   createComponentExtension,
+  createApiFactory,
   discoveryApiRef,
   fetchApiRef,
 } from '@backstage/core-plugin-api';
-import { createApiFactory } from '@backstage/frontend-plugin-api';
 import { rootRouteRef } from './routes';
 import { TerraformApiClient, terraformApiRef } from './api';
 
@@ -29,9 +28,10 @@ export const EntityTerraformContent = terraformPlugin.provide(
   createRoutableExtension({
     name: 'EntityTerraformContent',
     component: () =>
-      import('./components/Terraform').then(
-        m => () => m.Terraform({ isCard: false }),
-      ),
+      import('./components/Terraform').then(m => {
+        const TerraformContent = () => <m.Terraform isCard={false} />;
+        return TerraformContent;
+      }),
     mountPoint: rootRouteRef,
   }),
 );
@@ -41,9 +41,10 @@ export const EntityTerraformCard = terraformPlugin.provide(
     name: 'EntityTerraformCard',
     component: {
       lazy: () =>
-        import('./components/Terraform').then(
-          m => () => m.Terraform({ isCard: true }),
-        ),
+        import('./components/Terraform').then(m => {
+          const TerraformCard = () => <m.Terraform isCard />;
+          return TerraformCard;
+        }),
     },
   }),
 );

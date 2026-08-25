@@ -1,6 +1,6 @@
 import { useEntity } from '@backstage/plugin-catalog-react';
 import { CircularProgress } from '@material-ui/core';
-import { useEffect } from 'react';
+import { ReactNode } from 'react';
 import { useLatestRun } from '../../hooks';
 import { TerraformLatestRunContent } from '../TerraformLatestRunContent';
 import { TerraformLatestRunError } from '../TerraformLatestRunError';
@@ -23,40 +23,24 @@ export const TerraformLatestRun = () => {
     data: latestRun,
     isLoading,
     error,
-    refetch,
   } = useLatestRun(organization!, workspaces!);
 
-  useEffect(() => {
-    refetch();
-  }, [refetch]);
-
+  let content: ReactNode;
   if (error) {
-    return (
-      <TerraformLatestRunWrapperCard workspaces={workspaces!}>
-        <TerraformLatestRunError error={error} />
-      </TerraformLatestRunWrapperCard>
+    content = <TerraformLatestRunError error={error} />;
+  } else if (isLoading) {
+    content = (
+      <CircularProgress aria-describedby="Getting latest run" aria-busy />
     );
-  }
-
-  if (isLoading) {
-    return (
-      <TerraformLatestRunWrapperCard workspaces={workspaces!}>
-        <CircularProgress aria-describedby="Getting latest run" aria-busy />
-      </TerraformLatestRunWrapperCard>
-    );
-  }
-
-  if (!latestRun) {
-    return (
-      <TerraformLatestRunWrapperCard workspaces={workspaces!}>
-        <TerraformNoRuns />
-      </TerraformLatestRunWrapperCard>
-    );
+  } else if (!latestRun) {
+    content = <TerraformNoRuns />;
+  } else {
+    content = <TerraformLatestRunContent run={latestRun} />;
   }
 
   return (
     <TerraformLatestRunWrapperCard workspaces={workspaces!}>
-      <TerraformLatestRunContent run={latestRun} />
+      {content}
     </TerraformLatestRunWrapperCard>
   );
 };

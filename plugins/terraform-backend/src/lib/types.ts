@@ -23,8 +23,24 @@ export interface TerraformRun extends TerraformEntityBase {
   };
   relationships: {
     'confirmed-by'?: Relationship;
+    'configuration-version'?: Relationship;
     plan?: Relationship;
     workspace?: Relationship;
+  };
+}
+
+export interface TerraformConfigurationVersion extends TerraformEntityBase {
+  type: 'configuration-versions';
+  relationships?: {
+    'ingress-attributes'?: Relationship;
+  };
+}
+
+export interface TerraformIngressAttributes extends TerraformEntityBase {
+  type: 'ingress-attributes';
+  attributes: {
+    'sender-username'?: string;
+    'sender-avatar-url'?: string;
   };
 }
 
@@ -75,7 +91,9 @@ export type TerraformEntity =
   | TerraformRun
   | TerraformWorkspace
   | TerraformUser
-  | TerraformPlan;
+  | TerraformPlan
+  | TerraformConfigurationVersion
+  | TerraformIngressAttributes;
 
 export interface TerraformResponse<EntityType> {
   data: EntityType;

@@ -11,6 +11,19 @@ import { createOpenApiRouter } from '../schema/openapi/generated';
 
 export const DEFAULT_TF_BASE_URL = 'https://app.terraform.io';
 
+/**
+ * Derives the Terraform API root from the configured base URL.
+ *
+ * The configured `integrations.terraform.baseUrl` is the web origin of the
+ * Terraform instance (e.g. `https://tfe.enterprise.com`), so the API root is
+ * derived by appending `/api/v2`. For backwards compatibility, a configured
+ * value already ending in `/api/v2` is used as-is.
+ */
+export const getApiBaseUrl = (baseUrl: string): string => {
+  const trimmed = baseUrl.replace(/\/+$/, '');
+  return trimmed.endsWith('/api/v2') ? trimmed : `${trimmed}/api/v2`;
+};
+
 export interface RouterOptions {
   logger: LoggerService;
   config: Config;
@@ -25,9 +38,10 @@ export async function createRouter(
   router.use(express.json());
 
   const token = config.getString('integrations.terraform.token');
-  const baseUrl =
+  const baseUrl = getApiBaseUrl(
     config.getOptionalString('integrations.terraform.baseUrl') ??
-    DEFAULT_TF_BASE_URL;
+      DEFAULT_TF_BASE_URL,
+  );
   const pageSize = config.getOptionalNumber('integrations.terraform.pageSize');
 
   router.get(
@@ -37,7 +51,7 @@ export async function createRouter(
       const workspaces = request.params.workspaceNames.split(',');
 
       getLatestRunForWorkspaces(baseUrl, token, organization, workspaces)
-        .then(latestRun => response.json(latestRun))
+        .then(latestRun => response.json(latestRun ?? null))
         .catch(next);
     },
   );
@@ -72,6 +86,7 @@ export async function createRouter(
         baseUrl,
         organization,
         workspaces,
+        logger,
       })
         .then(assessments => {
           response.json(assessments);

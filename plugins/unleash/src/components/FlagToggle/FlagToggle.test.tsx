@@ -5,6 +5,13 @@ import { alertApiRef } from '@backstage/core-plugin-api';
 import { FlagToggle } from './FlagToggle';
 import { unleashApiRef } from '../../api';
 
+// Mimics the structured error thrown by UnleashApiClient
+const apiError = (message: string, statusCode: number, name?: string) =>
+  Object.assign(new Error(message), {
+    statusCode,
+    name: name ?? 'UnleashApiError',
+  });
+
 describe('FlagToggle', () => {
   const mockUnleashApi = {
     toggleFlag: jest.fn(),
@@ -84,7 +91,7 @@ describe('FlagToggle', () => {
   it('shows a permission error message when forbidden', async () => {
     const user = userEvent.setup();
     mockUnleashApi.toggleFlag.mockRejectedValue(
-      new Error('Permission denied: not allowed'),
+      apiError('Permission denied for toggle action', 403, 'NotAllowedError'),
     );
 
     await renderInTestApp(
@@ -210,7 +217,11 @@ describe('FlagToggle', () => {
   it('handles "not editable" environment error', async () => {
     const user = userEvent.setup();
     mockUnleashApi.toggleFlag.mockRejectedValue(
-      new Error('Environment production is not editable'),
+      apiError(
+        'Environment production is not editable',
+        403,
+        'NotAllowedError',
+      ),
     );
 
     await renderInTestApp(
@@ -243,9 +254,9 @@ describe('FlagToggle', () => {
     });
   });
 
-  it('handles "Forbidden" error', async () => {
+  it('handles 403 errors without an error name', async () => {
     const user = userEvent.setup();
-    mockUnleashApi.toggleFlag.mockRejectedValue(new Error('Forbidden'));
+    mockUnleashApi.toggleFlag.mockRejectedValue(apiError('Forbidden', 403));
 
     await renderInTestApp(
       <TestApiProvider
@@ -270,7 +281,8 @@ describe('FlagToggle', () => {
     await waitFor(() => {
       expect(mockAlertApi.post).toHaveBeenCalledWith(
         expect.objectContaining({
-          message: "You don't have permission to modify this flag.",
+          message:
+            "You don't have permission to modify this flag. Only component owners can toggle flags.",
           severity: 'error',
         }),
       );
@@ -280,7 +292,7 @@ describe('FlagToggle', () => {
   it('handles generic Unleash API errors', async () => {
     const user = userEvent.setup();
     mockUnleashApi.toggleFlag.mockRejectedValue(
-      new Error('Unleash API error: Feature not found'),
+      apiError('Feature not found', 404, 'NotFoundError'),
     );
 
     await renderInTestApp(

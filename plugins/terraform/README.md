@@ -42,6 +42,18 @@ annotations:
 
 You will also need to have the [terraform backend plugin](https://www.npmjs.com/package/@globallogicuki/backstage-plugin-terraform-backend) installed and running.
 
+## Configuration
+
+The plugin reads the optional `integrations.terraform.baseUrl` value from your `app-config.yaml` to build links to the Terraform web UI:
+
+```yaml
+integrations:
+  terraform:
+    baseUrl: https://tfe.enterprise.com # Optional, the web origin of your Terraform instance. Defaults to https://app.terraform.io
+```
+
+This is the same value used by the backend plugin, which derives the Terraform API root from it by appending `/api/v2`.
+
 ## Terraform Latest Run card
 
 ![Latest Run card - Single Workspace](./docs/terraform-plugin-latest-run-content.png)

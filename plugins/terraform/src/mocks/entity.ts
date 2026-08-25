@@ -11,10 +11,10 @@ export const mockEntity: Entity = {
       'terraform/organization': 'gluk',
       'terraform/workspaces': 'terraform-cloud-gluk-project-config,workspace-2',
     },
-    spec: {
-      owner: 'guest',
-      type: 'service',
-      lifecycle: 'production',
-    },
+  },
+  spec: {
+    owner: 'guest',
+    type: 'service',
+    lifecycle: 'production',
   },
 };

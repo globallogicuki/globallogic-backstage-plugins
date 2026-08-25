@@ -5,6 +5,7 @@ import {
 import { catalogServiceRef } from '@backstage/plugin-catalog-node';
 import { createRouter } from './router';
 import {
+  DEFAULT_NUM_ENVS,
   unleashFlagReadPermission,
   unleashFlagTogglePermission,
   unleashVariantManagePermission,
@@ -58,7 +59,8 @@ export const unleashPlugin = createBackendPlugin({
         const unleashToken = unleashConfig.getString('apiToken');
         const editableEnvs =
           unleashConfig.getOptionalStringArray('editableEnvs') ?? [];
-        const numEnvs = unleashConfig.getOptionalNumber('numEnvs') ?? 4;
+        const numEnvs =
+          unleashConfig.getOptionalNumber('numEnvs') ?? DEFAULT_NUM_ENVS;
 
         httpRouter.use(
           await createRouter({

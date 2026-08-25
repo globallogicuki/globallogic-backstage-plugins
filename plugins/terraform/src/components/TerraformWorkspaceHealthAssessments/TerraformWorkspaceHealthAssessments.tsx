@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import useAssessmentResults from '../../hooks/useAssessmentResults';
 import { InfoCard, ResponseErrorPanel } from '@backstage/core-components';
 import { CircularProgress, Grid, IconButton } from '@material-ui/core';
@@ -36,15 +35,11 @@ export const TerraformWorkspaceHealthAssessments = ({
     config.getOptionalString('integrations.terraform.baseUrl') ??
     DEFAULT_TF_BASE_URL;
 
-  useEffect(() => {
-    refetch();
-  }, [refetch]);
-
   if (error) {
     return <ResponseErrorPanel error={error} />;
   }
 
-  if (!data.length) {
+  if (!data?.length) {
     return null;
   }
 

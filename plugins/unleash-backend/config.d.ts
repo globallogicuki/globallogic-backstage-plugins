@@ -21,8 +21,9 @@ export interface Config {
     editableEnvs?: string[];
     /**
      * Number of environments to display in the UI
+     * The frontend reads this via the plugin's `GET /config` endpoint.
      * @default 4
-     * @visibility frontend
+     * @visibility backend
      */
     numEnvs?: number;
   };

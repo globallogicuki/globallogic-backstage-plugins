@@ -11,6 +11,7 @@ import {
   ResponseErrorPanel,
 } from '@backstage/core-components';
 import {
+  compareOwnersWorstFirst,
   useTechInsightsOverview,
   type OwnerSummary,
 } from './useTechInsightsOverview';
@@ -68,9 +69,7 @@ export const TechInsightsOverviewPage = () => {
       current.components += 1;
       tally.set(entity.ownerRef, current);
     }
-    return [...tally.values()].sort(
-      (a, b) => b.failing - a.failing || a.owner.localeCompare(b.owner),
-    );
+    return [...tally.values()].sort(compareOwnersWorstFirst);
   }, [aggregate, selectedCheck]);
 
   const selectedCheckName = aggregate?.checks.find(

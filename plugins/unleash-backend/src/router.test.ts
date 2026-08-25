@@ -231,7 +231,10 @@ describe('createRouter', () => {
         .set('Authorization', mockCredentials.user.header());
 
       expect(response.status).toEqual(403);
-      expect(response.body.error).toBe('Permission denied for toggle action');
+      expect(response.body.error.name).toBe('NotAllowedError');
+      expect(response.body.error.message).toBe(
+        'Permission denied for toggle action',
+      );
       expect(toggleFeatureFlag).not.toHaveBeenCalled();
     });
 
@@ -248,7 +251,9 @@ describe('createRouter', () => {
         .set('Authorization', mockCredentials.user.header());
 
       expect(response.status).toEqual(403);
-      expect(response.body.error).toBe('Permission denied for toggle action');
+      expect(response.body.error.message).toBe(
+        'Permission denied for toggle action',
+      );
       expect(toggleFeatureFlag).not.toHaveBeenCalled();
     });
 
@@ -260,10 +265,10 @@ describe('createRouter', () => {
         .set('Authorization', mockCredentials.user.header());
 
       expect(response.status).toEqual(403);
-      expect(response.body).toEqual({
-        error:
-          "Environment 'production' is not editable. Editable environments: development, staging",
-      });
+      expect(response.body.error.name).toBe('NotAllowedError');
+      expect(response.body.error.message).toBe(
+        "Environment 'production' is not editable. Editable environments: development, staging",
+      );
     });
 
     it('rejects invalid actions', async () => {
@@ -595,7 +600,34 @@ describe('createRouter', () => {
         .set('Authorization', mockCredentials.user.header());
 
       expect(response.status).toEqual(403);
-      expect(response.body.error).toContain('Permission denied');
+      expect(response.body.error.name).toBe('NotAllowedError');
+      expect(response.body.error.message).toContain('Permission denied');
+    });
+
+    it('maps upstream 404 errors from GET routes to NotFoundError', async () => {
+      const notFoundError: any = new Error('Unleash API error: Not Found');
+      notFoundError.statusCode = 404;
+      (getFeatureFlag as jest.Mock).mockRejectedValue(notFoundError);
+
+      const response = await request(app)
+        .get('/projects/test-project/features/missing-flag')
+        .set('Authorization', mockCredentials.user.header());
+
+      expect(response.status).toEqual(404);
+      expect(response.body.error.name).toBe('NotFoundError');
+    });
+
+    it('maps upstream 400 errors from GET routes to InputError', async () => {
+      const badRequestError: any = new Error('Unleash API error: Bad Request');
+      badRequestError.statusCode = 400;
+      (getProjectFeatures as jest.Mock).mockRejectedValue(badRequestError);
+
+      const response = await request(app)
+        .get('/projects/test-project/features')
+        .set('Authorization', mockCredentials.user.header());
+
+      expect(response.status).toEqual(400);
+      expect(response.body.error.name).toBe('InputError');
     });
 
     it('handles 500 error from toggle endpoint', async () => {
@@ -779,7 +811,7 @@ describe('createRouter', () => {
         .send({ name: 'default' });
 
       expect(response.status).toEqual(403);
-      expect(response.body.error).toContain('not editable');
+      expect(response.body.error.message).toContain('not editable');
       expect(updateStrategy).not.toHaveBeenCalled();
     });
   });
@@ -807,7 +839,9 @@ describe('createRouter', () => {
         .send([]);
 
       expect(response.status).toEqual(403);
-      expect(response.body.error).toContain('No environments are editable');
+      expect(response.body.error.message).toContain(
+        'No environments are editable',
+      );
     });
   });
 });

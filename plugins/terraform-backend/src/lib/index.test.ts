@@ -4,13 +4,14 @@ import {
   listOrgRuns,
 } from '.';
 import axios from 'axios';
+import { mockServices } from '@backstage/backend-test-utils';
 import {
   TerraformAssessmentResult,
   TerraformEntity,
   TerraformRun,
   TerraformWorkspace,
 } from './types';
-import { DEFAULT_TF_BASE_URL } from '../service/router';
+import { DEFAULT_TF_BASE_URL, getApiBaseUrl } from '../service/router';
 
 jest.mock('axios');
 
@@ -149,6 +150,15 @@ const mockAssessmentResult2: TerraformAssessmentResult = {
   },
 };
 
+const baseUrl = getApiBaseUrl(DEFAULT_TF_BASE_URL);
+
+const runsQuery = (pageSize: number, workspaces: string[]) =>
+  new URLSearchParams({
+    'filter[workspace_names]': workspaces.join(','),
+    'page[number]': '1',
+    'page[size]': String(pageSize),
+  }).toString();
+
 describe('lib/index', () => {
   beforeEach(() => {
     (axios.get as jest.Mock).mockResolvedValue({
@@ -166,7 +176,6 @@ describe('lib/index', () => {
   describe('listOrgRuns', () => {
     const workspaces = ['workspace-1', 'workspace-2'];
     const token = 'token-1';
-    const baseUrl = DEFAULT_TF_BASE_URL;
     const organization = 'org-1';
     const pageSize = 7;
 
@@ -180,7 +189,10 @@ describe('lib/index', () => {
       });
 
       expect(axios.get).toHaveBeenCalledWith(
-        `${baseUrl}/api/v2/organizations/${organization}/runs?filter[workspace_names]=workspace-1,workspace-2&page[number]=1&page[size]=${pageSize}`,
+        `${baseUrl}/organizations/${organization}/runs?${runsQuery(
+          pageSize,
+          workspaces,
+        )}`,
         { headers: { Authorization: `Bearer ${token}` } },
       );
     });
@@ -194,7 +206,24 @@ describe('lib/index', () => {
       });
 
       expect(axios.get).toHaveBeenCalledWith(
-        `${baseUrl}/api/v2/organizations/${organization}/runs?filter[workspace_names]=workspace-1,workspace-2&page[number]=1&page[size]=20`,
+        `${baseUrl}/organizations/${organization}/runs?${runsQuery(
+          20,
+          workspaces,
+        )}`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+    });
+
+    it('should encode the organization and workspace names', async () => {
+      await listOrgRuns({
+        token,
+        baseUrl,
+        organization: 'org 1/2',
+        workspaces: ['work space'],
+      });
+
+      expect(axios.get).toHaveBeenCalledWith(
+        `${baseUrl}/organizations/org%201%2F2/runs?filter%5Bworkspace_names%5D=work+space&page%5Bnumber%5D=1&page%5Bsize%5D=20`,
         { headers: { Authorization: `Bearer ${token}` } },
       );
     });
@@ -265,6 +294,97 @@ describe('lib/index', () => {
         'https://app.terraform.io/users/id-workspace',
         { headers: { Authorization: `Bearer ${token}` } },
       );
+    });
+
+    it('should attribute a VCS-triggered run (no confirmed-by) to the commit sender', async () => {
+      const vcsRun: TerraformRun = {
+        ...mockRun,
+        relationships: {
+          workspace: mockRun.relationships.workspace,
+          plan: mockRun.relationships.plan,
+          'configuration-version': {
+            data: { id: 'id-cv', type: 'configuration-versions' },
+            links: { related: '/api/v2/runs/id-1/configuration-version' },
+          },
+        },
+      };
+
+      (axios.get as jest.Mock).mockImplementation((url: string) => {
+        if (url.includes('/runs?')) {
+          return Promise.resolve({ data: { data: [vcsRun], included: [] } });
+        }
+        if (url.endsWith('/ingress-attributes')) {
+          return Promise.resolve({
+            data: {
+              data: {
+                id: 'id-ia',
+                type: 'ingress-attributes',
+                attributes: {
+                  'sender-username': 'commit-sender',
+                  'sender-avatar-url': 'sender-avatar',
+                },
+              },
+            },
+          });
+        }
+        if (url.endsWith('/configuration-version')) {
+          return Promise.resolve({
+            data: {
+              data: {
+                id: 'id-cv',
+                type: 'configuration-versions',
+                attributes: {},
+                relationships: {
+                  'ingress-attributes': {
+                    data: { id: 'id-ia', type: 'ingress-attributes' },
+                    links: {
+                      related:
+                        '/api/v2/configuration-versions/id-cv/ingress-attributes',
+                    },
+                  },
+                },
+              },
+            },
+          });
+        }
+        if (url.includes('/workspaces/')) {
+          return Promise.resolve({
+            data: { data: mockEntities.find(e => e.type === 'workspaces') },
+          });
+        }
+        return Promise.resolve({
+          data: { data: mockEntities.find(e => e.type === 'plans') },
+        });
+      });
+
+      const result = await listOrgRuns({
+        token,
+        baseUrl,
+        organization,
+        workspaces,
+      });
+
+      expect(result[0].confirmedBy).toEqual({
+        name: 'commit-sender',
+        avatar: 'sender-avatar',
+      });
+      expect(axios.get).toHaveBeenCalledWith(
+        'https://app.terraform.io/api/v2/runs/id-1/configuration-version',
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      expect(axios.get).toHaveBeenCalledWith(
+        'https://app.terraform.io/api/v2/configuration-versions/id-cv/ingress-attributes',
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+    });
+
+    it('should not fetch the configuration version when the run has a confirmed-by user', async () => {
+      await listOrgRuns({ token, baseUrl, organization, workspaces });
+
+      const calledUrls = (axios.get as jest.Mock).mock.calls.map(c => c[0]);
+      expect(
+        calledUrls.some((u: string) => u.includes('configuration-version')),
+      ).toBe(false);
     });
 
     it('should return the correctly formatted data when a related entity errors', async () => {
@@ -371,7 +491,6 @@ describe('lib/index', () => {
   describe('getLatestRunForWorkspaces', () => {
     const workSpaceNames = ['workspace-1', 'workspace-2'];
     const token = 'token-1';
-    const baseUrl = DEFAULT_TF_BASE_URL;
     const organization = 'org-1';
 
     it('should make the HTTP GET request correctly', async () => {
@@ -383,7 +502,10 @@ describe('lib/index', () => {
       );
 
       expect(axios.get).toHaveBeenCalledWith(
-        `${baseUrl}/api/v2/organizations/${organization}/runs?filter[workspace_names]=workspace-1,workspace-2&page[number]=1&page[size]=1`,
+        `${baseUrl}/organizations/${organization}/runs?${runsQuery(
+          1,
+          workSpaceNames,
+        )}`,
         { headers: { Authorization: `Bearer ${token}` } },
       );
     });
@@ -429,73 +551,90 @@ describe('lib/index', () => {
         workspace: null,
       });
     });
+
+    it('should return null when the workspaces have no runs', async () => {
+      (axios.get as jest.Mock).mockResolvedValue({
+        data: {
+          data: [],
+          included: [],
+        },
+      });
+
+      const result = await getLatestRunForWorkspaces(
+        baseUrl,
+        token,
+        organization,
+        workSpaceNames,
+      );
+
+      expect(result).toBeNull();
+    });
   });
 
   describe('getAssessmentResultsForWorkspaces', () => {
     const workspaces = [mockWorkspace1Name, mockWorkspace2Name];
     const token = 'token-1';
-    const baseUrl = DEFAULT_TF_BASE_URL;
     const organization = mockOrganization;
+    const logger = mockServices.logger.mock();
 
-    it('should make the HTTP GET /workspaces request correctly', async () => {
-      (axios.get as jest.Mock).mockResolvedValueOnce({
-        data: {
-          data: mockWorkspaces,
-        },
-      });
+    const workspaceUrl = (name: string) =>
+      `${baseUrl}/organizations/${organization}/workspaces/${encodeURIComponent(
+        name,
+      )}`;
 
-      (axios.get as jest.Mock).mockResolvedValueOnce({
-        data: {
-          data: mockAssessmentResult1,
-        },
+    const mockWorkspaceAndAssessmentRequests = () => {
+      (axios.get as jest.Mock).mockImplementation((url: string) => {
+        if (url === workspaceUrl(mockWorkspace1Name)) {
+          return Promise.resolve({ data: { data: mockWorkspaces[0] } });
+        }
+        if (url === workspaceUrl(mockWorkspace2Name)) {
+          return Promise.resolve({ data: { data: mockWorkspaces[1] } });
+        }
+        if (
+          url.endsWith('/workspaces/workspace1-id/current-assessment-result')
+        ) {
+          return Promise.resolve({ data: { data: mockAssessmentResult1 } });
+        }
+        if (
+          url.endsWith('/workspaces/workspace2-id/current-assessment-result')
+        ) {
+          return Promise.resolve({ data: { data: mockAssessmentResult2 } });
+        }
+        return Promise.reject(new Error(`Unexpected URL: ${url}`));
       });
+    };
 
-      (axios.get as jest.Mock).mockResolvedValueOnce({
-        data: {
-          data: mockAssessmentResult2,
-        },
-      });
+    it('should make an HTTP GET request per workspace', async () => {
+      mockWorkspaceAndAssessmentRequests();
 
       await getAssessmentResultsForWorkspaces({
         baseUrl,
         token,
         organization,
         workspaces,
+        logger,
       });
 
-      expect(axios.get).toHaveBeenCalledWith(
-        `${baseUrl}/api/v2/organizations/${organization}/workspaces`,
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
+      expect(axios.get).toHaveBeenCalledWith(workspaceUrl(mockWorkspace1Name), {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      expect(axios.get).toHaveBeenCalledWith(workspaceUrl(mockWorkspace2Name), {
+        headers: { Authorization: `Bearer ${token}` },
+      });
     });
 
     it('should make the correct number of HTTP GET requests for health assessments', async () => {
-      (axios.get as jest.Mock).mockResolvedValueOnce({
-        data: {
-          data: mockWorkspaces,
-        },
-      });
-
-      (axios.get as jest.Mock).mockResolvedValueOnce({
-        data: {
-          data: mockAssessmentResult1,
-        },
-      });
-
-      (axios.get as jest.Mock).mockResolvedValueOnce({
-        data: {
-          data: mockAssessmentResult2,
-        },
-      });
+      mockWorkspaceAndAssessmentRequests();
 
       await getAssessmentResultsForWorkspaces({
         baseUrl,
         token,
         organization,
         workspaces,
+        logger,
       });
 
-      expect(axios.get).toHaveBeenCalledTimes(3);
+      expect(axios.get).toHaveBeenCalledTimes(4);
       expect(axios.get).toHaveBeenCalledWith(
         'https://app.terraform.io/api/v2/workspaces/workspace1-id/current-assessment-result',
         { headers: { Authorization: `Bearer ${token}` } },
@@ -507,29 +646,14 @@ describe('lib/index', () => {
     });
 
     it('should return the correctly formatted data', async () => {
-      (axios.get as jest.Mock).mockResolvedValueOnce({
-        data: {
-          data: mockWorkspaces,
-        },
-      });
-
-      (axios.get as jest.Mock).mockResolvedValueOnce({
-        data: {
-          data: mockAssessmentResult1,
-        },
-      });
-
-      (axios.get as jest.Mock).mockResolvedValueOnce({
-        data: {
-          data: mockAssessmentResult2,
-        },
-      });
+      mockWorkspaceAndAssessmentRequests();
 
       const result = await getAssessmentResultsForWorkspaces({
         baseUrl,
         token,
         organization,
         workspaces,
+        logger,
       });
 
       expect(result).toEqual([
@@ -572,9 +696,142 @@ describe('lib/index', () => {
       ]);
     });
 
-    it('should handle an error when fetching the list of workspaces', async () => {
-      const errorMessage = 'Failed to fetch workspaces';
-      (axios.get as jest.Mock).mockRejectedValueOnce(new Error(errorMessage));
+    it('should not lose workspaces when there are more than one page of workspaces in the organization', async () => {
+      // Terraform Cloud returns 20 workspaces per page when listing an
+      // organization's workspaces. Fetching each annotated workspace
+      // individually must return every workspace regardless of how many the
+      // organization has.
+      const manyWorkspaceNames = Array.from(
+        { length: 25 },
+        (_, i) => `workspace-${i + 1}`,
+      );
+
+      (axios.get as jest.Mock).mockImplementation((url: string) => {
+        const workspaceMatch = url.match(/\/workspaces\/(workspace-\d+)$/);
+        if (workspaceMatch) {
+          const name = workspaceMatch[1];
+          const workspace: TerraformWorkspace = {
+            id: `${name}-id`,
+            type: 'workspaces',
+            attributes: {
+              'created-at': '2024-08-09T10:02:27.019Z',
+              name,
+            },
+            relationships: {
+              'current-assessment-result': {
+                data: {
+                  id: `asmtres-${name}`,
+                  type: 'assessment-results',
+                },
+                links: {
+                  related: `/api/v2/workspaces/${name}-id/current-assessment-result`,
+                },
+              },
+            },
+          };
+          return Promise.resolve({ data: { data: workspace } });
+        }
+        if (url.endsWith('/current-assessment-result')) {
+          return Promise.resolve({ data: { data: mockAssessmentResult1 } });
+        }
+        return Promise.reject(new Error(`Unexpected URL: ${url}`));
+      });
+
+      const result = await getAssessmentResultsForWorkspaces({
+        baseUrl,
+        token,
+        organization,
+        workspaces: manyWorkspaceNames,
+        logger,
+      });
+
+      expect(result).toHaveLength(25);
+      expect(result.map(r => r.workspaceName)).toEqual(manyWorkspaceNames);
+      // one lookup per workspace plus one assessment fetch per workspace
+      expect(axios.get).toHaveBeenCalledTimes(50);
+    });
+
+    it('should skip and log workspaces that cannot be fetched', async () => {
+      const warn = jest.spyOn(logger, 'warn');
+
+      (axios.get as jest.Mock).mockImplementation((url: string) => {
+        if (url === workspaceUrl(mockWorkspace1Name)) {
+          return Promise.reject(new Error('Not Found'));
+        }
+        if (url === workspaceUrl(mockWorkspace2Name)) {
+          return Promise.resolve({ data: { data: mockWorkspaces[1] } });
+        }
+        if (
+          url.endsWith('/workspaces/workspace2-id/current-assessment-result')
+        ) {
+          return Promise.resolve({ data: { data: mockAssessmentResult2 } });
+        }
+        return Promise.reject(new Error(`Unexpected URL: ${url}`));
+      });
+
+      const result = await getAssessmentResultsForWorkspaces({
+        baseUrl,
+        token,
+        organization,
+        workspaces,
+        logger,
+      });
+
+      expect(result).toHaveLength(1);
+      expect(result[0].workspaceName).toEqual(mockWorkspace2Name);
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining(`Skipping workspace "${mockWorkspace1Name}"`),
+      );
+    });
+
+    it('should filter out workspaces without a current assessment result', async () => {
+      const workspaceWithoutAssessment: TerraformWorkspace = {
+        id: 'workspace1-id',
+        type: 'workspaces',
+        attributes: {
+          'created-at': '2024-08-09T10:02:27.019Z',
+          name: 'workspace-1',
+        },
+      };
+
+      (axios.get as jest.Mock).mockImplementation((url: string) => {
+        if (url === workspaceUrl(mockWorkspace1Name)) {
+          return Promise.resolve({
+            data: { data: workspaceWithoutAssessment },
+          });
+        }
+        return Promise.reject(new Error(`Unexpected URL: ${url}`));
+      });
+
+      const result = await getAssessmentResultsForWorkspaces({
+        baseUrl,
+        token,
+        organization,
+        workspaces: [mockWorkspace1Name],
+        logger,
+      });
+
+      expect(result).toEqual([]);
+      expect(axios.get).toHaveBeenCalledTimes(1);
+    });
+
+    it('should handle an error when fetching a single workspace assessment', async () => {
+      (axios.get as jest.Mock).mockImplementation((url: string) => {
+        if (url === workspaceUrl(mockWorkspace1Name)) {
+          return Promise.resolve({ data: { data: mockWorkspaces[0] } });
+        }
+        if (url === workspaceUrl(mockWorkspace2Name)) {
+          return Promise.resolve({ data: { data: mockWorkspaces[1] } });
+        }
+        if (
+          url.endsWith('/workspaces/workspace1-id/current-assessment-result')
+        ) {
+          return Promise.resolve({ data: { data: mockAssessmentResult1 } });
+        }
+        return Promise.reject(
+          new Error('Failed to fetch assessment for workspace-2'),
+        );
+      });
 
       await expect(
         getAssessmentResultsForWorkspaces({
@@ -582,96 +839,23 @@ describe('lib/index', () => {
           token,
           organization,
           workspaces,
+          logger,
         }),
-      ).rejects.toThrow(errorMessage);
-      expect(axios.get).toHaveBeenCalledWith(
-        `${baseUrl}/api/v2/organizations/${organization}/workspaces`,
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
-      expect(axios.get).toHaveBeenCalledTimes(1);
-    });
-
-    it('should handle the case where no matching workspaces are found', async () => {
-      (axios.get as jest.Mock).mockResolvedValueOnce({
-        data: {
-          data: [],
-        },
-      });
-
-      const result = await getAssessmentResultsForWorkspaces({
-        baseUrl,
-        token,
-        organization,
-        workspaces,
-      });
-
-      expect(result).toEqual([]);
-      expect(axios.get).toHaveBeenCalledWith(
-        `${baseUrl}/api/v2/organizations/${organization}/workspaces`,
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
-      expect(axios.get).toHaveBeenCalledTimes(1);
-    });
-
-    it('should handle an error when fetching a single workspace assessment', async () => {
-      (axios.get as jest.Mock)
-        .mockResolvedValueOnce({
-          data: {
-            data: mockWorkspaces,
-          },
-        })
-        .mockResolvedValueOnce({
-          data: {
-            data: mockAssessmentResult1,
-          },
-        })
-        .mockRejectedValueOnce(
-          new Error('Failed to fetch assessment for workspace-2'),
-        );
-
-      const result = await getAssessmentResultsForWorkspaces({
-        baseUrl,
-        token,
-        organization,
-        workspaces,
-      }).catch(() => []);
-
-      expect(result).toEqual([]);
-      expect(axios.get).toHaveBeenCalledTimes(3);
-      expect(axios.get).toHaveBeenCalledWith(
-        `${baseUrl}/api/v2/organizations/${organization}/workspaces`,
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
-      expect(axios.get).toHaveBeenCalledWith(
-        'https://app.terraform.io/api/v2/workspaces/workspace1-id/current-assessment-result',
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
-      expect(axios.get).toHaveBeenCalledWith(
-        'https://app.terraform.io/api/v2/workspaces/workspace2-id/current-assessment-result',
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
+      ).rejects.toThrow('Failed to fetch assessment for workspace-2');
+      expect(axios.get).toHaveBeenCalledTimes(4);
     });
 
     it('should handle the case where the workspaces array is empty', async () => {
-      (axios.get as jest.Mock).mockResolvedValueOnce({
-        data: {
-          data: mockWorkspaces,
-        },
-      });
-
       const result = await getAssessmentResultsForWorkspaces({
         baseUrl,
         token,
         organization,
         workspaces: [],
+        logger,
       });
 
       expect(result).toEqual([]);
-      expect(axios.get).toHaveBeenCalledTimes(1);
-      expect(axios.get).toHaveBeenCalledWith(
-        `${baseUrl}/api/v2/organizations/${organization}/workspaces`,
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
+      expect(axios.get).not.toHaveBeenCalled();
     });
   });
 });

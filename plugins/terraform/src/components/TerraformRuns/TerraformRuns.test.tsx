@@ -84,7 +84,7 @@ describe('TerraformRuns', () => {
     const refresh = await screen.findByLabelText('Refresh');
     refresh.click();
 
-    expect(refetchMock).toHaveBeenCalledTimes(2);
+    expect(refetchMock).toHaveBeenCalledTimes(1);
   });
 
   it('renders error panel on error fetching', async () => {
