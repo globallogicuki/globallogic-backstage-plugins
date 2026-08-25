@@ -13,8 +13,8 @@ kind: Component
 metadata:
   name: example-website
   annotations:
-    terraform/organization: orgName
-    terraform/workspaces: workspaceName1,workspaceName2,workspaceName3
+    terraform/organization: GLUK
+    terraform/workspaces: compliace-as-code-workshop-example-workspace
     unleash.io/project-id: test
     unleash.io/filter-tags: component:test1, component:test2
 spec:
