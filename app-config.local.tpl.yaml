@@ -16,21 +16,19 @@ integrations:
   #   - username: BITBUCKET_USERNAME_HERE
   #     appPassword: BITBUCKET_APP_PASSWORD_HERE
 
-# The repo hosting the Claude Code marketplace shown on the /skills page.
+# The repos hosting the Claude Code marketplaces shown on the /skills page.
 # Required by the skills-marketplace plugin — it has no defaults. Use the web
-# URL of the repo tree at the branch to read, e.g.
+# URL of each repo tree at the branch to read, e.g.
 #   https://github.com/ORG/REPO/tree/main
 #   https://gitlab.com/GROUP/REPO/-/tree/main
 #   https://bitbucket.org/WORKSPACE/REPO/src/main
+# List as many as you like — skills from every marketplace are shown together
+# and filterable by marketplace, named by its repo, which must be unique.
 skillsMarketplace:
-  url: MARKETPLACE_TREE_URL
-  # URL format for the /plugin marketplace add install command shown to users.
-  # installUrlFormat: https # ssh (default) | https
-  # Optional: pull skills in from more repos too. Skills from every marketplace
-  # are listed together and filterable by repo name, which must be unique.
-  # marketplaces:
-  #   - url: OTHER_MARKETPLACE_TREE_URL
-  #     installUrlFormat: ssh # optional per-entry override
+  marketplaces:
+    - url: MARKETPLACE_TREE_URL
+      # URL format for this repo's /plugin marketplace add command.
+      # installUrlFormat: https # ssh (default) | https
 
 unleash:
   url: UNLEASH_URL

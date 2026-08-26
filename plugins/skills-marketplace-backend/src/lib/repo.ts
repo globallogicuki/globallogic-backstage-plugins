@@ -26,7 +26,7 @@ function repoPath(treeUrl: string): string {
     .replace(/\.git$/, '');
   if (!path || !path.includes('/')) {
     throw new Error(
-      `Cannot derive a repo path from skillsMarketplace.url '${treeUrl}'`,
+      `Cannot derive a repo path from marketplace url '${treeUrl}'`,
     );
   }
   return path;
