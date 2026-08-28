@@ -9,7 +9,7 @@ import Typography from '@material-ui/core/Typography';
 import { Link } from '@backstage/core-components';
 import type { FailingEntity } from '../useTechInsightsOverview';
 import { entityHref } from '../links';
-import { useOverviewStyles } from '../styles';
+import { meterColor, useOverviewStyles } from '../styles';
 import { OwnerGlyph } from './OwnerGlyph';
 
 /** One column of the matrix — a category, or a check within one. */
@@ -42,16 +42,30 @@ const CELL_WORDS: Record<CellState, string> = {
  * Cells are never colour alone: each carries a tooltip and an accessible name
  * spelling out the standard and its state, and `unscored` renders as a dash
  * rather than a mark so "no facts yet" cannot read as a pass.
+ *
+ * A category cell also reports how many of its checks passed, and `cellRatio`
+ * hues the dot on the same red-to-green ramp the tiles use — one check missing
+ * out of six should not look identical to all six missing. Without a ratio the
+ * dot falls back to flat pass/fail, which is all a single check can say.
  */
 export const FailuresTable = ({
   entities,
   columns,
   cellState,
+  cellRatio,
   highlightedColumn = null,
 }: {
   entities: FailingEntity[];
   columns: MatrixColumn[];
   cellState: (entity: FailingEntity, key: string) => CellState;
+  /**
+   * How many of this cell's checks passed, when the cell stands for more than
+   * one. Returning null keeps the flat pass/fail colouring.
+   */
+  cellRatio?: (
+    entity: FailingEntity,
+    key: string,
+  ) => { passed: number; total: number } | null;
   /** Column to emphasise — the one the page is scoped to, if any. */
   highlightedColumn?: string | null;
 }) => {
@@ -107,7 +121,16 @@ export const FailuresTable = ({
               </TableCell>
               {columns.map(column => {
                 const state = cellState(entity, column.key);
-                const label = `${column.label}: ${CELL_WORDS[state]}`;
+                const ratio = cellRatio?.(entity, column.key) ?? null;
+                /* Only worth grading when the cell covers several checks —
+                   a lone check has nothing between passed and failed. */
+                const graded =
+                  state !== 'unscored' && ratio && ratio.total > 1
+                    ? meterColor(ratio.total - ratio.passed, ratio.total)
+                    : null;
+                const label = ratio
+                  ? `${column.label}: ${CELL_WORDS[state]} (${ratio.passed} of ${ratio.total} checks passed)`
+                  : `${column.label}: ${CELL_WORDS[state]}`;
                 return (
                   <TableCell key={column.key} align="center">
                     <Tooltip title={label}>
@@ -126,6 +149,9 @@ export const FailuresTable = ({
                               ? classes.markFailed
                               : classes.markPassed
                           }`}
+                          style={
+                            graded ? { backgroundColor: graded } : undefined
+                          }
                           role="img"
                           aria-label={label}
                         />

@@ -221,15 +221,17 @@ describe('TechInsightsOverviewPage', () => {
         'Documentation',
       ]);
 
-      // Both fail Security; api meets Documentation and web does not.
+      // Both fail Security; api meets Documentation and web does not. The
+      // name also carries the check count behind the cell's colour, so these
+      // match on the verdict rather than the whole string.
       expect(
-        screen.getAllByRole('img', { name: 'Security: failed' }),
+        screen.getAllByRole('img', { name: /^Security: failed/ }),
       ).toHaveLength(2);
       expect(
-        screen.getAllByRole('img', { name: 'Documentation: passed' }),
+        screen.getAllByRole('img', { name: /^Documentation: passed/ }),
       ).toHaveLength(1);
       expect(
-        screen.getAllByRole('img', { name: 'Documentation: failed' }),
+        screen.getAllByRole('img', { name: /^Documentation: failed/ }),
       ).toHaveLength(1);
 
       // The tile row is the only category control.
