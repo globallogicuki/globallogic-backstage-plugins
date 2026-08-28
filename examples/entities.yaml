@@ -12,6 +12,11 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: example-website
+  title: Example Website
+  description: The example website, fully documented and tagged.
+  tags:
+    - website
+    - example
   annotations:
     terraform/organization: GLUK
     terraform/workspaces: compliace-as-code-workshop-example-workspace
@@ -28,6 +33,7 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: example-service
+  description: The example service, described but neither titled nor tagged.
   annotations:
     terraform/organization: orgName
     terraform/workspaces: workspaceName1,workspaceName2,workspaceName3
@@ -43,6 +49,9 @@ apiVersion: backstage.io/v1alpha1
 kind: API
 metadata:
   name: example-grpc-api
+  title: Example gRPC API
+  tags:
+    - api
 spec:
   type: grpc
   lifecycle: experimental
@@ -58,3 +67,16 @@ spec:
     message ExampleMessage {
       string example = 1;
     };
+---
+# Deliberately thin: owned by a user rather than a group, and carrying no
+# title, description, or tags. Without an entity like this every check passes
+# for every component and the overview page has no gradient to show.
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: example-orphan
+spec:
+  type: service
+  lifecycle: experimental
+  owner: user:guest
+  system: examples

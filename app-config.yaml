@@ -207,6 +207,37 @@ techInsights:
               - fact: hasTags
                 operator: equal
                 value: true
+      # Two checks per category, deliberately: with one check apiece every
+      # category could only ever be 0% or 100%, which is exactly the all-or-
+      # nothing colouring the graded meter exists to replace.
+      hasGroupOwner:
+        type: json-rules-engine
+        name: Has group owner
+        description: spec.owner refers to a group rather than a single user
+        metadata:
+          category: Ownership
+        factIds:
+          - entityOwnershipFactRetriever
+        rule:
+          conditions:
+            all:
+              - fact: hasGroupOwner
+                operator: equal
+                value: true
+      hasTitle:
+        type: json-rules-engine
+        name: Has title
+        description: The entity has a human-readable metadata.title
+        metadata:
+          category: Documentation
+        factIds:
+          - entityMetadataFactRetriever
+        rule:
+          conditions:
+            all:
+              - fact: hasTitle
+                operator: equal
+                value: true
 
 proxy:
   {}

@@ -1,17 +1,21 @@
 import { makeStyles } from '@material-ui/core/styles';
 
 /**
- * How red a check tile is allowed to look. A quarter of the catalog failing a
- * check is a standard nobody is meeting; anything else failing is a warning;
- * zero stays neutral.
+ * Meter colour as a continuous ramp from red at 0% passing to green at 100%,
+ * through amber in the middle — so a category at 90% reads visibly healthier
+ * than one at 30%, rather than both landing in the same "critical" bucket.
+ *
+ * ponytail: hand-rolled hsl interpolation rather than a colour library. Hue
+ * 0→120 with fixed saturation/lightness is close enough at meter size; reach
+ * for a perceptual space (oklch) only if the mid-range reads muddy.
+ *
+ * Nothing scored is not a pass: that stays neutral, and the tile's own "n of m
+ * failing" line is what carries the state to anyone who cannot read the hue.
  */
-const CRITICAL_FAILURE_RATE = 0.25;
-
-export type Severity = 'none' | 'warning' | 'critical';
-
-export const checkSeverity = (failing: number, total: number): Severity => {
-  if (failing === 0 || total === 0) return 'none';
-  return failing / total >= CRITICAL_FAILURE_RATE ? 'critical' : 'warning';
+export const meterColor = (failing: number, total: number): string | null => {
+  if (total === 0) return null;
+  const passRate = (total - failing) / total;
+  return `hsl(${Math.round(passRate * 120)}, 62%, 45%)`;
 };
 
 /** Layout-only styles — colors, fonts, and radii come from the host theme. */
@@ -149,7 +153,7 @@ export const useOverviewStyles = makeStyles(theme => {
       fontVariantNumeric: 'tabular-nums',
     },
 
-    /* Meter: neutral track, colored only when it matters */
+    /* Meter: neutral track; the fill is the pass rate, hued by meterColor. */
     meter: {
       height: 6,
       position: 'relative',
@@ -167,8 +171,6 @@ export const useOverviewStyles = makeStyles(theme => {
           ? theme.palette.grey[400]
           : theme.palette.grey[700],
     },
-    meterWarning: { backgroundColor: theme.palette.warning.main },
-    meterCritical: { backgroundColor: theme.palette.error.main },
 
     /* Filters */
     filters: {

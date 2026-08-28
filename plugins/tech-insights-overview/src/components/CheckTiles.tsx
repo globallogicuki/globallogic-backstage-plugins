@@ -6,14 +6,15 @@ import Typography from '@material-ui/core/Typography';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import type { CheckSummary } from '../useTechInsightsOverview';
-import { checkSeverity, useOverviewStyles } from '../styles';
+import { meterColor, useOverviewStyles } from '../styles';
 
 /**
  * One tile per check (or per category) in a single scrollable row, doubling as
  * the page's primary filter. The arrows in the header page the row; trackpads
- * and touch scroll it directly, so the scrollbar itself is hidden. A tile is
- * neutral unless the check is actually being missed, so a healthy catalog is a
- * page with no color.
+ * and touch scroll it directly, so the scrollbar itself is hidden. Each tile's
+ * meter is filled to its pass rate and coloured on a red-to-green ramp, so a
+ * row of tiles can be read at a glance and near-misses are told apart from
+ * standards nobody is meeting.
  *
  * `parent` turns the heading into a breadcrumb, for when this row is one level
  * of a drill-down rather than the whole story.
@@ -107,17 +108,12 @@ export const CheckTiles = ({
         aria-label={title}
       >
         {checks.map(check => {
-          const severity = checkSeverity(check.failing, check.total);
           const passing = check.total - check.failing;
           const pct = check.total
             ? Math.round((passing / check.total) * 100)
             : 100;
           const selected = selectedId === check.id;
-          const fillClass = {
-            critical: classes.meterCritical,
-            warning: classes.meterWarning,
-            none: '',
-          }[severity];
+          const fill = meterColor(check.failing, check.total);
 
           return (
             <ButtonBase
@@ -149,14 +145,13 @@ export const CheckTiles = ({
               <Box
                 className={classes.meter}
                 role="img"
-                aria-label={`${check.failing} of ${check.total} components failing`}
+                aria-label={`${passing} of ${check.total} components passing`}
               >
                 <Box
-                  className={`${classes.meterFill} ${fillClass}`}
+                  className={classes.meterFill}
                   style={{
-                    width: check.total
-                      ? `${(check.failing / check.total) * 100}%`
-                      : 0,
+                    width: `${pct}%`,
+                    ...(fill ? { backgroundColor: fill } : {}),
                   }}
                 />
               </Box>

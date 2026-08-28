@@ -43,6 +43,15 @@ export type FailingEntity = {
    * as meeting it.
    */
   scoredCategories: string[];
+  /**
+   * How many of each category's checks this component passes.
+   *
+   * `failedCategories` is the verdict; this is the margin behind it. A
+   * component missing one check of six and one missing all six both "fail" the
+   * category, and a matrix of identical red dots cannot tell them apart — so
+   * the dot takes its colour from this instead.
+   */
+  categoryTallies: Record<string, { passed: number; total: number }>;
 };
 
 export type CheckSummary = {
@@ -266,6 +275,12 @@ export const aggregateInsights = (
       failedCheckNames,
       failedCategories,
       scoredCategories: [...componentCategories.keys()],
+      categoryTallies: Object.fromEntries(
+        [...componentCategories].map(([name, t]) => [
+          name,
+          { passed: t.total - t.failed, total: t.total },
+        ]),
+      ),
     });
 
     const tally = ownerTotals.get(ownerRef) ?? {

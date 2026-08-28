@@ -36,6 +36,10 @@ const categoryCellState = (entity: FailingEntity, key: string): CellState => {
   return 'unscored';
 };
 
+/** How many of a category's checks this component passes, for the cell's hue. */
+const categoryCellRatio = (entity: FailingEntity, key: string) =>
+  entity.categoryTallies[key] ?? null;
+
 /** The same, for a check column. */
 const checkCellState = (entity: FailingEntity, key: string): CellState => {
   if (entity.failedCheckIds.includes(key)) return 'failed';
@@ -329,6 +333,9 @@ export const TechInsightsOverviewPage = () => {
                 cellState={
                   showCategoryColumns ? categoryCellState : checkCellState
                 }
+                /* Only category cells stand for more than one check; a check
+                   column's dot has nothing to grade. */
+                cellRatio={showCategoryColumns ? categoryCellRatio : undefined}
                 highlightedColumn={showCategoryColumns ? null : selectedCheck}
               />
             </Box>
