@@ -11,17 +11,22 @@ export type MarketplaceConfig = {
 };
 
 const NOT_CONFIGURED =
-  'Skills Marketplace is not configured: set skillsMarketplace.url (or a ' +
-  'skillsMarketplace.marketplaces list) in app-config.yaml to the web URL of ' +
-  'the repo tree that hosts your Claude Code marketplace, e.g. ' +
+  'Skills Marketplace is not configured: set a skillsMarketplace.marketplaces ' +
+  'list in app-config.yaml, each entry giving the web URL of a repo tree that ' +
+  'hosts a Claude Code marketplace, e.g. ' +
   'https://github.com/my-org/skills-marketplace/tree/main';
 
-const readInstallUrlFormat = (
-  raw: string | undefined,
-  fallback: InstallUrlFormat,
-): InstallUrlFormat => {
+// `url` and `installUrlFormat` used to sit at the top level. Say so rather
+// than reporting an otherwise puzzling "not configured".
+const MOVED_TO_LIST =
+  'Skills Marketplace: skillsMarketplace.url and ' +
+  'skillsMarketplace.installUrlFormat have moved into the ' +
+  'skillsMarketplace.marketplaces list — give each repo its own entry, e.g. ' +
+  'marketplaces: [{ url: ..., installUrlFormat: ssh }].';
+
+const readInstallUrlFormat = (raw: string | undefined): InstallUrlFormat => {
   if (raw === undefined) {
-    return fallback;
+    return 'ssh';
   }
   if (raw !== 'ssh' && raw !== 'https') {
     throw new Error(
@@ -32,51 +37,35 @@ const readInstallUrlFormat = (
   return raw;
 };
 
-const toMarketplace = (
-  url: string,
-  installUrlFormat: InstallUrlFormat,
-): MarketplaceConfig => ({
-  repo: deriveRepoName(url),
-  url,
-  installUrlFormat,
-});
-
 /**
- * Resolve the configured marketplaces: the single `skillsMarketplace.url` and
- * every entry of the optional `skillsMarketplace.marketplaces` list, in that
- * order. Each entry inherits the top-level `installUrlFormat` unless it sets
- * its own.
+ * Resolve every entry of the `skillsMarketplace.marketplaces` list, in the
+ * order they are configured.
  */
 export function readMarketplaceConfigs(
   config: RootConfigService,
 ): MarketplaceConfig[] {
-  const defaultFormat = readInstallUrlFormat(
-    config.getOptionalString('skillsMarketplace.installUrlFormat'),
-    'ssh',
-  );
-
-  const marketplaces: MarketplaceConfig[] = [];
-  const url = config.getOptionalString('skillsMarketplace.url');
-  if (url) {
-    marketplaces.push(toMarketplace(url, defaultFormat));
-  }
   const entries =
     config.getOptionalConfigArray('skillsMarketplace.marketplaces') ?? [];
-  for (const entry of entries) {
-    marketplaces.push(
-      toMarketplace(
-        entry.getString('url'),
-        readInstallUrlFormat(
-          entry.getOptionalString('installUrlFormat'),
-          defaultFormat,
-        ),
-      ),
+
+  if (entries.length === 0) {
+    throw new Error(
+      config.getOptionalString('skillsMarketplace.url') ||
+      config.getOptionalString('skillsMarketplace.installUrlFormat')
+        ? MOVED_TO_LIST
+        : NOT_CONFIGURED,
     );
   }
 
-  if (marketplaces.length === 0) {
-    throw new Error(NOT_CONFIGURED);
-  }
+  const marketplaces = entries.map(entry => {
+    const url = entry.getString('url');
+    return {
+      repo: deriveRepoName(url),
+      url,
+      installUrlFormat: readInstallUrlFormat(
+        entry.getOptionalString('installUrlFormat'),
+      ),
+    };
+  });
 
   // The repo name identifies a marketplace in the API and the UI filter, so
   // two repos with the same name would be indistinguishable.

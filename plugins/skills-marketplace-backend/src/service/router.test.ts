@@ -24,7 +24,7 @@ describe('createRouter', () => {
 
   const buildApp = async (
     configData: object = {
-      skillsMarketplace: { url: TREE_URL },
+      skillsMarketplace: { marketplaces: [{ url: TREE_URL }] },
     },
   ) => {
     const router = await createRouter({
@@ -91,8 +91,10 @@ describe('createRouter', () => {
     it('returns every configured marketplace', async () => {
       app = await buildApp({
         skillsMarketplace: {
-          url: TREE_URL,
-          marketplaces: [{ url: OTHER_TREE_URL, installUrlFormat: 'https' }],
+          marketplaces: [
+            { url: TREE_URL },
+            { url: OTHER_TREE_URL, installUrlFormat: 'https' },
+          ],
         },
       });
       serve({
@@ -159,7 +161,9 @@ describe('createRouter', () => {
 
     it('derives an https install URL when configured', async () => {
       app = await buildApp({
-        skillsMarketplace: { url: TREE_URL, installUrlFormat: 'https' },
+        skillsMarketplace: {
+          marketplaces: [{ url: TREE_URL, installUrlFormat: 'https' }],
+        },
       });
       readUrl.mockResolvedValue(readUrlResponse(JSON.stringify(manifest)));
 
@@ -173,7 +177,9 @@ describe('createRouter', () => {
 
     it('rejects an unsupported installUrlFormat', async () => {
       app = await buildApp({
-        skillsMarketplace: { url: TREE_URL, installUrlFormat: 'ftp' },
+        skillsMarketplace: {
+          marketplaces: [{ url: TREE_URL, installUrlFormat: 'ftp' }],
+        },
       });
       readUrl.mockResolvedValue(readUrlResponse(JSON.stringify(manifest)));
 
@@ -238,8 +244,7 @@ describe('createRouter', () => {
     it('reads from the marketplace named by repo', async () => {
       app = await buildApp({
         skillsMarketplace: {
-          url: TREE_URL,
-          marketplaces: [{ url: OTHER_TREE_URL }],
+          marketplaces: [{ url: TREE_URL }, { url: OTHER_TREE_URL }],
         },
       });
       readUrl.mockResolvedValue(readUrlResponse('Bar docs'));

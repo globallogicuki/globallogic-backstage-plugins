@@ -5,9 +5,9 @@ Browse and install shared **Claude Code skills** from a
 (a repo containing `.claude-plugin/marketplace.json`) inside Backstage.
 
 - Skill cards with name, description, category, and keywords; full-text search
-  plus category and repo filtering.
+  plus category and marketplace filtering.
 - One marketplace repo, or several — skills from every configured repo are
-  listed together and filterable by repo name.
+  listed together and filterable by the marketplace they came from.
 - A detail drawer with the skill's rendered docs — its `SKILL.md`, or its
   `README.md` where it has no `SKILL.md` — and copy-able Claude Code install
   commands.
@@ -71,52 +71,33 @@ createApiFactory({
 
 ## Configuration
 
-Required — there are no defaults. `url` is the web URL of the repo tree at the
-branch to read:
+Required — there are no defaults. Each entry's `url` is the web URL of a repo
+tree at the branch to read; `installUrlFormat` is optional and defaults to
+`ssh`:
 
 ```yaml
 skillsMarketplace:
-  url: https://github.com/my-org/skills-marketplace/tree/main
-  installUrlFormat: https # optional: ssh (default) | https
-```
-
-Other providers:
-
-```
-https://gitlab.com/my-group/skills-marketplace/-/tree/main
-https://bitbucket.org/my-workspace/skills-marketplace/src/main
-```
-
-`installUrlFormat` sets the git URL shown in the `/plugin marketplace add`
-command: `git@host:owner/repo.git` (ssh) or `https://host/owner/repo.git`.
-
-### Multiple marketplaces
-
-Add a `marketplaces` list to pull skills in from more than one repo. Each entry
-takes the same `url`, and may override `installUrlFormat`; hosts can be mixed
-freely:
-
-```yaml
-skillsMarketplace:
-  installUrlFormat: https
   marketplaces:
     - url: https://github.com/my-org/skills-marketplace/tree/main
+      installUrlFormat: https
     - url: https://gitlab.com/my-group/team-skills/-/tree/main
       installUrlFormat: ssh
     - url: https://bitbucket.org/my-workspace/platform-skills/src/main
 ```
 
-`url` and `marketplaces` can be used together — the single `url` is simply
-listed first. Every skill is shown with the repo it came from, and a **Repo**
-filter appears once more than one marketplace is configured; the repo name is
-searchable too. Each skill's install commands use its own repo's git URL and
-marketplace name, so installing from a mixed listing always points at the right
-place.
+One entry or many — hosts can be mixed freely. `installUrlFormat` sets the git
+URL shown in that repo's `/plugin marketplace add` command:
+`git@host:owner/repo.git` (ssh) or `https://host/owner/repo.git`.
 
-Repo names must be unique across all configured marketplaces — two repos with
-the same name (in different orgs, say) cannot be told apart in the UI, and the
-plugin reports a config error rather than guessing. If one marketplace fails to
-load, the page still lists the others and warns about the one it skipped.
+With more than one marketplace configured, every skill is shown with the repo it
+came from and a **Marketplace** filter appears; the repo name is searchable too.
+Each skill's install commands use its own repo's git URL and marketplace name,
+so installing from a mixed listing always points at the right place.
+
+Repo names must be unique across the list — two repos with the same name (in
+different orgs, say) cannot be told apart in the UI, and the plugin reports a
+config error rather than guessing. If one marketplace fails to load, the page
+still lists the others and warns about the one it skipped.
 
 ### Private repos
 

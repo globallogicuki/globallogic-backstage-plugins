@@ -8,40 +8,32 @@ const read = (data: object) =>
   readMarketplaceConfigs(mockServices.rootConfig({ data }));
 
 describe('readMarketplaceConfigs', () => {
-  it('reads a single url', () => {
-    expect(read({ skillsMarketplace: { url: GITHUB } })).toEqual([
-      { repo: 'skills-marketplace', url: GITHUB, installUrlFormat: 'ssh' },
-    ]);
-  });
-
-  it('reads a marketplaces list on its own', () => {
+  it('reads a single-entry list', () => {
     expect(
-      read({
-        skillsMarketplace: { marketplaces: [{ url: GITHUB }, { url: GITLAB }] },
-      }),
+      read({ skillsMarketplace: { marketplaces: [{ url: GITHUB }] } }),
     ).toEqual([
       { repo: 'skills-marketplace', url: GITHUB, installUrlFormat: 'ssh' },
+    ]);
+  });
+
+  it('keeps every entry, in configured order', () => {
+    expect(
+      read({
+        skillsMarketplace: { marketplaces: [{ url: GITLAB }, { url: GITHUB }] },
+      }),
+    ).toEqual([
       { repo: 'team-skills', url: GITLAB, installUrlFormat: 'ssh' },
+      { repo: 'skills-marketplace', url: GITHUB, installUrlFormat: 'ssh' },
     ]);
   });
 
-  it('puts the single url first, then the list', () => {
-    const marketplaces = read({
-      skillsMarketplace: { url: GITHUB, marketplaces: [{ url: GITLAB }] },
-    });
-
-    expect(marketplaces.map(m => m.repo)).toEqual([
-      'skills-marketplace',
-      'team-skills',
-    ]);
-  });
-
-  it('inherits the top-level installUrlFormat, per-entry overrides win', () => {
+  it('takes installUrlFormat per entry, defaulting to ssh', () => {
     const marketplaces = read({
       skillsMarketplace: {
-        url: GITHUB,
-        installUrlFormat: 'https',
-        marketplaces: [{ url: GITLAB, installUrlFormat: 'ssh' }],
+        marketplaces: [
+          { url: GITHUB, installUrlFormat: 'https' },
+          { url: GITLAB },
+        ],
       },
     });
 
@@ -55,10 +47,16 @@ describe('readMarketplaceConfigs', () => {
     );
   });
 
-  it('throws on an unsupported installUrlFormat', () => {
+  it('points top-level url or installUrlFormat at the list', () => {
+    expect(() => read({ skillsMarketplace: { url: GITHUB } })).toThrow(
+      /have moved into the skillsMarketplace.marketplaces list/,
+    );
     expect(() =>
-      read({ skillsMarketplace: { url: GITHUB, installUrlFormat: 'ftp' } }),
-    ).toThrow(/invalid installUrlFormat/);
+      read({ skillsMarketplace: { installUrlFormat: 'https' } }),
+    ).toThrow(/have moved into the skillsMarketplace.marketplaces list/);
+  });
+
+  it('throws on an unsupported installUrlFormat', () => {
     expect(() =>
       read({
         skillsMarketplace: {
@@ -68,12 +66,20 @@ describe('readMarketplaceConfigs', () => {
     ).toThrow(/invalid installUrlFormat/);
   });
 
+  it('throws when a url is missing', () => {
+    expect(() =>
+      read({
+        skillsMarketplace: { marketplaces: [{ installUrlFormat: 'ssh' }] },
+      }),
+    ).toThrow(/url/);
+  });
+
   it('throws when two marketplaces share a repo name', () => {
     expect(() =>
       read({
         skillsMarketplace: {
-          url: GITHUB,
           marketplaces: [
+            { url: GITHUB },
             {
               url: 'https://gitlab.com/other-group/skills-marketplace/-/tree/main',
             },

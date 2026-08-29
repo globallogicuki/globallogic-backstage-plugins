@@ -131,19 +131,19 @@ export const SkillsMarketplacePage = () => {
                 ),
               }}
             />
-            {/* Repo filtering only earns its space with more than one repo. */}
+            {/* The marketplace filter only earns its space with more than one. */}
             {repos.length > 1 && (
               <TextField
                 className={classes.repoFilter}
                 select
                 variant="outlined"
                 size="small"
-                label="Repo"
+                label="Marketplace"
                 value={repo}
                 onChange={e => setRepo(e.target.value)}
-                inputProps={{ 'aria-label': 'Filter by repo' }}
+                inputProps={{ 'aria-label': 'Filter by marketplace' }}
               >
-                <MenuItem value={ALL}>All repos</MenuItem>
+                <MenuItem value={ALL}>All marketplaces</MenuItem>
                 {repos.map(name => (
                   <MenuItem key={name} value={name}>
                     {name}

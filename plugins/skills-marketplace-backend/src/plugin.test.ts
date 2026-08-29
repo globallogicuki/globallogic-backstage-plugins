@@ -16,7 +16,11 @@ describe('skillsMarketplacePlugin', () => {
         mockServices.rootConfig.factory({
           data: {
             skillsMarketplace: {
-              url: 'https://github.com/my-org/skills-marketplace/tree/main',
+              marketplaces: [
+                {
+                  url: 'https://github.com/my-org/skills-marketplace/tree/main',
+                },
+              ],
             },
           },
         }),

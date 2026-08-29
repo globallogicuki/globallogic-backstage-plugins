@@ -74,9 +74,9 @@ describe('SkillsMarketplacePage', () => {
       </TestApiProvider>,
     );
 
-  /** Pick a value from the repo filter select. */
+  /** Pick a value from the marketplace filter select. */
   const selectRepo = (name: string) => {
-    fireEvent.mouseDown(screen.getByLabelText('Filter by repo'));
+    fireEvent.mouseDown(screen.getByLabelText('Filter by marketplace'));
     fireEvent.click(within(screen.getByRole('listbox')).getByText(name));
   };
 
@@ -190,7 +190,7 @@ describe('SkillsMarketplacePage', () => {
     ).toBeInTheDocument();
   });
 
-  it('hides the repo filter with a single marketplace', async () => {
+  it('hides the marketplace filter with a single marketplace', async () => {
     getMarketplace.mockResolvedValue(response);
 
     await render();
@@ -198,7 +198,7 @@ describe('SkillsMarketplacePage', () => {
       expect(screen.getByTestId('skill-card-deck-gl')).toBeInTheDocument();
     });
 
-    expect(screen.queryByLabelText('Filter by repo')).toBeNull();
+    expect(screen.queryByLabelText('Filter by marketplace')).toBeNull();
   });
 
   it('lists skills from every marketplace', async () => {
@@ -215,7 +215,7 @@ describe('SkillsMarketplacePage', () => {
     expect(screen.getByText('team-skills')).toBeInTheDocument();
   });
 
-  it('filters skills by repo', async () => {
+  it('filters skills by marketplace', async () => {
     getMarketplace.mockResolvedValue(multiResponse);
 
     await render();
@@ -229,13 +229,13 @@ describe('SkillsMarketplacePage', () => {
     expect(screen.queryByTestId('skill-card-deck-gl')).toBeNull();
     expect(screen.getByText('1 of 3')).toBeInTheDocument();
 
-    selectRepo('All repos');
+    selectRepo('All marketplaces');
 
     expect(screen.getByTestId('skill-card-deck-gl')).toBeInTheDocument();
     expect(screen.getByText('3 of 3')).toBeInTheDocument();
   });
 
-  it('combines the repo filter with the search query', async () => {
+  it('combines the marketplace filter with the search query', async () => {
     getMarketplace.mockResolvedValue(multiResponse);
 
     await render();

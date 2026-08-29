@@ -35,16 +35,14 @@ backend.add(
 
 ```yaml
 skillsMarketplace:
-  url: https://github.com/my-org/skills-marketplace/tree/main
-  installUrlFormat: https # optional: ssh (default) | https
-  # optional: pull skills in from more repos as well
   marketplaces:
+    - url: https://github.com/my-org/skills-marketplace/tree/main
+      installUrlFormat: https # optional: ssh (default) | https
     - url: https://gitlab.com/my-group/team-skills/-/tree/main
-      installUrlFormat: ssh # optional per-entry override
 ```
 
-Repo names must be unique across `url` and `marketplaces` — the repo name
-identifies a marketplace in the API and in the UI filter.
+Repo names must be unique across the list — the repo name identifies a
+marketplace in the API and in the UI filter.
 
 See the frontend plugin's README for the full reference, including private
 repos.
