@@ -50,7 +50,8 @@ describe('aggregateInsights', () => {
     expect(aggregate.fullyPassing).toBe(1);
     expect(aggregate.unscored).toBe(0);
 
-    expect(aggregate.entities.map(e => e.name)).toEqual(['api', 'web']);
+    // Passing components stay in the list, sorted last.
+    expect(aggregate.entities.map(e => e.name)).toEqual(['api', 'web', 'db']);
     expect(aggregate.entities[0]).toMatchObject({
       name: 'api',
       failing: 2,
@@ -223,6 +224,7 @@ describe('aggregateInsights categories', () => {
         failing: 2,
         scored: 2,
         checkIds: ['scan', 'vulns'],
+        checkResults: { failing: 2, total: 4 },
       },
       {
         name: 'Documentation',
@@ -230,6 +232,7 @@ describe('aggregateInsights categories', () => {
         failing: 1,
         scored: 2,
         checkIds: ['readme'],
+        checkResults: { failing: 1, total: 2 },
       },
     ]);
   });
@@ -338,8 +341,33 @@ describe('aggregateInsights categories', () => {
         failing: 0,
         scored: 1,
         checkIds: ['scan'],
+        checkResults: { failing: 0, total: 1 },
       },
     ]);
     expect(aggregate.unscored).toBe(1);
+  });
+
+  it('tallies check results per category for cumulative scoring', () => {
+    // Ten components, four checks, each passing two: nobody meets the whole
+    // category, but half the check results pass.
+    const names = Array.from({ length: 10 }, (_, i) => `c${i}`);
+    const aggregate = aggregateInsights(
+      names.map(n => component(n)),
+      names.map(n => ({
+        entity: `component:default/${n}`,
+        results: [
+          categorised('a', true, 'Security'),
+          categorised('b', true, 'Security'),
+          categorised('c', false, 'Security'),
+          categorised('d', false, 'Security'),
+        ],
+      })),
+      isFailed,
+    );
+
+    expect(aggregate.categories[0]).toMatchObject({
+      passing: 0,
+      checkResults: { failing: 20, total: 40 },
+    });
   });
 });

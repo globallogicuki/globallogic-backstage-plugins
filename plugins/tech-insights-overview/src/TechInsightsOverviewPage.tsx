@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react';
 import Box from '@material-ui/core/Box';
 import Divider from '@material-ui/core/Divider';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
 import MenuItem from '@material-ui/core/MenuItem';
+import Switch from '@material-ui/core/Switch';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import {
@@ -9,6 +11,7 @@ import {
   Progress,
   ResponseErrorPanel,
 } from '@backstage/core-components';
+import { configApiRef, useApi } from '@backstage/core-plugin-api';
 import {
   useTechInsightsOverview,
   type Aggregate,
@@ -57,14 +60,31 @@ const ALL = 'all';
  * whole category, a check tile counts components passing one check — and the
  * tile's own caption says "of N failing" either way, so the shape carries over
  * without lying. Keyed by name because a category has no id of its own.
+ *
+ * Under `techInsightsOverview.categoryAggregation: cumulative` a tile counts
+ * check results instead, so partial progress shows rather than flooring at 0%
+ * until someone meets every check.
  */
-const asTile = (category: CategorySummary): CheckSummary => ({
+const asTile = (
+  category: CategorySummary,
+  cumulative: boolean,
+): CheckSummary => ({
   id: category.name,
   name: category.name,
   category: category.name,
-  failing: category.failing,
-  total: category.scored,
+  ...(cumulative
+    ? { ...category.checkResults, unit: 'checks' as const }
+    : { failing: category.failing, total: category.scored }),
 });
+
+/**
+ * Lowest pass rate first, matching the percentage on each tile — whichever
+ * unit the tiles count in. An empty tile reads 100%, so it sorts last.
+ */
+const passRate = (tile: CheckSummary) =>
+  tile.total ? (tile.total - tile.failing) / tile.total : 1;
+const byPassRateWorstFirst = (a: CheckSummary, b: CheckSummary) =>
+  passRate(a) - passRate(b);
 
 /** The crumb label for the top of the drill-down. */
 const CATEGORIES_TITLE = 'Weakest categories';
@@ -96,6 +116,10 @@ const TileRow = ({
   onSelectCheck: (id: string | null) => void;
 }) => {
   const classes = useOverviewStyles();
+  const cumulative =
+    useApi(configApiRef).getOptionalString(
+      'techInsightsOverview.categoryAggregation',
+    ) === 'cumulative';
 
   if (aggregate.checks.length === 0) {
     return (
@@ -139,7 +163,9 @@ const TileRow = ({
   return (
     <CheckTiles
       title={CATEGORIES_TITLE}
-      checks={aggregate.categories.map(asTile)}
+      checks={aggregate.categories
+        .map(c => asTile(c, cumulative))
+        .sort(byPassRateWorstFirst)}
       selectedId={null}
       onSelect={onSelectCategory}
     />
@@ -154,6 +180,7 @@ export const TechInsightsOverviewPage = () => {
   const [selectedCheck, setSelectedCheck] = useState<string | null>(null);
   const [ownerRef, setOwnerRef] = useState<string>(ALL);
   const [query, setQuery] = useState('');
+  const [hidePassing, setHidePassing] = useState(false);
 
   /* Choosing a category clears the check: a check from another category would
      scope the table to something the selected category cannot contain, leaving a
@@ -191,18 +218,34 @@ export const TechInsightsOverviewPage = () => {
     return aggregate.entities.filter(entity => {
       if (q && !entity.name.toLowerCase().includes(q)) return false;
       if (ownerRef !== ALL && entity.ownerRef !== ownerRef) return false;
+      /* A scope keeps every component with a result in it, passing or not;
+         "passing" is then judged within the scope, not across all checks. */
       if (
         selectedCategory &&
-        !entity.failedCategories.includes(selectedCategory)
+        !entity.scoredCategories.includes(selectedCategory)
       ) {
         return false;
       }
-      if (selectedCheck && !entity.failedCheckIds.includes(selectedCheck)) {
+      if (selectedCheck && !entity.checkIds.includes(selectedCheck)) {
         return false;
+      }
+      if (hidePassing) {
+        if (selectedCheck) return entity.failedCheckIds.includes(selectedCheck);
+        if (selectedCategory) {
+          return entity.failedCategories.includes(selectedCategory);
+        }
+        return entity.failing > 0;
       }
       return true;
     });
-  }, [aggregate, query, ownerRef, selectedCategory, selectedCheck]);
+  }, [
+    aggregate,
+    query,
+    ownerRef,
+    selectedCategory,
+    selectedCheck,
+    hidePassing,
+  ]);
 
   const selectedCheckName = aggregate?.checks.find(
     c => c.id === selectedCheck,
@@ -248,7 +291,7 @@ export const TechInsightsOverviewPage = () => {
               <Box className={classes.panelHead}>
                 <Box>
                   <Typography variant="subtitle1">
-                    <strong>Components with failures</strong>
+                    <strong>Components</strong>
                   </Typography>
                   <Typography variant="caption" className={classes.subtle}>
                     Which standards each component is missing
@@ -319,6 +362,16 @@ export const TechInsightsOverviewPage = () => {
                       </MenuItem>
                     ))}
                 </TextField>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      size="small"
+                      checked={hidePassing}
+                      onChange={e => setHidePassing(e.target.checked)}
+                    />
+                  }
+                  label="Hide passing"
+                />
                 <Typography component="span" className={classes.resultCount}>
                   {visible.length} of {aggregate.entities.length}
                 </Typography>

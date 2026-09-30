@@ -148,6 +148,9 @@ integrations:
     #   apiBaseUrl: https://ghe.example.net/api/v3
     #   token: ${GHE_TOKEN}
 
+techInsightsOverview:
+  categoryAggregation: cumulative
+
 # Demo tech-insights setup feeding the estate-health page: the built-in
 # metadata/ownership fact retrievers plus a few json-rules-engine checks.
 techInsights:

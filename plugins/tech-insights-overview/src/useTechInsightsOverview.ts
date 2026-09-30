@@ -12,7 +12,7 @@ import {
 } from '@backstage/catalog-model';
 import { hasCategories, readCheckCategory } from './categories';
 
-/** A component with at least one failing check. */
+/** A scored component and how it fares; `failing` is 0 when it passes everything. */
 export type FailingEntity = {
   ref: string;
   name: string;
@@ -61,6 +61,8 @@ export type CheckSummary = {
   category: string;
   failing: number;
   total: number;
+  /** What `total` counts; a cumulative category tile counts check results. */
+  unit?: 'components' | 'checks';
 };
 
 export type OwnerSummary = {
@@ -90,6 +92,11 @@ export type CategorySummary = {
   scored: number;
   /** The check ids that make up this category. */
   checkIds: string[];
+  /**
+   * Individual check results in this category, across every component — what
+   * a tile scores under `categoryAggregation: cumulative`.
+   */
+  checkResults: { failing: number; total: number };
 };
 
 // Worst first; a name-sorted list is one nobody acts on.
@@ -238,8 +245,11 @@ export const aggregateInsights = (
         failing: 0,
         scored: 0,
         checkIds: new Set<string>(),
+        checkResults: { failing: 0, total: 0 },
       };
       catalogCategory.checkIds.add(result.check.id);
+      catalogCategory.checkResults.total += 1;
+      if (failed) catalogCategory.checkResults.failing += 1;
       categoryTotals.set(category, catalogCategory);
     }
 
@@ -256,10 +266,7 @@ export const aggregateInsights = (
       }
     }
 
-    if (failing === 0) {
-      fullyPassing += 1;
-      continue;
-    }
+    if (failing === 0) fullyPassing += 1;
 
     const { ownerRef, owner, ownerKind } = readOwner(entity);
     entities.push({
@@ -290,8 +297,9 @@ export const aggregateInsights = (
       failing: 0,
       components: 0,
     };
+    // Passing components still register their owner, so the owner filter can find them.
     tally.failing += failing;
-    tally.components += 1;
+    if (failing > 0) tally.components += 1;
     ownerTotals.set(ownerRef, tally);
   }
 
