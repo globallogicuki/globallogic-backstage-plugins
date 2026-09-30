@@ -71,8 +71,6 @@ export type OwnerSummary = {
   ownerKind: 'group' | 'user' | 'unknown';
   /** Total failing checks across this owner's components. */
   failing: number;
-  /** How many of their components have at least one failure. */
-  components: number;
 };
 
 /**
@@ -295,11 +293,8 @@ export const aggregateInsights = (
       owner,
       ownerKind,
       failing: 0,
-      components: 0,
     };
-    // Passing components still register their owner, so the owner filter can find them.
     tally.failing += failing;
-    if (failing > 0) tally.components += 1;
     ownerTotals.set(ownerRef, tally);
   }
 

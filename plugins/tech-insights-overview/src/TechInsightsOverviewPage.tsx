@@ -229,14 +229,12 @@ export const TechInsightsOverviewPage = () => {
       if (selectedCheck && !entity.checkIds.includes(selectedCheck)) {
         return false;
       }
-      if (hidePassing) {
-        if (selectedCheck) return entity.failedCheckIds.includes(selectedCheck);
-        if (selectedCategory) {
-          return entity.failedCategories.includes(selectedCategory);
-        }
-        return entity.failing > 0;
+      if (!hidePassing) return true;
+      if (selectedCheck) return entity.failedCheckIds.includes(selectedCheck);
+      if (selectedCategory) {
+        return entity.failedCategories.includes(selectedCategory);
       }
-      return true;
+      return entity.failing > 0;
     });
   }, [
     aggregate,

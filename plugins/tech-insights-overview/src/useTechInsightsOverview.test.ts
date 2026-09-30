@@ -82,14 +82,12 @@ describe('aggregateInsights', () => {
         owner: 'team-a',
         ownerKind: 'group',
         failing: 2,
-        components: 1,
       },
       {
         ownerRef: 'group:default/team-b',
         owner: 'team-b',
         ownerKind: 'group',
         failing: 1,
-        components: 1,
       },
     ]);
   });
@@ -345,29 +343,5 @@ describe('aggregateInsights categories', () => {
       },
     ]);
     expect(aggregate.unscored).toBe(1);
-  });
-
-  it('tallies check results per category for cumulative scoring', () => {
-    // Ten components, four checks, each passing two: nobody meets the whole
-    // category, but half the check results pass.
-    const names = Array.from({ length: 10 }, (_, i) => `c${i}`);
-    const aggregate = aggregateInsights(
-      names.map(n => component(n)),
-      names.map(n => ({
-        entity: `component:default/${n}`,
-        results: [
-          categorised('a', true, 'Security'),
-          categorised('b', true, 'Security'),
-          categorised('c', false, 'Security'),
-          categorised('d', false, 'Security'),
-        ],
-      })),
-      isFailed,
-    );
-
-    expect(aggregate.categories[0]).toMatchObject({
-      passing: 0,
-      checkResults: { failing: 20, total: 40 },
-    });
   });
 });

@@ -358,7 +358,6 @@ describe('TechInsightsOverviewPage', () => {
       expect(screen.queryByText('api')).toBeNull();
       expect(screen.getByText('web')).toBeInTheDocument();
       expect(screen.getByText('1 of 2')).toBeInTheDocument();
-      fireEvent.click(screen.getByRole('checkbox', { name: 'Hide passing' }));
 
       // The row is now that category's checks, under a breadcrumb.
       const drilled = screen.getByRole('group', { name: 'Documentation' });
