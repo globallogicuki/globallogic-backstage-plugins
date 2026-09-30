@@ -50,7 +50,8 @@ describe('aggregateInsights', () => {
     expect(aggregate.fullyPassing).toBe(1);
     expect(aggregate.unscored).toBe(0);
 
-    expect(aggregate.entities.map(e => e.name)).toEqual(['api', 'web']);
+    // Passing components stay in the list, sorted last.
+    expect(aggregate.entities.map(e => e.name)).toEqual(['api', 'web', 'db']);
     expect(aggregate.entities[0]).toMatchObject({
       name: 'api',
       failing: 2,
@@ -81,14 +82,12 @@ describe('aggregateInsights', () => {
         owner: 'team-a',
         ownerKind: 'group',
         failing: 2,
-        components: 1,
       },
       {
         ownerRef: 'group:default/team-b',
         owner: 'team-b',
         ownerKind: 'group',
         failing: 1,
-        components: 1,
       },
     ]);
   });
@@ -223,6 +222,7 @@ describe('aggregateInsights categories', () => {
         failing: 2,
         scored: 2,
         checkIds: ['scan', 'vulns'],
+        checkResults: { failing: 2, total: 4 },
       },
       {
         name: 'Documentation',
@@ -230,6 +230,7 @@ describe('aggregateInsights categories', () => {
         failing: 1,
         scored: 2,
         checkIds: ['readme'],
+        checkResults: { failing: 1, total: 2 },
       },
     ]);
   });
@@ -338,6 +339,7 @@ describe('aggregateInsights categories', () => {
         failing: 0,
         scored: 1,
         checkIds: ['scan'],
+        checkResults: { failing: 0, total: 1 },
       },
     ]);
     expect(aggregate.unscored).toBe(1);

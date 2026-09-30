@@ -5,11 +5,11 @@ Three views over
 check results, sharing one visual language: failures first, and never colour on
 its own — every verdict is spelled out in words beside its mark.
 
-| View                     | Where                     | What it shows                                                                                         |
-| ------------------------ | ------------------------- | ----------------------------------------------------------------------------------------------------- |
-| Catalog-wide overview    | `/tech-insights-overview` | How many components pass everything, a tile row you drill through, and a scorecard matrix of failures |
-| Entity scorecard summary | Entity overview card      | The score, a segmented meter, and one verdict per category                                            |
-| Entity scorecard         | Entity `/scorecard` tab   | Every check with its description, grouped under its category                                          |
+| View                     | Where                     | What it shows                                                                                                                                                        |
+| ------------------------ | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Catalog-wide overview    | `/tech-insights-overview` | How many components pass everything, a tile row you drill through, and a scorecard matrix of every scored component, worst first, with a toggle to hide passing ones |
+| Entity scorecard summary | Entity overview card      | The score, a segmented meter, and one verdict per category                                                                                                           |
+| Entity scorecard         | Entity `/scorecard` tab   | Every check with its description, grouped under its category                                                                                                         |
 
 Checks and categories are discovered from the check responses, so the views work
 against whatever your backend has configured — no check IDs or category names are
@@ -58,9 +58,20 @@ checks (breadcrumb back), narrows the matrix columns to those checks, and scopes
 the rows to components failing it. Since a category is one verdict per component,
 a category tile counts **components**, not checks.
 
-Checks with no category fall into an `Uncategorised` bucket that behaves like any
-other category, so a check you forgot to label stays visible. If _nothing_
-declares a category, every view falls back to a flat failing/passing layout.
+### Cumulative categories
+
+When a category is hard to meet in full, an all-or-nothing tile sits at 0% until
+someone clears every check, hiding real progress. Switch every category tile to
+score by **check results** instead in your app config — ten components each
+passing two of four checks then show 50%, not 0%:
+
+```yaml
+techInsightsOverview:
+  categoryAggregation: cumulative # default: absolute
+```
+
+This changes only the category tiles on the catalog-wide page; matrix cells and
+the entity views keep their per-component verdict.
 
 ## Why the table is a matrix
 

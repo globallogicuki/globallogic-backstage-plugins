@@ -1,5 +1,10 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
-import { TestApiProvider, renderInTestApp } from '@backstage/test-utils';
+import {
+  MockConfigApi,
+  TestApiProvider,
+  renderInTestApp,
+} from '@backstage/test-utils';
+import { configApiRef } from '@backstage/core-plugin-api';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import { techInsightsApiRef } from '@backstage-community/plugin-tech-insights-react';
 import { TechInsightsOverviewPage } from './TechInsightsOverviewPage';
@@ -50,12 +55,13 @@ describe('TechInsightsOverviewPage', () => {
     isCheckResultFailed: (r: any) => r.result === false,
   } as any;
 
-  const render = () =>
+  const render = (config = {}) =>
     renderInTestApp(
       <TestApiProvider
         apis={[
           [catalogApiRef, catalogApi],
           [techInsightsApiRef, techInsightsApi],
+          [configApiRef, new MockConfigApi(config)],
         ]}
       >
         <TechInsightsOverviewPage />
@@ -110,6 +116,31 @@ describe('TechInsightsOverviewPage', () => {
 
     expect(screen.getByText('api')).toBeInTheDocument();
     expect(screen.queryByText('web')).toBeNull();
+    expect(screen.getByText('1 of 2')).toBeInTheDocument();
+  });
+
+  it('lists passing components until hide passing is on', async () => {
+    runBulkChecks.mockResolvedValue([
+      {
+        entity: 'component:default/api',
+        results: [check('hasOwner', 'Has owner', true)],
+      },
+      {
+        entity: 'component:default/web',
+        results: [check('hasOwner', 'Has owner', false)],
+      },
+    ]);
+
+    await render();
+    await waitFor(() => {
+      expect(screen.getByText('web')).toBeInTheDocument();
+    });
+    expect(screen.getByText('2 of 2')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Hide passing' }));
+
+    expect(screen.queryByText('web')).toBeNull();
+    expect(screen.getByText('api')).toBeInTheDocument();
     expect(screen.getByText('1 of 2')).toBeInTheDocument();
   });
 
@@ -177,6 +208,70 @@ describe('TechInsightsOverviewPage', () => {
             categorised('readme', 'Has readme', true, 'Documentation'),
           ],
         },
+      ]);
+    });
+
+    it.each([
+      [undefined, '0%'],
+      ['cumulative', '50%'],
+    ])(
+      'scores category tiles with categoryAggregation %s as %s',
+      async (categoryAggregation, pct) => {
+        // Each component passes one of Security's two checks: nobody meets the
+        // category, but half the check results pass.
+        runBulkChecks.mockResolvedValue(
+          ['api', 'web'].map(name => ({
+            entity: `component:default/${name}`,
+            results: [
+              categorised('scan', 'Has image scan', true, 'Security'),
+              categorised('vulns', 'No vulns', false, 'Security'),
+            ],
+          })),
+        );
+        await render({ techInsightsOverview: { categoryAggregation } });
+
+        const tiles = await screen.findByRole('group', {
+          name: 'Weakest categories',
+        });
+        expect(within(tiles).getByRole('button')).toHaveTextContent(pct);
+      },
+    );
+
+    it('orders cumulative tiles by their percentage, worst first', async () => {
+      // Security fails both components but passes 4 of 6 checks (67%);
+      // Documentation fails only api yet passes 2 of 4 (50%). Counting failing
+      // components would lead with Security — the percentages lead with Docs.
+      runBulkChecks.mockResolvedValue(
+        ['api', 'web'].map(name => ({
+          entity: `component:default/${name}`,
+          results: [
+            categorised('scan', 'Has image scan', true, 'Security'),
+            categorised('vulns', 'No vulns', false, 'Security'),
+            categorised('sig', 'Signed', false, 'Security'),
+            categorised(
+              'readme',
+              'Has readme',
+              name === 'api',
+              'Documentation',
+            ),
+            categorised('adr', 'Has ADRs', name === 'api', 'Documentation'),
+          ],
+        })),
+      );
+      await render({
+        techInsightsOverview: { categoryAggregation: 'cumulative' },
+      });
+
+      const tiles = await screen.findByRole('group', {
+        name: 'Weakest categories',
+      });
+      expect(
+        within(tiles)
+          .getAllByRole('button')
+          .map(b => b.textContent),
+      ).toEqual([
+        expect.stringContaining('Documentation'),
+        expect.stringContaining('Security'),
       ]);
     });
 
@@ -252,11 +347,17 @@ describe('TechInsightsOverviewPage', () => {
       );
 
       await waitFor(() => {
-        expect(screen.queryByText('api')).toBeNull();
+        expect(screen.getByText(/scoped to documentation/)).toBeInTheDocument();
       });
+      // api passes Documentation but stays listed until passing is hidden.
+      expect(screen.getByText('api')).toBeInTheDocument();
+      expect(screen.getByText('2 of 2')).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('checkbox', { name: 'Hide passing' }));
+      // Judged within the scope: api fails Security, but passes Documentation.
+      expect(screen.queryByText('api')).toBeNull();
       expect(screen.getByText('web')).toBeInTheDocument();
       expect(screen.getByText('1 of 2')).toBeInTheDocument();
-      expect(screen.getByText(/scoped to documentation/)).toBeInTheDocument();
 
       // The row is now that category's checks, under a breadcrumb.
       const drilled = screen.getByRole('group', { name: 'Documentation' });

@@ -145,7 +145,9 @@ export const CheckTiles = ({
               <Box
                 className={classes.meter}
                 role="img"
-                aria-label={`${passing} of ${check.total} components passing`}
+                aria-label={`${passing} of ${check.total} ${
+                  check.unit ?? 'components'
+                } passing`}
               >
                 <Box
                   className={classes.meterFill}
