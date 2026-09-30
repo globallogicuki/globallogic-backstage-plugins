@@ -1,5 +1,12 @@
 # @globallogicuki/backstage-plugin-tech-insights-overview
 
+## 0.4.0
+
+### Minor Changes
+
+- 8106eaf: Add `techInsightsOverview.categoryAggregation` app config. `absolute` (default) keeps category tiles counting components that pass every check; `cumulative` scores them by passing check results, so partial progress no longer reads as 0%.
+- 8106eaf: The overview matrix now lists fully passing components too (sorted last), with a **Hide passing** toggle to get back to failures only. Picking a category or check now keeps every component with a result in it rather than only those failing it; the toggle then hides components passing within that scope.
+
 ## 0.3.0
 
 ### Minor Changes
