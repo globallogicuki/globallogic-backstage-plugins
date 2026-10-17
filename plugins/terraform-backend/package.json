@@ -38,7 +38,7 @@
     "generate-openapi-schema": "backstage-repo-tools package schema openapi generate --server"
   },
   "dependencies": {
-    "@backstage/backend-defaults": "^0.17.7",
+    "@backstage/backend-defaults": "^0.17.8",
     "@backstage/backend-openapi-utils": "^0.7.1",
     "@backstage/backend-plugin-api": "^1.10.0",
     "@backstage/config": "^1.3.8",
