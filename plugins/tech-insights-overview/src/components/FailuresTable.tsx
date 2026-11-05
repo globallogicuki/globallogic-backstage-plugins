@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import Box from '@material-ui/core/Box';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
+import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
 import Tooltip from '@material-ui/core/Tooltip';
 import Typography from '@material-ui/core/Typography';
@@ -22,6 +24,9 @@ const CELL_WORDS: Record<CellState, string> = {
   passed: 'passed',
   unscored: 'no result yet',
 };
+
+/** Rows per page on offer; the first is the default. */
+export const PAGE_SIZES = [25, 50, 75, 100];
 
 /**
  * Components with at least one failing check, worst first, as a scorecard
@@ -47,6 +52,11 @@ const CELL_WORDS: Record<CellState, string> = {
  * hues the dot on the same red-to-green ramp the tiles use — one check missing
  * out of six should not look identical to all six missing. Without a ratio the
  * dot falls back to flat pass/fail, which is all a single check can say.
+ *
+ * Rows are paged, 25 by default, because a catalog-sized matrix is hundreds of
+ * rows of tooltipped marks — slow to render and impossible to scan. Any change
+ * to the row set (a filter, a drill) returns to the first page, so a narrowed
+ * table never opens on a page past its end.
  */
 export const FailuresTable = ({
   entities,
@@ -70,6 +80,17 @@ export const FailuresTable = ({
   highlightedColumn?: string | null;
 }) => {
   const classes = useOverviewStyles();
+  const [rowsPerPage, setRowsPerPage] = useState(PAGE_SIZES[0]);
+  const [page, setPage] = useState(0);
+
+  /* Reset during render rather than in an effect, so a filtered table never
+     paints one frame of the old page first. The caller memoises `entities`, so
+     its identity only changes when the row set does. */
+  const [pagedEntities, setPagedEntities] = useState(entities);
+  if (pagedEntities !== entities) {
+    setPagedEntities(entities);
+    setPage(0);
+  }
 
   if (entities.length === 0) {
     return (
@@ -79,91 +100,112 @@ export const FailuresTable = ({
     );
   }
 
+  const pageRows = entities.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage,
+  );
+
   return (
-    <Box className={classes.tableScroll}>
-      <Table size="small" className={classes.table}>
-        <TableHead>
-          <TableRow className={classes.matrixHeadRow}>
-            <TableCell
-              className={`${classes.tableHeadCell} ${classes.stickyCell}`}
-            >
-              Component
-            </TableCell>
-            <TableCell className={classes.tableHeadCell}>Owner</TableCell>
-            {columns.map(column => (
+    <>
+      <Box className={classes.tableScroll}>
+        <Table size="small" className={classes.table}>
+          <TableHead>
+            <TableRow className={classes.matrixHeadRow}>
               <TableCell
-                key={column.key}
-                align="center"
-                className={`${classes.tableHeadCell} ${
-                  classes.matrixHeadCell
-                } ${
-                  highlightedColumn === column.key ? classes.matrixHeadOn : ''
-                }`}
+                className={`${classes.tableHeadCell} ${classes.stickyCell}`}
               >
-                {column.label}
+                Component
               </TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {entities.map(entity => (
-            <TableRow key={entity.ref} className={classes.matrixRow}>
-              <TableCell className={classes.stickyCell}>
-                <Link to={entityHref(entity.ref)}>{entity.name}</Link>
-              </TableCell>
-              <TableCell>
-                <Box className={classes.ownerCell}>
-                  <OwnerGlyph kind={entity.ownerKind} />
-                  <Typography component="span" className={classes.ownerName}>
-                    {entity.owner}
-                  </Typography>
-                </Box>
-              </TableCell>
-              {columns.map(column => {
-                const state = cellState(entity, column.key);
-                const ratio = cellRatio?.(entity, column.key) ?? null;
-                /* Only worth grading when the cell covers several checks —
-                   a lone check has nothing between passed and failed. */
-                const graded =
-                  state !== 'unscored' && ratio && ratio.total > 1
-                    ? meterColor(ratio.total - ratio.passed, ratio.total)
-                    : null;
-                const label = ratio
-                  ? `${column.label}: ${CELL_WORDS[state]} (${ratio.passed} of ${ratio.total} checks passed)`
-                  : `${column.label}: ${CELL_WORDS[state]}`;
-                return (
-                  <TableCell key={column.key} align="center">
-                    <Tooltip title={label}>
-                      {state === 'unscored' ? (
-                        <span
-                          className={classes.markUnscored}
-                          role="img"
-                          aria-label={label}
-                        >
-                          –
-                        </span>
-                      ) : (
-                        <span
-                          className={`${classes.mark} ${
-                            state === 'failed'
-                              ? classes.markFailed
-                              : classes.markPassed
-                          }`}
-                          style={
-                            graded ? { backgroundColor: graded } : undefined
-                          }
-                          role="img"
-                          aria-label={label}
-                        />
-                      )}
-                    </Tooltip>
-                  </TableCell>
-                );
-              })}
+              <TableCell className={classes.tableHeadCell}>Owner</TableCell>
+              {columns.map(column => (
+                <TableCell
+                  key={column.key}
+                  align="center"
+                  className={`${classes.tableHeadCell} ${
+                    classes.matrixHeadCell
+                  } ${
+                    highlightedColumn === column.key ? classes.matrixHeadOn : ''
+                  }`}
+                >
+                  {column.label}
+                </TableCell>
+              ))}
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </Box>
+          </TableHead>
+          <TableBody>
+            {pageRows.map(entity => (
+              <TableRow key={entity.ref} className={classes.matrixRow}>
+                <TableCell className={classes.stickyCell}>
+                  <Link to={entityHref(entity.ref)}>{entity.name}</Link>
+                </TableCell>
+                <TableCell>
+                  <Box className={classes.ownerCell}>
+                    <OwnerGlyph kind={entity.ownerKind} />
+                    <Typography component="span" className={classes.ownerName}>
+                      {entity.owner}
+                    </Typography>
+                  </Box>
+                </TableCell>
+                {columns.map(column => {
+                  const state = cellState(entity, column.key);
+                  const ratio = cellRatio?.(entity, column.key) ?? null;
+                  /* Only worth grading when the cell covers several checks —
+                     a lone check has nothing between passed and failed. */
+                  const graded =
+                    state !== 'unscored' && ratio && ratio.total > 1
+                      ? meterColor(ratio.total - ratio.passed, ratio.total)
+                      : null;
+                  const label = ratio
+                    ? `${column.label}: ${CELL_WORDS[state]} (${ratio.passed} of ${ratio.total} checks passed)`
+                    : `${column.label}: ${CELL_WORDS[state]}`;
+                  return (
+                    <TableCell key={column.key} align="center">
+                      <Tooltip title={label}>
+                        {state === 'unscored' ? (
+                          <span
+                            className={classes.markUnscored}
+                            role="img"
+                            aria-label={label}
+                          >
+                            –
+                          </span>
+                        ) : (
+                          <span
+                            className={`${classes.mark} ${
+                              state === 'failed'
+                                ? classes.markFailed
+                                : classes.markPassed
+                            }`}
+                            style={
+                              graded ? { backgroundColor: graded } : undefined
+                            }
+                            role="img"
+                            aria-label={label}
+                          />
+                        )}
+                      </Tooltip>
+                    </TableCell>
+                  );
+                })}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Box>
+      {/* Outside the scroll box, so the controls stay put while a wide matrix
+          scrolls sideways. */}
+      <TablePagination
+        component="div"
+        count={entities.length}
+        page={page}
+        rowsPerPage={rowsPerPage}
+        rowsPerPageOptions={PAGE_SIZES}
+        onPageChange={(_, next) => setPage(next)}
+        onRowsPerPageChange={e => {
+          setRowsPerPage(Number(e.target.value));
+          setPage(0);
+        }}
+      />
+    </>
   );
 };
